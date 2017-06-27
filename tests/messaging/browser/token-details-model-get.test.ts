@@ -14,21 +14,22 @@
 * limitations under the License.
 */
 import { assert } from "chai";
-import makeFakeSubscription from './make-fake-subscription';
-import dbHelpers from './db-helper';
-import Errors from '../../../src/messaging/models/errors';
-import TokenDetailsModel from '../../../src/messaging/models/token-details-model';
-import arrayBufferToBase64 from '../../../src/messaging/helpers/array-buffer-to-base64';
+import makeFakeSubscription from "./make-fake-subscription";
+import dbHelpers from "./db-helper";
+import Errors from "../../../src/messaging/models/errors";
+import TokenDetailsModel from "../../../src/messaging/models/token-details-model";
+import arrayBufferToBase64 from "../../../src/messaging/helpers/array-buffer-to-base64";
 
-describe('Firebase Messaging > TokenDetailsModel.getToken()', function() {
+describe("Firebase Messaging > TokenDetailsModel.getToken()", function() {
   const EXAMPLE_INPUT = {
-    swScope: '/example-scope',
-    vapidKey: 'BNJxw7sCGkGLOUP2cawBaBXRuWZ3lw_PmQMgreLVVvX_b' +
-      '4emEWVURkCF8fUTHEFe2xrEgTt5ilh5xD94v0pFe_I',
+    swScope: "/example-scope",
+    vapidKey:
+      "BNJxw7sCGkGLOUP2cawBaBXRuWZ3lw_PmQMgreLVVvX_b" +
+      "4emEWVURkCF8fUTHEFe2xrEgTt5ilh5xD94v0pFe_I",
     subscription: makeFakeSubscription(),
-    fcmSenderId: '1234567',
-    fcmToken: 'qwerty',
-    fcmPushSet: '7654321',
+    fcmSenderId: "1234567",
+    fcmToken: "qwerty",
+    fcmPushSet: "7654321"
   };
 
   let tokenModel;
@@ -49,124 +50,109 @@ describe('Firebase Messaging > TokenDetailsModel.getToken()', function() {
     });
   });
 
-  it('should throw on bad scope input', function() {
-    const badInputs = [
-      '',
-      [],
-      {},
-      true,
-      null,
-      123
-    ];
-    const promises = badInputs.map((badInput) => {
+  it("should throw on bad scope input", function() {
+    const badInputs = ["", [], {}, true, null, 123];
+    const promises = badInputs.map(badInput => {
       tokenModel = new TokenDetailsModel();
-      return tokenModel.getTokenDetailsFromSWScope(badInput)
-      .then(() => {
-        throw new Error('Expected promise to reject');
-      }, (err) => {
-        assert.equal('messaging/' + Errors.codes.BAD_SCOPE,
-          err.code);
-      });
+      return tokenModel.getTokenDetailsFromSWScope(badInput).then(
+        () => {
+          throw new Error("Expected promise to reject");
+        },
+        err => {
+          assert.equal("messaging/" + Errors.codes.BAD_SCOPE, err.code);
+        }
+      );
     });
 
     return Promise.all(promises);
   });
 
-  it('should throw on bad FCM Token input', function() {
-    const badInputs = [
-      '',
-      [],
-      {},
-      true,
-      null,
-      123
-    ];
-    const promises = badInputs.map((badInput) => {
+  it("should throw on bad FCM Token input", function() {
+    const badInputs = ["", [], {}, true, null, 123];
+    const promises = badInputs.map(badInput => {
       tokenModel = new TokenDetailsModel();
-      return tokenModel.getTokenDetailsFromToken(badInput)
-      .then(() => {
-        throw new Error('Expected promise to reject');
-      }, (err) => {
-        assert.equal('messaging/' + Errors.codes.BAD_TOKEN,
-          err.code);
-      });
+      return tokenModel.getTokenDetailsFromToken(badInput).then(
+        () => {
+          throw new Error("Expected promise to reject");
+        },
+        err => {
+          assert.equal("messaging/" + Errors.codes.BAD_TOKEN, err.code);
+        }
+      );
     });
 
     return Promise.all(promises);
   });
 
-  it('should get from scope', function() {
+  it("should get from scope", function() {
     tokenModel = new TokenDetailsModel();
-    return tokenModel.getTokenDetailsFromSWScope(EXAMPLE_INPUT.swScope)
-    .then((details) => {
-      assert.equal(null, details);
+    return tokenModel
+      .getTokenDetailsFromSWScope(EXAMPLE_INPUT.swScope)
+      .then(details => {
+        assert.equal(null, details);
 
-      return tokenModel.saveTokenDetails(EXAMPLE_INPUT);
-    })
-    .then(() => {
-      return tokenModel.getTokenDetailsFromSWScope(EXAMPLE_INPUT.swScope);
-    })
-    .then((details) => {
-      const subscriptionKeys = [
-        'endpoint',
-        'auth',
-        'p256dh'
-      ];
-      const subscriptionValues = {
-        endpoint: EXAMPLE_INPUT.subscription.endpoint,
-        auth: arrayBufferToBase64(EXAMPLE_INPUT.subscription.getKey('auth')),
-        p256dh: arrayBufferToBase64(EXAMPLE_INPUT.subscription.getKey('p256dh'))
-      };
+        return tokenModel.saveTokenDetails(EXAMPLE_INPUT);
+      })
+      .then(() => {
+        return tokenModel.getTokenDetailsFromSWScope(EXAMPLE_INPUT.swScope);
+      })
+      .then(details => {
+        const subscriptionKeys = ["endpoint", "auth", "p256dh"];
+        const subscriptionValues = {
+          endpoint: EXAMPLE_INPUT.subscription.endpoint,
+          auth: arrayBufferToBase64(EXAMPLE_INPUT.subscription.getKey("auth")),
+          p256dh: arrayBufferToBase64(
+            EXAMPLE_INPUT.subscription.getKey("p256dh")
+          )
+        };
 
-      subscriptionKeys.forEach((keyName) => {
-        assert.equal(details[keyName], subscriptionValues[keyName]);
+        subscriptionKeys.forEach(keyName => {
+          assert.equal(details[keyName], subscriptionValues[keyName]);
+        });
+
+        Object.keys(details).forEach(keyName => {
+          if (subscriptionKeys.indexOf(keyName) !== -1) {
+            return;
+          }
+
+          assert.equal(details[keyName], EXAMPLE_INPUT[keyName]);
+        });
       });
-
-      Object.keys(details).forEach((keyName) => {
-        if (subscriptionKeys.indexOf(keyName) !== -1) {
-          return;
-        }
-
-        assert.equal(details[keyName], EXAMPLE_INPUT[keyName]);
-      });
-    });
   });
 
-  it('should get from token', function() {
+  it("should get from token", function() {
     tokenModel = new TokenDetailsModel();
-    return tokenModel.getTokenDetailsFromToken(EXAMPLE_INPUT.fcmToken)
-    .then((details) => {
-      assert.equal(null, details);
+    return tokenModel
+      .getTokenDetailsFromToken(EXAMPLE_INPUT.fcmToken)
+      .then(details => {
+        assert.equal(null, details);
 
-      return tokenModel.saveTokenDetails(EXAMPLE_INPUT);
-    })
-    .then(() => {
-      return tokenModel.getTokenDetailsFromToken(EXAMPLE_INPUT.fcmToken);
-    })
-    .then((details) => {
-      const subscriptionKeys = [
-        'endpoint',
-        'auth',
-        'p256dh'
-      ];
-      const subscriptionValues = {
-        endpoint: EXAMPLE_INPUT.subscription.endpoint,
-        auth: arrayBufferToBase64(EXAMPLE_INPUT.subscription.getKey('auth')),
-        p256dh: arrayBufferToBase64(EXAMPLE_INPUT.subscription.getKey('p256dh'))
-      };
+        return tokenModel.saveTokenDetails(EXAMPLE_INPUT);
+      })
+      .then(() => {
+        return tokenModel.getTokenDetailsFromToken(EXAMPLE_INPUT.fcmToken);
+      })
+      .then(details => {
+        const subscriptionKeys = ["endpoint", "auth", "p256dh"];
+        const subscriptionValues = {
+          endpoint: EXAMPLE_INPUT.subscription.endpoint,
+          auth: arrayBufferToBase64(EXAMPLE_INPUT.subscription.getKey("auth")),
+          p256dh: arrayBufferToBase64(
+            EXAMPLE_INPUT.subscription.getKey("p256dh")
+          )
+        };
 
-      subscriptionKeys.forEach((keyName) => {
-        assert.equal(details[keyName], subscriptionValues[keyName]);
+        subscriptionKeys.forEach(keyName => {
+          assert.equal(details[keyName], subscriptionValues[keyName]);
+        });
+
+        Object.keys(details).forEach(keyName => {
+          if (subscriptionKeys.indexOf(keyName) !== -1) {
+            return;
+          }
+
+          assert.equal(details[keyName], EXAMPLE_INPUT[keyName]);
+        });
       });
-
-      Object.keys(details).forEach((keyName) => {
-        if (subscriptionKeys.indexOf(keyName) !== -1) {
-          return;
-        }
-
-        assert.equal(details[keyName], EXAMPLE_INPUT[keyName]);
-      });
-    });
   });
-
 });

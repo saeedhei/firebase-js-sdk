@@ -67,7 +67,7 @@ export class LimitedFilter {
      * @private
      */
     this.reverse_ = !params.isViewFromLeft();
-  };
+  }
   /**
    * @inheritDoc
    */
@@ -79,12 +79,26 @@ export class LimitedFilter {
       // No change
       return snap;
     } else if (snap.numChildren() < this.limit_) {
-      return this.rangedFilter_.getIndexedFilter().updateChild(snap, key, newChild, affectedPath, source,
-          optChangeAccumulator);
+      return this.rangedFilter_
+        .getIndexedFilter()
+        .updateChild(
+          snap,
+          key,
+          newChild,
+          affectedPath,
+          source,
+          optChangeAccumulator
+        );
     } else {
-      return this.fullLimitUpdateChild_(snap, key, newChild, source, optChangeAccumulator);
+      return this.fullLimitUpdateChild_(
+        snap,
+        key,
+        newChild,
+        source,
+        optChangeAccumulator
+      );
     }
-  };
+  }
 
   /**
    * @inheritDoc
@@ -95,25 +109,36 @@ export class LimitedFilter {
       // Make sure we have a children node with the correct index, not a leaf node;
       filtered = ChildrenNode.EMPTY_NODE.withIndex(this.index_);
     } else {
-      if (this.limit_ * 2 < newSnap.numChildren() && newSnap.isIndexed(this.index_)) {
+      if (
+        this.limit_ * 2 < newSnap.numChildren() &&
+        newSnap.isIndexed(this.index_)
+      ) {
         // Easier to build up a snapshot, since what we're given has more than twice the elements we want
         filtered = ChildrenNode.EMPTY_NODE.withIndex(this.index_);
         // anchor to the startPost, endPost, or last element as appropriate
         var iterator;
-        newSnap = /** @type {!ChildrenNode} */ (newSnap);
+        newSnap /** @type {!ChildrenNode} */ = newSnap;
         if (this.reverse_) {
-          iterator = newSnap.getReverseIteratorFrom(this.rangedFilter_.getEndPost(), this.index_);
+          iterator = newSnap.getReverseIteratorFrom(
+            this.rangedFilter_.getEndPost(),
+            this.index_
+          );
         } else {
-          iterator = newSnap.getIteratorFrom(this.rangedFilter_.getStartPost(), this.index_);
+          iterator = newSnap.getIteratorFrom(
+            this.rangedFilter_.getStartPost(),
+            this.index_
+          );
         }
         var count = 0;
         while (iterator.hasNext() && count < this.limit_) {
           var next = iterator.getNext();
           var inRange;
           if (this.reverse_) {
-            inRange = this.index_.compare(this.rangedFilter_.getStartPost(), next) <= 0;
+            inRange =
+              this.index_.compare(this.rangedFilter_.getStartPost(), next) <= 0;
           } else {
-            inRange = this.index_.compare(next, this.rangedFilter_.getEndPost()) <= 0;
+            inRange =
+              this.index_.compare(next, this.rangedFilter_.getEndPost()) <= 0;
           }
           if (inRange) {
             filtered = filtered.updateImmediateChild(next.name, next.node);
@@ -127,7 +152,9 @@ export class LimitedFilter {
         // The snap contains less than twice the limit. Faster to delete from the snap than build up a new one
         filtered = newSnap.withIndex(this.index_);
         // Don't support priorities on queries
-        filtered = /** @type {!ChildrenNode} */ (filtered.updatePriority(ChildrenNode.EMPTY_NODE));
+        filtered /** @type {!ChildrenNode} */ = filtered.updatePriority(
+          ChildrenNode.EMPTY_NODE
+        );
         var startPost;
         var endPost;
         var cmp;
@@ -136,7 +163,9 @@ export class LimitedFilter {
           startPost = this.rangedFilter_.getEndPost();
           endPost = this.rangedFilter_.getStartPost();
           var indexCompare = this.index_.getCompare();
-          cmp = function(a, b) { return indexCompare(b, a); };
+          cmp = function(a, b) {
+            return indexCompare(b, a);
+          };
         } else {
           iterator = filtered.getIterator(this.index_);
           startPost = this.rangedFilter_.getStartPost();
@@ -152,17 +181,23 @@ export class LimitedFilter {
             // start adding
             foundStartPost = true;
           }
-          inRange = foundStartPost && count < this.limit_ && cmp(next, endPost) <= 0;
+          inRange =
+            foundStartPost && count < this.limit_ && cmp(next, endPost) <= 0;
           if (inRange) {
             count++;
           } else {
-            filtered = filtered.updateImmediateChild(next.name, ChildrenNode.EMPTY_NODE);
+            filtered = filtered.updateImmediateChild(
+              next.name,
+              ChildrenNode.EMPTY_NODE
+            );
           }
         }
       }
     }
-    return this.rangedFilter_.getIndexedFilter().updateFullNode(oldSnap, filtered, optChangeAccumulator);
-  };
+    return this.rangedFilter_
+      .getIndexedFilter()
+      .updateFullNode(oldSnap, filtered, optChangeAccumulator);
+  }
 
   /**
    * @inheritDoc
@@ -170,28 +205,28 @@ export class LimitedFilter {
   updatePriority(oldSnap, newPriority) {
     // Don't support priorities on queries
     return oldSnap;
-  };
+  }
 
   /**
    * @inheritDoc
    */
   filtersNodes() {
     return true;
-  };
+  }
 
   /**
    * @inheritDoc
    */
   getIndexedFilter() {
     return this.rangedFilter_.getIndexedFilter();
-  };
+  }
 
   /**
    * @inheritDoc
    */
   getIndex() {
     return this.index_;
-  };
+  }
 
   /**
    * @param {!Node} snap
@@ -202,47 +237,82 @@ export class LimitedFilter {
    * @return {!Node}
    * @private
    */
-  fullLimitUpdateChild_(snap: Node, childKey: string, childSnap: Node, source, changeAccumulator?) {
+  fullLimitUpdateChild_(
+    snap: Node,
+    childKey: string,
+    childSnap: Node,
+    source,
+    changeAccumulator?
+  ) {
     // TODO: rename all cache stuff etc to general snap terminology
     var cmp;
     if (this.reverse_) {
       var indexCmp = this.index_.getCompare();
-      cmp = function(a, b) { return indexCmp(b, a); };
+      cmp = function(a, b) {
+        return indexCmp(b, a);
+      };
     } else {
       cmp = this.index_.getCompare();
     }
     var oldEventCache = <ChildrenNode>snap;
-    assert(oldEventCache.numChildren() == this.limit_, '');
+    assert(oldEventCache.numChildren() == this.limit_, "");
     var newChildNamedNode = new NamedNode(childKey, childSnap);
-    var windowBoundary = <NamedNode>(this.reverse_ ? oldEventCache.getFirstChild(this.index_) : oldEventCache.getLastChild(this.index_));
+    var windowBoundary = <NamedNode>(this.reverse_
+      ? oldEventCache.getFirstChild(this.index_)
+      : oldEventCache.getLastChild(this.index_));
     var inRange = this.rangedFilter_.matches(newChildNamedNode);
     if (oldEventCache.hasChild(childKey)) {
       var oldChildSnap = oldEventCache.getImmediateChild(childKey);
-      var nextChild = source.getChildAfterChild(this.index_, windowBoundary, this.reverse_);
-      while (nextChild != null && (nextChild.name == childKey || oldEventCache.hasChild(nextChild.name))) {
+      var nextChild = source.getChildAfterChild(
+        this.index_,
+        windowBoundary,
+        this.reverse_
+      );
+      while (
+        nextChild != null &&
+        (nextChild.name == childKey || oldEventCache.hasChild(nextChild.name))
+      ) {
         // There is a weird edge case where a node is updated as part of a merge in the write tree, but hasn't
         // been applied to the limited filter yet. Ignore this next child which will be updated later in
         // the limited filter...
-        nextChild = source.getChildAfterChild(this.index_, nextChild, this.reverse_);
+        nextChild = source.getChildAfterChild(
+          this.index_,
+          nextChild,
+          this.reverse_
+        );
       }
-      var compareNext = nextChild == null ? 1 : cmp(nextChild, newChildNamedNode);
+      var compareNext =
+        nextChild == null ? 1 : cmp(nextChild, newChildNamedNode);
       var remainsInWindow = inRange && !childSnap.isEmpty() && compareNext >= 0;
       if (remainsInWindow) {
         if (changeAccumulator != null) {
-          changeAccumulator.trackChildChange(Change.childChangedChange(childKey, childSnap, oldChildSnap));
+          changeAccumulator.trackChildChange(
+            Change.childChangedChange(childKey, childSnap, oldChildSnap)
+          );
         }
         return oldEventCache.updateImmediateChild(childKey, childSnap);
       } else {
         if (changeAccumulator != null) {
-          changeAccumulator.trackChildChange(Change.childRemovedChange(childKey, oldChildSnap));
+          changeAccumulator.trackChildChange(
+            Change.childRemovedChange(childKey, oldChildSnap)
+          );
         }
-        var newEventCache = oldEventCache.updateImmediateChild(childKey, ChildrenNode.EMPTY_NODE);
-        var nextChildInRange = nextChild != null && this.rangedFilter_.matches(nextChild);
+        var newEventCache = oldEventCache.updateImmediateChild(
+          childKey,
+          ChildrenNode.EMPTY_NODE
+        );
+        var nextChildInRange =
+          nextChild != null && this.rangedFilter_.matches(nextChild);
         if (nextChildInRange) {
           if (changeAccumulator != null) {
-            changeAccumulator.trackChildChange(Change.childAddedChange(nextChild.name, nextChild.node));
+            changeAccumulator.trackChildChange(
+              Change.childAddedChange(nextChild.name, nextChild.node)
+            );
           }
-          return newEventCache.updateImmediateChild(nextChild.name, nextChild.node);
+          return newEventCache.updateImmediateChild(
+            nextChild.name,
+            nextChild.node
+          );
         } else {
           return newEventCache;
         }
@@ -253,16 +323,21 @@ export class LimitedFilter {
     } else if (inRange) {
       if (cmp(windowBoundary, newChildNamedNode) >= 0) {
         if (changeAccumulator != null) {
-          changeAccumulator.trackChildChange(Change.childRemovedChange(windowBoundary.name, windowBoundary.node));
-          changeAccumulator.trackChildChange(Change.childAddedChange(childKey, childSnap));
+          changeAccumulator.trackChildChange(
+            Change.childRemovedChange(windowBoundary.name, windowBoundary.node)
+          );
+          changeAccumulator.trackChildChange(
+            Change.childAddedChange(childKey, childSnap)
+          );
         }
-        return oldEventCache.updateImmediateChild(childKey, childSnap).updateImmediateChild(windowBoundary.name,
-          ChildrenNode.EMPTY_NODE);
+        return oldEventCache
+          .updateImmediateChild(childKey, childSnap)
+          .updateImmediateChild(windowBoundary.name, ChildrenNode.EMPTY_NODE);
       } else {
         return snap;
       }
     } else {
       return snap;
     }
-  };
+  }
 }

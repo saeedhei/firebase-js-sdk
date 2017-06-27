@@ -17,8 +17,8 @@
 /**
  * @fileoverview Functions to create and manipulate URLs for the server API.
  */
-import * as constants from './constants';
-import * as object from './object';
+import * as constants from "./constants";
+import * as object from "./object";
 
 export function makeNormalUrl(urlPart: string): string {
   return constants.domainBase + constants.apiBaseUrl + urlPart;
@@ -34,10 +34,10 @@ export function makeUploadUrl(urlPart: string): string {
 
 export function makeQueryString(params: { [key: string]: string }): string {
   let encode = encodeURIComponent;
-  let queryPart = '?';
+  let queryPart = "?";
   object.forEach(params, function(key, val) {
-    let nextPart = encode(key) + '=' + encode(val);
-    queryPart = queryPart + nextPart + '&';
+    let nextPart = encode(key) + "=" + encode(val);
+    queryPart = queryPart + nextPart + "&";
   });
 
   // Chop off the extra '&' or '?' on the end

@@ -1,4 +1,4 @@
-import { RepoInfo } from '../core/RepoInfo';
+import { RepoInfo } from "../core/RepoInfo";
 
 export abstract class Transport {
   /**
@@ -21,7 +21,12 @@ export abstract class Transport {
    * @param {string=} lastSessionId Optional lastSessionId if there was a previous connection
    * @interface
    */
-  constructor(connId: string, repoInfo: RepoInfo, transportSessionId?: string, lastSessionId?: string) {}
+  constructor(
+    connId: string,
+    repoInfo: RepoInfo,
+    transportSessionId?: string,
+    lastSessionId?: string
+  ) {}
 
   /**
    * @param {function(Object)} onMessage Callback when messages arrive

@@ -16,15 +16,17 @@ export class PathIndex extends Index {
   constructor(indexPath) {
     super();
 
-    assert(!indexPath.isEmpty() && indexPath.getFront() !== '.priority',
-        'Can\'t create PathIndex with empty path or .priority key');
+    assert(
+      !indexPath.isEmpty() && indexPath.getFront() !== ".priority",
+      "Can't create PathIndex with empty path or .priority key"
+    );
     /**
      *
      * @type {!Path}
      * @private
      */
     this.indexPath_ = indexPath;
-  };
+  }
   /**
    * @param {!Node} snap
    * @return {!Node}
@@ -32,16 +34,14 @@ export class PathIndex extends Index {
    */
   extractChild(snap) {
     return snap.getChild(this.indexPath_);
-  };
-
+  }
 
   /**
    * @inheritDoc
    */
   isDefinedOn(node) {
     return !node.getChild(this.indexPath_).isEmpty();
-  };
-
+  }
 
   /**
    * @inheritDoc
@@ -55,8 +55,7 @@ export class PathIndex extends Index {
     } else {
       return indexCmp;
     }
-  };
-
+  }
 
   /**
    * @inheritDoc
@@ -65,8 +64,7 @@ export class PathIndex extends Index {
     var valueNode = nodeFromJSON(indexValue);
     var node = ChildrenNode.EMPTY_NODE.updateChild(this.indexPath_, valueNode);
     return new NamedNode(name, node);
-  };
-
+  }
 
   /**
    * @inheritDoc
@@ -74,13 +72,12 @@ export class PathIndex extends Index {
   maxPost() {
     var node = ChildrenNode.EMPTY_NODE.updateChild(this.indexPath_, MAX_NODE);
     return new NamedNode(MAX_NAME, node);
-  };
-
+  }
 
   /**
    * @inheritDoc
    */
   toString() {
-    return this.indexPath_.slice().join('/');
-  };
+    return this.indexPath_.slice().join("/");
+  }
 }

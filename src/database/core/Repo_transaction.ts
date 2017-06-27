@@ -5,11 +5,7 @@ import { Path } from "./util/Path";
 import { Tree } from "./util/Tree";
 import { PRIORITY_INDEX } from "./snap/indexes/PriorityIndex";
 import { Node } from "./snap/Node";
-import { 
-  LUIDGenerator,
-  warn,
-  exceptionGuard,
-} from "./util/util";
+import { LUIDGenerator, warn, exceptionGuard } from "./util/util";
 import { resolveDeferredValueSnapshot } from "./util/ServerValues";
 import { isValidPriority, validateFirebaseData } from "./util/validation";
 import { contains, safeGet } from "../../utils/obj";
@@ -89,27 +85,32 @@ export const TransactionStatus = {
   this.transactionQueueTree_ = new Tree();
 };
 
-declare module './Repo' {
+declare module "./Repo" {
   interface Repo {
-    startTransaction(path: Path, transactionUpdate, onComplete, applyLocally): void
+    startTransaction(
+      path: Path,
+      transactionUpdate,
+      onComplete,
+      applyLocally
+    ): void;
   }
 }
 
 type Transaction = {
-  path: Path,
-  update: Function,
-  onComplete: Function,
-  status: number,
-  order: number,
-  applyLocally: boolean,
-  retryCount: number,
-  unwatcher: Function,
-  abortReason: any,
-  currentWriteId: any,
-  currentInputSnapshot: any,
-  currentOutputSnapshotRaw: any,
-  currentOutputSnapshotResolved: any
-}
+  path: Path;
+  update: Function;
+  onComplete: Function;
+  status: number;
+  order: number;
+  applyLocally: boolean;
+  retryCount: number;
+  unwatcher: Function;
+  abortReason: any;
+  currentWriteId: any;
+  currentInputSnapshot: any;
+  currentOutputSnapshotRaw: any;
+  currentOutputSnapshotResolved: any;
+};
 
 /**
  * Creates a new transaction, adds it to the transactions we're tracking, and sends it to the server if possible.
@@ -119,17 +120,21 @@ type Transaction = {
  * @param {?function(?Error, boolean, ?DataSnapshot)} onComplete Completion callback.
  * @param {boolean} applyLocally Whether or not to make intermediate results visible
  */
-(Repo.prototype as any).startTransaction = function(path: Path, 
-                                                    transactionUpdate: () => any, 
-                                                    onComplete: (Error, boolean, DataSnapshot) => any, 
-                                                    applyLocally: boolean) {
-  this.log_('transaction on ' + path);
+(Repo.prototype as any).startTransaction = function(
+  path: Path,
+  transactionUpdate: () => any,
+  onComplete: (Error, boolean, DataSnapshot) => any,
+  applyLocally: boolean
+) {
+  this.log_("transaction on " + path);
 
   // Add a watch to make sure we get server updates.
-  var valueCallback = function() { };
+  var valueCallback = function() {};
   var watchRef = new Reference(this, path);
-  watchRef.on('value', valueCallback);
-  var unwatcher = function() { watchRef.off('value', valueCallback); };
+  watchRef.on("value", valueCallback);
+  var unwatcher = function() {
+    watchRef.off("value", valueCallback);
+  };
 
   // Initialize transaction.
   var transaction: Transaction = {
@@ -164,7 +169,6 @@ type Transaction = {
     currentOutputSnapshotResolved: null
   };
 
-
   // Run transaction initially.
   var currentState = this.getLatestState_(path);
   transaction.currentInputSnapshot = currentState;
@@ -176,11 +180,19 @@ type Transaction = {
     transaction.currentOutputSnapshotResolved = null;
     if (transaction.onComplete) {
       // We just set the input snapshot, so this cast should be safe
-      var snapshot = new DataSnapshot(transaction.currentInputSnapshot, new Reference(this, transaction.path), PRIORITY_INDEX);
+      var snapshot = new DataSnapshot(
+        transaction.currentInputSnapshot,
+        new Reference(this, transaction.path),
+        PRIORITY_INDEX
+      );
       transaction.onComplete(null, false, snapshot);
     }
   } else {
-    validateFirebaseData('transaction failed: Data returned ', newVal, transaction.path);
+    validateFirebaseData(
+      "transaction failed: Data returned ",
+      newVal,
+      transaction.path
+    );
 
     // Mark as run and add to our queue.
     transaction.status = TransactionStatus.RUN;
@@ -194,15 +206,24 @@ type Transaction = {
     // Note: We intentionally raise events after updating all of our transaction state, since the user could
     // start new transactions from the event callbacks.
     var priorityForNode;
-    if (typeof newVal === 'object' && newVal !== null && contains(newVal, '.priority')) {
-      priorityForNode = safeGet(newVal, '.priority');
-      assert(isValidPriority(priorityForNode), 'Invalid priority returned by transaction. ' +
-        'Priority must be a valid string, finite number, server value, or null.');
+    if (
+      typeof newVal === "object" &&
+      newVal !== null &&
+      contains(newVal, ".priority")
+    ) {
+      priorityForNode = safeGet(newVal, ".priority");
+      assert(
+        isValidPriority(priorityForNode),
+        "Invalid priority returned by transaction. " +
+          "Priority must be a valid string, finite number, server value, or null."
+      );
     } else {
-      var currentNode = this.serverSyncTree_.calcCompleteEventCache(path) || ChildrenNode.EMPTY_NODE;
+      var currentNode =
+        this.serverSyncTree_.calcCompleteEventCache(path) ||
+        ChildrenNode.EMPTY_NODE;
       priorityForNode = currentNode.getPriority().val();
     }
-    priorityForNode = /** @type {null|number|string} */ (priorityForNode);
+    priorityForNode /** @type {null|number|string} */ = priorityForNode;
 
     var serverValues = this.generateServerValues();
     var newNodeUnresolved = nodeFromJSON(newVal, priorityForNode);
@@ -211,7 +232,12 @@ type Transaction = {
     transaction.currentOutputSnapshotResolved = newNode;
     transaction.currentWriteId = this.getNextWriteId_();
 
-    var events = this.serverSyncTree_.applyUserOverwrite(path, newNode, transaction.currentWriteId, transaction.applyLocally);
+    var events = this.serverSyncTree_.applyUserOverwrite(
+      path,
+      newNode,
+      transaction.currentWriteId,
+      transaction.applyLocally
+    );
     this.eventQueue_.raiseEventsForChangedPath(path, events);
 
     this.sendReadyTransactions_();
@@ -224,10 +250,15 @@ type Transaction = {
  * @return {Node}
  * @private
  */
-(Repo.prototype as any).getLatestState_ = function(path: Path, excludeSets: [number]): Node {
-  return this.serverSyncTree_.calcCompleteEventCache(path, excludeSets) || ChildrenNode.EMPTY_NODE;
+(Repo.prototype as any).getLatestState_ = function(
+  path: Path,
+  excludeSets: [number]
+): Node {
+  return (
+    this.serverSyncTree_.calcCompleteEventCache(path, excludeSets) ||
+    ChildrenNode.EMPTY_NODE
+  );
 };
-
 
 /**
  * Sends any already-run transactions that aren't waiting for outstanding transactions to
@@ -240,7 +271,8 @@ type Transaction = {
  * @private
  */
 (Repo.prototype as any).sendReadyTransactions_ = function(node?) {
-  var node = /** @type {!Tree.<Array.<!Transaction>>} */ (node || this.transactionQueueTree_);
+  var node /** @type {!Tree.<Array.<!Transaction>>} */ =
+    node || this.transactionQueueTree_;
 
   // Before recursing, make sure any completed transactions are removed.
   if (!node) {
@@ -249,7 +281,7 @@ type Transaction = {
 
   if (node.getValue() !== null) {
     var queue = this.buildTransactionQueue_(node);
-    assert(queue.length > 0, 'Sending zero length transaction queue');
+    assert(queue.length > 0, "Sending zero length transaction queue");
 
     var allRun = queue.every(function(transaction) {
       return transaction.status === TransactionStatus.RUN;
@@ -267,7 +299,6 @@ type Transaction = {
   }
 };
 
-
 /**
  * Given a list of run transactions, send them to the server and then handle the result (success or failure).
  *
@@ -275,21 +306,31 @@ type Transaction = {
  * @param {!Array.<Transaction>} queue Queue of transactions under the specified location.
  * @private
  */
-(Repo.prototype as any).sendTransactionQueue_ = function(path: Path, queue: Array<Transaction>) {
+(Repo.prototype as any).sendTransactionQueue_ = function(
+  path: Path,
+  queue: Array<Transaction>
+) {
   // Mark transactions as sent and increment retry count!
-  var setsToIgnore = queue.map(function(txn) { return txn.currentWriteId; });
+  var setsToIgnore = queue.map(function(txn) {
+    return txn.currentWriteId;
+  });
   var latestState = this.getLatestState_(path, setsToIgnore);
   var snapToSend = latestState;
   var latestHash = latestState.hash();
   for (var i = 0; i < queue.length; i++) {
     var txn = queue[i];
-    assert(txn.status === TransactionStatus.RUN,
-      'tryToSendTransactionQueue_: items in queue should all be run.');
+    assert(
+      txn.status === TransactionStatus.RUN,
+      "tryToSendTransactionQueue_: items in queue should all be run."
+    );
     txn.status = TransactionStatus.SENT;
     txn.retryCount++;
     var relativePath = Path.relativePath(path, txn.path);
     // If we've gotten to this point, the output snapshot must be defined.
-    snapToSend = snapToSend.updateChild(relativePath, /**@type {!Node} */ (txn.currentOutputSnapshotRaw));
+    snapToSend = snapToSend.updateChild(
+      relativePath /**@type {!Node} */,
+      txn.currentOutputSnapshotRaw
+    );
   }
 
   var dataToSend = snapToSend.val(true);
@@ -297,58 +338,74 @@ type Transaction = {
 
   // Send the put.
   var self = this;
-  this.server_.put(pathToSend.toString(), dataToSend, function(status) {
-    self.log_('transaction put response', {path: pathToSend.toString(), status: status});
+  this.server_.put(
+    pathToSend.toString(),
+    dataToSend,
+    function(status) {
+      self.log_("transaction put response", {
+        path: pathToSend.toString(),
+        status: status
+      });
 
-    var events = [];
-    if (status === 'ok') {
-      // Queue up the callbacks and fire them after cleaning up all of our transaction state, since
-      // the callback could trigger more transactions or sets.
-      var callbacks = [];
-      for (i = 0; i < queue.length; i++) {
-        queue[i].status = TransactionStatus.COMPLETED;
-        events = events.concat(self.serverSyncTree_.ackUserWrite(queue[i].currentWriteId));
-        if (queue[i].onComplete) {
-          // We never unset the output snapshot, and given that this transaction is complete, it should be set
-          var node = /** @type {!Node} */ (queue[i].currentOutputSnapshotResolved);
-          var ref = new Reference(self, queue[i].path);
-          var snapshot = new DataSnapshot(node, ref, PRIORITY_INDEX);
-          callbacks.push(queue[i].onComplete.bind(null, null, true, snapshot));
-        }
-        queue[i].unwatcher();
-      }
-
-      // Now remove the completed transactions.
-      self.pruneCompletedTransactionsBelowNode_(self.transactionQueueTree_.subTree(path));
-      // There may be pending transactions that we can now send.
-      self.sendReadyTransactions_();
-
-      self.eventQueue_.raiseEventsForChangedPath(path, events);
-
-      // Finally, trigger onComplete callbacks.
-      for (i = 0; i < callbacks.length; i++) {
-        exceptionGuard(callbacks[i]);
-      }
-    } else {
-      // transactions are no longer sent.  Update their status appropriately.
-      if (status === 'datastale') {
+      var events = [];
+      if (status === "ok") {
+        // Queue up the callbacks and fire them after cleaning up all of our transaction state, since
+        // the callback could trigger more transactions or sets.
+        var callbacks = [];
         for (i = 0; i < queue.length; i++) {
-          if (queue[i].status === TransactionStatus.SENT_NEEDS_ABORT)
-            queue[i].status = TransactionStatus.NEEDS_ABORT;
-          else
-            queue[i].status = TransactionStatus.RUN;
+          queue[i].status = TransactionStatus.COMPLETED;
+          events = events.concat(
+            self.serverSyncTree_.ackUserWrite(queue[i].currentWriteId)
+          );
+          if (queue[i].onComplete) {
+            // We never unset the output snapshot, and given that this transaction is complete, it should be set
+            var node /** @type {!Node} */ =
+              queue[i].currentOutputSnapshotResolved;
+            var ref = new Reference(self, queue[i].path);
+            var snapshot = new DataSnapshot(node, ref, PRIORITY_INDEX);
+            callbacks.push(
+              queue[i].onComplete.bind(null, null, true, snapshot)
+            );
+          }
+          queue[i].unwatcher();
+        }
+
+        // Now remove the completed transactions.
+        self.pruneCompletedTransactionsBelowNode_(
+          self.transactionQueueTree_.subTree(path)
+        );
+        // There may be pending transactions that we can now send.
+        self.sendReadyTransactions_();
+
+        self.eventQueue_.raiseEventsForChangedPath(path, events);
+
+        // Finally, trigger onComplete callbacks.
+        for (i = 0; i < callbacks.length; i++) {
+          exceptionGuard(callbacks[i]);
         }
       } else {
-        warn('transaction at ' + pathToSend.toString() + ' failed: ' + status);
-        for (i = 0; i < queue.length; i++) {
-          queue[i].status = TransactionStatus.NEEDS_ABORT;
-          queue[i].abortReason = status;
+        // transactions are no longer sent.  Update their status appropriately.
+        if (status === "datastale") {
+          for (i = 0; i < queue.length; i++) {
+            if (queue[i].status === TransactionStatus.SENT_NEEDS_ABORT)
+              queue[i].status = TransactionStatus.NEEDS_ABORT;
+            else queue[i].status = TransactionStatus.RUN;
+          }
+        } else {
+          warn(
+            "transaction at " + pathToSend.toString() + " failed: " + status
+          );
+          for (i = 0; i < queue.length; i++) {
+            queue[i].status = TransactionStatus.NEEDS_ABORT;
+            queue[i].abortReason = status;
+          }
         }
-      }
 
-      self.rerunTransactions_(path);
-    }
-  }, latestHash);
+        self.rerunTransactions_(path);
+      }
+    },
+    latestHash
+  );
 };
 
 /**
@@ -373,7 +430,6 @@ type Transaction = {
   return path;
 };
 
-
 /**
  * Does all the work of rerunning transactions (as well as cleans up aborted transactions and whatnot).
  *
@@ -381,7 +437,10 @@ type Transaction = {
  * @param {!Path} path The path the queue is for.
  * @private
  */
-(Repo.prototype as any).rerunTransactionQueue_ = function(queue: Array<Transaction>, path: Path) {
+(Repo.prototype as any).rerunTransactionQueue_ = function(
+  queue: Array<Transaction>,
+  path: Path
+) {
   if (queue.length === 0) {
     return; // Nothing to do!
   }
@@ -391,33 +450,51 @@ type Transaction = {
   var callbacks = [];
   var events = [];
   // Ignore all of the sets we're going to re-run.
-  var txnsToRerun = queue.filter(function(q) { return q.status === TransactionStatus.RUN; });
-  var setsToIgnore = txnsToRerun.map(function(q) { return q.currentWriteId; });
+  var txnsToRerun = queue.filter(function(q) {
+    return q.status === TransactionStatus.RUN;
+  });
+  var setsToIgnore = txnsToRerun.map(function(q) {
+    return q.currentWriteId;
+  });
   for (var i = 0; i < queue.length; i++) {
     var transaction = queue[i];
     var relativePath = Path.relativePath(path, transaction.path);
-    var abortTransaction = false, abortReason;
-    assert(relativePath !== null, 'rerunTransactionsUnderNode_: relativePath should not be null.');
+    var abortTransaction = false,
+      abortReason;
+    assert(
+      relativePath !== null,
+      "rerunTransactionsUnderNode_: relativePath should not be null."
+    );
 
     if (transaction.status === TransactionStatus.NEEDS_ABORT) {
       abortTransaction = true;
       abortReason = transaction.abortReason;
-      events = events.concat(this.serverSyncTree_.ackUserWrite(transaction.currentWriteId, true));
+      events = events.concat(
+        this.serverSyncTree_.ackUserWrite(transaction.currentWriteId, true)
+      );
     } else if (transaction.status === TransactionStatus.RUN) {
       if (transaction.retryCount >= (Repo as any).MAX_TRANSACTION_RETRIES_) {
         abortTransaction = true;
-        abortReason = 'maxretry';
-        events = events.concat(this.serverSyncTree_.ackUserWrite(transaction.currentWriteId, true));
+        abortReason = "maxretry";
+        events = events.concat(
+          this.serverSyncTree_.ackUserWrite(transaction.currentWriteId, true)
+        );
       } else {
         // This code reruns a transaction
         var currentNode = this.getLatestState_(transaction.path, setsToIgnore);
         transaction.currentInputSnapshot = currentNode;
         var newData = queue[i].update(currentNode.val());
         if (newData !== undefined) {
-          validateFirebaseData('transaction failed: Data returned ', newData, transaction.path);
+          validateFirebaseData(
+            "transaction failed: Data returned ",
+            newData,
+            transaction.path
+          );
           var newDataNode = nodeFromJSON(newData);
-          var hasExplicitPriority = (typeof newData === 'object' && newData != null &&
-            contains(newData, '.priority'));
+          var hasExplicitPriority =
+            typeof newData === "object" &&
+            newData != null &&
+            contains(newData, ".priority");
           if (!hasExplicitPriority) {
             // Keep the old priority if there wasn't a priority explicitly specified.
             newDataNode = newDataNode.updatePriority(currentNode.getPriority());
@@ -425,7 +502,10 @@ type Transaction = {
 
           var oldWriteId = transaction.currentWriteId;
           var serverValues = this.generateServerValues();
-          var newNodeResolved = resolveDeferredValueSnapshot(newDataNode, serverValues);
+          var newNodeResolved = resolveDeferredValueSnapshot(
+            newDataNode,
+            serverValues
+          );
 
           transaction.currentOutputSnapshotRaw = newDataNode;
           transaction.currentOutputSnapshotResolved = newNodeResolved;
@@ -433,14 +513,22 @@ type Transaction = {
           // Mutates setsToIgnore in place
           setsToIgnore.splice(setsToIgnore.indexOf(oldWriteId), 1);
           events = events.concat(
-            this.serverSyncTree_.applyUserOverwrite(transaction.path, newNodeResolved, transaction.currentWriteId,
-              transaction.applyLocally)
+            this.serverSyncTree_.applyUserOverwrite(
+              transaction.path,
+              newNodeResolved,
+              transaction.currentWriteId,
+              transaction.applyLocally
+            )
           );
-          events = events.concat(this.serverSyncTree_.ackUserWrite(oldWriteId, true));
+          events = events.concat(
+            this.serverSyncTree_.ackUserWrite(oldWriteId, true)
+          );
         } else {
           abortTransaction = true;
-          abortReason = 'nodata';
-          events = events.concat(this.serverSyncTree_.ackUserWrite(transaction.currentWriteId, true));
+          abortReason = "nodata";
+          events = events.concat(
+            this.serverSyncTree_.ackUserWrite(transaction.currentWriteId, true)
+          );
         }
       }
     }
@@ -457,14 +545,16 @@ type Transaction = {
       })(queue[i].unwatcher);
 
       if (queue[i].onComplete) {
-        if (abortReason === 'nodata') {
+        if (abortReason === "nodata") {
           var ref = new Reference(this, queue[i].path);
           // We set this field immediately, so it's safe to cast to an actual snapshot
-          var lastInput = /** @type {!Node} */ (queue[i].currentInputSnapshot);
+          var lastInput /** @type {!Node} */ = queue[i].currentInputSnapshot;
           var snapshot = new DataSnapshot(lastInput, ref, PRIORITY_INDEX);
           callbacks.push(queue[i].onComplete.bind(null, null, false, snapshot));
         } else {
-          callbacks.push(queue[i].onComplete.bind(null, new Error(abortReason), false, null));
+          callbacks.push(
+            queue[i].onComplete.bind(null, new Error(abortReason), false, null)
+          );
         }
       }
     }
@@ -482,7 +572,6 @@ type Transaction = {
   this.sendReadyTransactions_();
 };
 
-
 /**
  * Returns the rootmost ancestor node of the specified path that has a pending transaction on it, or just returns
  * the node for the given path if there are no pending transactions on any ancestor.
@@ -491,19 +580,23 @@ type Transaction = {
  * @return {!Tree.<Array.<!Transaction>>} The rootmost node with a transaction.
  * @private
  */
-(Repo.prototype as any).getAncestorTransactionNode_ = function(path: Path): Tree {
+(Repo.prototype as any).getAncestorTransactionNode_ = function(
+  path: Path
+): Tree {
   var front;
 
   // Start at the root and walk deeper into the tree towards path until we find a node with pending transactions.
   var transactionNode = this.transactionQueueTree_;
-  while ((front = path.getFront()) !== null && transactionNode.getValue() === null) {
+  while (
+    (front = path.getFront()) !== null &&
+    transactionNode.getValue() === null
+  ) {
     transactionNode = transactionNode.subTree(front);
     path = path.popFront();
   }
 
   return transactionNode;
 };
-
 
 /**
  * Builds the queue of all transactions at or below the specified transactionNode.
@@ -512,13 +605,17 @@ type Transaction = {
  * @return {Array.<Transaction>} The generated queue.
  * @private
  */
-(Repo.prototype as any).buildTransactionQueue_ = function(transactionNode: Tree): Array<Transaction> {
+(Repo.prototype as any).buildTransactionQueue_ = function(
+  transactionNode: Tree
+): Array<Transaction> {
   // Walk any child transaction queues and aggregate them into a single queue.
   var transactionQueue = [];
   this.aggregateTransactionQueuesForNode_(transactionNode, transactionQueue);
 
   // Sort them by the order the transactions were created.
-  transactionQueue.sort(function(a, b) { return a.order - b.order; });
+  transactionQueue.sort(function(a, b) {
+    return a.order - b.order;
+  });
 
   return transactionQueue;
 };
@@ -528,7 +625,10 @@ type Transaction = {
  * @param {Array.<Transaction>} queue
  * @private
  */
-(Repo.prototype as any).aggregateTransactionQueuesForNode_ = function(node: Tree, queue: Array<Transaction>) {
+(Repo.prototype as any).aggregateTransactionQueuesForNode_ = function(
+  node: Tree,
+  queue: Array<Transaction>
+) {
   var nodeQueue = node.getValue();
   if (nodeQueue !== null) {
     for (var i = 0; i < nodeQueue.length; i++) {
@@ -542,14 +642,15 @@ type Transaction = {
   });
 };
 
-
 /**
  * Remove COMPLETED transactions at or below this node in the transactionQueueTree_.
  *
  * @param {!Tree.<Array.<!Transaction>>} node
  * @private
  */
-(Repo.prototype as any).pruneCompletedTransactionsBelowNode_ = function(node: Tree) {
+(Repo.prototype as any).pruneCompletedTransactionsBelowNode_ = function(
+  node: Tree
+) {
   var queue = node.getValue();
   if (queue) {
     var to = 0;
@@ -568,7 +669,6 @@ type Transaction = {
     self.pruneCompletedTransactionsBelowNode_(childNode);
   });
 };
-
 
 /**
  * Aborts all transactions on ancestors or descendants of the specified path.  Called when doing a set() or update()
@@ -597,7 +697,6 @@ type Transaction = {
   return affectedPath;
 };
 
-
 /**
  * Abort transactions stored in this transaction queue node.
  *
@@ -607,7 +706,6 @@ type Transaction = {
 (Repo.prototype as any).abortTransactionsOnNode_ = function(node: Tree) {
   var queue = node.getValue();
   if (queue !== null) {
-
     // Queue up the callbacks and fire them after cleaning up all of our transaction state, since
     // the callback could trigger more transactions or sets.
     var callbacks = [];
@@ -620,20 +718,29 @@ type Transaction = {
       if (queue[i].status === TransactionStatus.SENT_NEEDS_ABORT) {
         // Already marked.  No action needed.
       } else if (queue[i].status === TransactionStatus.SENT) {
-        assert(lastSent === i - 1, 'All SENT items should be at beginning of queue.');
+        assert(
+          lastSent === i - 1,
+          "All SENT items should be at beginning of queue."
+        );
         lastSent = i;
         // Mark transaction for abort when it comes back.
         queue[i].status = TransactionStatus.SENT_NEEDS_ABORT;
-        queue[i].abortReason = 'set';
+        queue[i].abortReason = "set";
       } else {
-        assert(queue[i].status === TransactionStatus.RUN,
-          'Unexpected transaction status in abort');
+        assert(
+          queue[i].status === TransactionStatus.RUN,
+          "Unexpected transaction status in abort"
+        );
         // We can abort it immediately.
         queue[i].unwatcher();
-        events = events.concat(this.serverSyncTree_.ackUserWrite(queue[i].currentWriteId, true));
+        events = events.concat(
+          this.serverSyncTree_.ackUserWrite(queue[i].currentWriteId, true)
+        );
         if (queue[i].onComplete) {
           var snapshot = null;
-          callbacks.push(queue[i].onComplete.bind(null, new Error('set'), false, snapshot));
+          callbacks.push(
+            queue[i].onComplete.bind(null, new Error("set"), false, snapshot)
+          );
         }
       }
     }

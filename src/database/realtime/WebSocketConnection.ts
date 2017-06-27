@@ -1,24 +1,24 @@
-import { RepoInfo } from '../core/RepoInfo';
+import { RepoInfo } from "../core/RepoInfo";
 declare const MozWebSocket;
 
 import firebase from "../../app";
-import { assert } from '../../utils/assert';
-import { logWrapper, splitStringBySize } from '../core/util/util';
-import { StatsManager } from '../core/stats/StatsManager';
-import { CONSTANTS } from './Constants';
+import { assert } from "../../utils/assert";
+import { logWrapper, splitStringBySize } from "../core/util/util";
+import { StatsManager } from "../core/stats/StatsManager";
+import { CONSTANTS } from "./Constants";
 import { CONSTANTS as ENV_CONSTANTS } from "../../utils/constants";
-import { PersistentStorage } from '../core/storage/storage';
-import { jsonEval, stringify } from '../../utils/json';
+import { PersistentStorage } from "../core/storage/storage";
+import { jsonEval, stringify } from "../../utils/json";
 import { isNodeSdk } from "../../utils/environment";
-import { Transport } from './Transport';
+import { Transport } from "./Transport";
 
 const WEBSOCKET_MAX_FRAME_SIZE = 16384;
 const WEBSOCKET_KEEPALIVE_INTERVAL = 45000;
 
 let WebSocketImpl = null;
-if (typeof MozWebSocket !== 'undefined') {
+if (typeof MozWebSocket !== "undefined") {
   WebSocketImpl = MozWebSocket;
-} else if (typeof WebSocket !== 'undefined') {
+} else if (typeof WebSocket !== "undefined") {
   WebSocketImpl = WebSocket;
 }
 
@@ -51,7 +51,12 @@ export class WebSocketConnection implements Transport {
   private everConnected_: boolean;
   private isClosed_: boolean;
 
-  constructor(public connId: string, repoInfo: RepoInfo, transportSessionId?: string, lastSessionId?: string) {
+  constructor(
+    public connId: string,
+    repoInfo: RepoInfo,
+    transportSessionId?: string,
+    lastSessionId?: string
+  ) {
     this.log_ = logWrapper(this.connId);
     this.keepaliveTimer = null;
     this.frames = null;
@@ -59,7 +64,11 @@ export class WebSocketConnection implements Transport {
     this.bytesSent = 0;
     this.bytesReceived = 0;
     this.stats_ = StatsManager.getCollection(repoInfo);
-    this.connURL = WebSocketConnection.connectionURL_(repoInfo, transportSessionId, lastSessionId);
+    this.connURL = WebSocketConnection.connectionURL_(
+      repoInfo,
+      transportSessionId,
+      lastSessionId
+    );
   }
 
   /**
@@ -70,14 +79,20 @@ export class WebSocketConnection implements Transport {
    * @return {string} connection url
    * @private
    */
-  private static connectionURL_(repoInfo: RepoInfo, transportSessionId?: string, lastSessionId?: string): string {
+  private static connectionURL_(
+    repoInfo: RepoInfo,
+    transportSessionId?: string,
+    lastSessionId?: string
+  ): string {
     const urlParams = {};
     urlParams[CONSTANTS.VERSION_PARAM] = CONSTANTS.PROTOCOL_VERSION;
 
-    if (!isNodeSdk() &&
-      typeof location !== 'undefined' &&
+    if (
+      !isNodeSdk() &&
+      typeof location !== "undefined" &&
       location.href &&
-      location.href.indexOf(CONSTANTS.FORGE_DOMAIN) !== -1) {
+      location.href.indexOf(CONSTANTS.FORGE_DOMAIN) !== -1
+    ) {
       urlParams[CONSTANTS.REFERER_PARAM] = CONSTANTS.FORGE_REF;
     }
     if (transportSessionId) {
@@ -98,29 +113,31 @@ export class WebSocketConnection implements Transport {
     this.onDisconnect = onDisconnect;
     this.onMessage = onMessage;
 
-    this.log_('Websocket connecting to ' + this.connURL);
+    this.log_("Websocket connecting to " + this.connURL);
 
     this.everConnected_ = false;
     // Assume failure until proven otherwise.
-    PersistentStorage.set('previous_websocket_failure', true);
+    PersistentStorage.set("previous_websocket_failure", true);
 
     try {
       if (isNodeSdk()) {
-        const device = ENV_CONSTANTS.NODE_ADMIN ? 'AdminNode' : 'Node';
+        const device = ENV_CONSTANTS.NODE_ADMIN ? "AdminNode" : "Node";
         // UA Format: Firebase/<wire_protocol>/<sdk_version>/<platform>/<device>
         const options = {
-          'headers': {
-            'User-Agent': `Firebase/${CONSTANTS.PROTOCOL_VERSION}/${firebase.SDK_VERSION}/${process.platform}/${device}`
-        }};
+          headers: {
+            "User-Agent": `Firebase/${CONSTANTS.PROTOCOL_VERSION}/${firebase.SDK_VERSION}/${process.platform}/${device}`
+          }
+        };
 
         // Plumb appropriate http_proxy environment variable into faye-websocket if it exists.
-        const env = process['env'];
-        const proxy = (this.connURL.indexOf("wss://") == 0)
-            ? (env['HTTPS_PROXY'] || env['https_proxy'])
-            : (env['HTTP_PROXY']  || env['http_proxy']);
+        const env = process["env"];
+        const proxy =
+          this.connURL.indexOf("wss://") == 0
+            ? env["HTTPS_PROXY"] || env["https_proxy"]
+            : env["HTTP_PROXY"] || env["http_proxy"];
 
         if (proxy) {
-          options['proxy'] = { origin: proxy };
+          options["proxy"] = { origin: proxy };
         }
 
         this.mySock = new WebSocketImpl(this.connURL, [], options);
@@ -128,7 +145,7 @@ export class WebSocketConnection implements Transport {
         this.mySock = new WebSocketImpl(this.connURL);
       }
     } catch (e) {
-      this.log_('Error instantiating WebSocket.');
+      this.log_("Error instantiating WebSocket.");
       const error = e.message || e.data;
       if (error) {
         this.log_(error);
@@ -138,22 +155,22 @@ export class WebSocketConnection implements Transport {
     }
 
     this.mySock.onopen = () => {
-      this.log_('Websocket connected.');
+      this.log_("Websocket connected.");
       this.everConnected_ = true;
     };
 
     this.mySock.onclose = () => {
-      this.log_('Websocket connection was disconnected.');
+      this.log_("Websocket connection was disconnected.");
       this.mySock = null;
       this.onClosed_();
     };
 
-    this.mySock.onmessage = (m) => {
+    this.mySock.onmessage = m => {
       this.handleIncomingFrame(m);
     };
 
-    this.mySock.onerror = (e) => {
-      this.log_('WebSocket error.  Closing connection.');
+    this.mySock.onerror = e => {
+      this.log_("WebSocket error.  Closing connection.");
       const error = e.message || e.data;
       if (error) {
         this.log_(error);
@@ -165,7 +182,7 @@ export class WebSocketConnection implements Transport {
   /**
    * No-op for websockets, we don't need to do anything once the connection is confirmed as open
    */
-  start() {};
+  start() {}
 
   static forceDisallow_: Boolean;
 
@@ -175,7 +192,7 @@ export class WebSocketConnection implements Transport {
 
   static isAvailable(): boolean {
     let isOldAndroid = false;
-    if (typeof navigator !== 'undefined' && navigator.userAgent) {
+    if (typeof navigator !== "undefined" && navigator.userAgent) {
       const oldAndroidRegex = /Android ([0-9]{0,}\.[0-9]{0,})/;
       const oldAndroidMatch = navigator.userAgent.match(oldAndroidRegex);
       if (oldAndroidMatch && oldAndroidMatch.length > 1) {
@@ -185,7 +202,11 @@ export class WebSocketConnection implements Transport {
       }
     }
 
-    return !isOldAndroid && WebSocketImpl !== null && !WebSocketConnection.forceDisallow_;
+    return (
+      !isOldAndroid &&
+      WebSocketImpl !== null &&
+      !WebSocketConnection.forceDisallow_
+    );
   }
 
   /**
@@ -211,18 +232,20 @@ export class WebSocketConnection implements Transport {
   static previouslyFailed(): boolean {
     // If our persistent storage is actually only in-memory storage,
     // we default to assuming that it previously failed to be safe.
-    return PersistentStorage.isInMemoryStorage ||
-      PersistentStorage.get('previous_websocket_failure') === true;
-  };
+    return (
+      PersistentStorage.isInMemoryStorage ||
+      PersistentStorage.get("previous_websocket_failure") === true
+    );
+  }
 
   markConnectionHealthy() {
-    PersistentStorage.remove('previous_websocket_failure');
-  };
+    PersistentStorage.remove("previous_websocket_failure");
+  }
 
   private appendFrame_(data) {
     this.frames.push(data);
     if (this.frames.length == this.totalFrames) {
-      const fullMess = this.frames.join('');
+      const fullMess = this.frames.join("");
       this.frames = null;
       const jsonMess = jsonEval(fullMess);
 
@@ -247,7 +270,7 @@ export class WebSocketConnection implements Transport {
    * @private
    */
   private extractFrameCount_(data: string): string | null {
-    assert(this.frames === null, 'We already have a frame buffer');
+    assert(this.frames === null, "We already have a frame buffer");
     // TODO: The server is only supposed to send up to 9999 frames (i.e. length <= 4), but that isn't being enforced
     // currently.  So allowing larger frame counts (length <= 6).  See https://app.asana.com/0/search/8688598998380/8237608042508
     if (data.length <= 6) {
@@ -259,18 +282,17 @@ export class WebSocketConnection implements Transport {
     }
     this.handleNewFrameCount_(1);
     return data;
-  };
+  }
 
   /**
    * Process a websocket frame that has arrived from the server.
    * @param mess The frame data
    */
   handleIncomingFrame(mess) {
-    if (this.mySock === null)
-      return; // Chrome apparently delivers incoming packets even after we .close() the connection sometimes.
-    const data = mess['data'];
+    if (this.mySock === null) return; // Chrome apparently delivers incoming packets even after we .close() the connection sometimes.
+    const data = mess["data"];
     this.bytesReceived += data.length;
-    this.stats_.incrementCounter('bytes_received', data.length);
+    this.stats_.incrementCounter("bytes_received", data.length);
 
     this.resetKeepAlive();
 
@@ -284,19 +306,18 @@ export class WebSocketConnection implements Transport {
         this.appendFrame_(remainingData);
       }
     }
-  };
+  }
 
   /**
    * Send a message to the server
    * @param {Object} data The JSON object to transmit
    */
   send(data: Object) {
-
     this.resetKeepAlive();
 
     const dataStr = stringify(data);
     this.bytesSent += dataStr.length;
-    this.stats_.incrementCounter('bytes_sent', dataStr.length);
+    this.stats_.incrementCounter("bytes_sent", dataStr.length);
 
     //We can only fit a certain amount in each websocket frame, so we need to split this request
     //up into multiple pieces if it doesn't fit in one request.
@@ -312,7 +333,7 @@ export class WebSocketConnection implements Transport {
     for (let i = 0; i < dataSegs.length; i++) {
       this.sendString_(dataSegs[i]);
     }
-  };
+  }
 
   private shutdown_() {
     this.isClosed_ = true;
@@ -325,11 +346,11 @@ export class WebSocketConnection implements Transport {
       this.mySock.close();
       this.mySock = null;
     }
-  };
+  }
 
   private onClosed_() {
     if (!this.isClosed_) {
-      this.log_('WebSocket is closing itself');
+      this.log_("WebSocket is closing itself");
       this.shutdown_();
 
       // since this is an internal close, trigger the close listener
@@ -338,7 +359,7 @@ export class WebSocketConnection implements Transport {
         this.onDisconnect = null;
       }
     }
-  };
+  }
 
   /**
    * External-facing close handler.
@@ -346,10 +367,10 @@ export class WebSocketConnection implements Transport {
    */
   close() {
     if (!this.isClosed_) {
-      this.log_('WebSocket is being closed');
+      this.log_("WebSocket is being closed");
       this.shutdown_();
     }
-  };
+  }
 
   /**
    * Kill the current keepalive timer and start a new one, to ensure that it always fires N seconds after
@@ -360,11 +381,11 @@ export class WebSocketConnection implements Transport {
     this.keepaliveTimer = setInterval(() => {
       //If there has been no websocket activity for a while, send a no-op
       if (this.mySock) {
-        this.sendString_('0');
+        this.sendString_("0");
       }
       this.resetKeepAlive();
     }, Math.floor(WEBSOCKET_KEEPALIVE_INTERVAL));
-  };
+  }
 
   /**
    * Send a string over the websocket.
@@ -379,10 +400,12 @@ export class WebSocketConnection implements Transport {
     try {
       this.mySock.send(str);
     } catch (e) {
-      this.log_('Exception thrown from WebSocket.send():', e.message || e.data, 'Closing connection.');
+      this.log_(
+        "Exception thrown from WebSocket.send():",
+        e.message || e.data,
+        "Closing connection."
+      );
       setTimeout(this.onClosed_.bind(this), 0);
     }
-  };
+  }
 }
-
-

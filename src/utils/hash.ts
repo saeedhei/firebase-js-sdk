@@ -11,14 +11,14 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
- 
+
 /**
  * @fileoverview Abstract cryptographic hash interface.
  *
  * See Sha1 and Md5 for sample implementations.
  *
  */
- 
+
 /**
  * Create a cryptographic hash instance.
  *
@@ -31,6 +31,6 @@ export class Hash {
    * @type {number}
    */
   blockSize: number = -1;
-  
+
   constructor() {}
 }

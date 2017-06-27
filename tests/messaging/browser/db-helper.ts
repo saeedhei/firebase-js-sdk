@@ -14,7 +14,7 @@
 * limitations under the License.
 */
 export default {
-  deleteDb: (dbName) => {
+  deleteDb: dbName => {
     return new Promise((resolve, reject) => {
       const request = indexedDB.deleteDatabase(dbName);
       request.onerror = event => {
@@ -24,7 +24,7 @@ export default {
         resolve();
       };
       request.onblocked = event => {
-        console.warn('deleteDb blocked.');
+        console.warn("deleteDb blocked.");
       };
     });
   }

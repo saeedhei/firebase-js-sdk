@@ -1,6 +1,6 @@
 import { assert } from "../../utils/assert";
 import { forEach } from "../../utils/obj";
-import { PersistentStorage } from './storage/storage';
+import { PersistentStorage } from "./storage/storage";
 import { CONSTANTS } from "../realtime/Constants";
 /**
  * A class that holds metadata about a Repo object
@@ -22,37 +22,39 @@ export class RepoInfo {
 
   constructor(host, secure, namespace, webSocketOnly, persistenceKey?) {
     this.host = host.toLowerCase();
-    this.domain = this.host.substr(this.host.indexOf('.') + 1);
+    this.domain = this.host.substr(this.host.indexOf(".") + 1);
     this.secure = secure;
     this.namespace = namespace;
     this.webSocketOnly = webSocketOnly;
-    this.persistenceKey = persistenceKey || '';
-    this.internalHost = PersistentStorage.get('host:' + host) || this.host;
+    this.persistenceKey = persistenceKey || "";
+    this.internalHost = PersistentStorage.get("host:" + host) || this.host;
   }
   needsQueryParam() {
     return this.host !== this.internalHost;
-  };
+  }
 
   isCacheableHost() {
-    return this.internalHost.substr(0, 2) === 's-';
-  };
+    return this.internalHost.substr(0, 2) === "s-";
+  }
 
   isDemoHost() {
-    return this.domain === 'firebaseio-demo.com';
-  };
+    return this.domain === "firebaseio-demo.com";
+  }
 
   isCustomHost() {
-    return this.domain !== 'firebaseio.com' && this.domain !== 'firebaseio-demo.com';
-  };
+    return (
+      this.domain !== "firebaseio.com" && this.domain !== "firebaseio-demo.com"
+    );
+  }
 
   updateHost(newHost) {
     if (newHost !== this.internalHost) {
       this.internalHost = newHost;
       if (this.isCacheableHost()) {
-        PersistentStorage.set('host:' + this.host, this.internalHost);
+        PersistentStorage.set("host:" + this.host, this.internalHost);
       }
     }
-  };
+  }
 
   /**
    * Returns the websocket URL for this repo
@@ -61,40 +63,42 @@ export class RepoInfo {
    * @return {string} The URL for this repo
    */
   connectionURL(type, params) {
-    assert(typeof type === 'string', 'typeof type must == string');
-    assert(typeof params === 'object', 'typeof params must == object');
+    assert(typeof type === "string", "typeof type must == string");
+    assert(typeof params === "object", "typeof params must == object");
     var connURL;
     if (type === CONSTANTS.WEBSOCKET) {
-      connURL = (this.secure ? 'wss://' : 'ws://') + this.internalHost + '/.ws?';
+      connURL =
+        (this.secure ? "wss://" : "ws://") + this.internalHost + "/.ws?";
     } else if (type === CONSTANTS.LONG_POLLING) {
-      connURL = (this.secure ? 'https://' : 'http://') + this.internalHost + '/.lp?';
+      connURL =
+        (this.secure ? "https://" : "http://") + this.internalHost + "/.lp?";
     } else {
-      throw new Error('Unknown connection type: ' + type);
+      throw new Error("Unknown connection type: " + type);
     }
     if (this.needsQueryParam()) {
-      params['ns'] = this.namespace;
+      params["ns"] = this.namespace;
     }
 
     var pairs = [];
 
     forEach(params, (key, value) => {
-      pairs.push(key + '=' + value);
+      pairs.push(key + "=" + value);
     });
 
-    return connURL + pairs.join('&');
-  };
+    return connURL + pairs.join("&");
+  }
 
   /** @return {string} */
   toString() {
     var str = this.toURLString();
     if (this.persistenceKey) {
-      str += '<' + this.persistenceKey + '>';
+      str += "<" + this.persistenceKey + ">";
     }
     return str;
-  };
+  }
 
   /** @return {string} */
   toURLString() {
-    return (this.secure ? 'https://' : 'http://') + this.host;
-  };
+    return (this.secure ? "https://" : "http://") + this.host;
+  }
 }

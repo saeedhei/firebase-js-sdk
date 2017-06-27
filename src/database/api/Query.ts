@@ -1,26 +1,34 @@
-import { assert } from '../../utils/assert';
-import { KEY_INDEX } from '../core/snap/indexes/KeyIndex';
-import { PRIORITY_INDEX } from '../core/snap/indexes/PriorityIndex';
-import { VALUE_INDEX } from '../core/snap/indexes/ValueIndex';
-import { PathIndex } from '../core/snap/indexes/PathIndex';
-import { MIN_NAME, MAX_NAME, ObjectToUniqueKey } from '../core/util/util';
-import { Path } from '../core/util/Path';
+import { assert } from "../../utils/assert";
+import { KEY_INDEX } from "../core/snap/indexes/KeyIndex";
+import { PRIORITY_INDEX } from "../core/snap/indexes/PriorityIndex";
+import { VALUE_INDEX } from "../core/snap/indexes/ValueIndex";
+import { PathIndex } from "../core/snap/indexes/PathIndex";
+import { MIN_NAME, MAX_NAME, ObjectToUniqueKey } from "../core/util/util";
+import { Path } from "../core/util/Path";
 import {
   isValidPriority,
   validateEventType,
   validatePathString,
   validateFirebaseDataArg,
-  validateKey,
-} from '../core/util/validation';
-import { errorPrefix, validateArgCount, validateCallback, validateContextObject } from '../../utils/validation';
-import { ValueEventRegistration, ChildEventRegistration } from '../core/view/EventRegistration';
-import { Deferred, attachDummyErrorHandler } from '../../utils/promise';
-import { Repo } from '../core/Repo';
-import { QueryParams } from '../core/view/QueryParams';
-import { Reference } from './Reference';
-import { DataSnapshot } from './DataSnapshot';
+  validateKey
+} from "../core/util/validation";
+import {
+  errorPrefix,
+  validateArgCount,
+  validateCallback,
+  validateContextObject
+} from "../../utils/validation";
+import {
+  ValueEventRegistration,
+  ChildEventRegistration
+} from "../core/view/EventRegistration";
+import { Deferred, attachDummyErrorHandler } from "../../utils/promise";
+import { Repo } from "../core/Repo";
+import { QueryParams } from "../core/view/QueryParams";
+import { Reference } from "./Reference";
+import { DataSnapshot } from "./DataSnapshot";
 
-let __referenceConstructor: new(repo: Repo, path: Path) => Query;
+let __referenceConstructor: new (repo: Repo, path: Path) => Query;
 
 /**
  * A Query represents a filter to be applied to a firebase location.  This object purely represents the
@@ -34,11 +42,16 @@ export class Query {
   }
 
   static get __referenceConstructor() {
-    assert(__referenceConstructor, 'Reference.ts has not been loaded');
+    assert(__referenceConstructor, "Reference.ts has not been loaded");
     return __referenceConstructor;
   }
 
-  constructor(public repo: Repo, public path: Path, private queryParams_: QueryParams, private orderByCalled_: boolean) {}
+  constructor(
+    public repo: Repo,
+    public path: Path,
+    private queryParams_: QueryParams,
+    private orderByCalled_: boolean
+  ) {}
 
   /**
    * Validates start/end values for queries.
@@ -56,15 +69,17 @@ export class Query {
     }
 
     if (params.getIndex() === KEY_INDEX) {
-      const tooManyArgsError = 'Query: When ordering by key, you may only pass one argument to ' +
-        'startAt(), endAt(), or equalTo().';
-      const wrongArgTypeError = 'Query: When ordering by key, the argument passed to startAt(), endAt(),' +
-        'or equalTo() must be a string.';
+      const tooManyArgsError =
+        "Query: When ordering by key, you may only pass one argument to " +
+        "startAt(), endAt(), or equalTo().";
+      const wrongArgTypeError =
+        "Query: When ordering by key, the argument passed to startAt(), endAt()," +
+        "or equalTo() must be a string.";
       if (params.hasStart()) {
         const startName = params.getIndexStartName();
         if (startName != MIN_NAME) {
           throw new Error(tooManyArgsError);
-        } else if (typeof(startNode) !== 'string') {
+        } else if (typeof startNode !== "string") {
           throw new Error(wrongArgTypeError);
         }
       }
@@ -72,24 +87,34 @@ export class Query {
         const endName = params.getIndexEndName();
         if (endName != MAX_NAME) {
           throw new Error(tooManyArgsError);
-        } else if (typeof(endNode) !== 'string') {
+        } else if (typeof endNode !== "string") {
           throw new Error(wrongArgTypeError);
         }
       }
-    }
-    else if (params.getIndex() === PRIORITY_INDEX) {
-      if ((startNode != null && !isValidPriority(startNode)) ||
-        (endNode != null && !isValidPriority(endNode))) {
-        throw new Error('Query: When ordering by priority, the first argument passed to startAt(), ' +
-          'endAt(), or equalTo() must be a valid priority value (null, a number, or a string).');
+    } else if (params.getIndex() === PRIORITY_INDEX) {
+      if (
+        (startNode != null && !isValidPriority(startNode)) ||
+        (endNode != null && !isValidPriority(endNode))
+      ) {
+        throw new Error(
+          "Query: When ordering by priority, the first argument passed to startAt(), " +
+            "endAt(), or equalTo() must be a valid priority value (null, a number, or a string)."
+        );
       }
     } else {
-      assert((params.getIndex() instanceof PathIndex) ||
-        (params.getIndex() === VALUE_INDEX), 'unknown index type.');
-      if ((startNode != null && typeof startNode === 'object') ||
-        (endNode != null && typeof endNode === 'object')) {
-        throw new Error('Query: First argument passed to startAt(), endAt(), or equalTo() cannot be ' +
-          'an object.');
+      assert(
+        params.getIndex() instanceof PathIndex ||
+          params.getIndex() === VALUE_INDEX,
+        "unknown index type."
+      );
+      if (
+        (startNode != null && typeof startNode === "object") ||
+        (endNode != null && typeof endNode === "object")
+      ) {
+        throw new Error(
+          "Query: First argument passed to startAt(), endAt(), or equalTo() cannot be " +
+            "an object."
+        );
       }
     }
   }
@@ -100,9 +125,14 @@ export class Query {
    * @private
    */
   private static validateLimit_(params: QueryParams) {
-    if (params.hasStart() && params.hasEnd() && params.hasLimit() && !params.hasAnchoredLimit()) {
+    if (
+      params.hasStart() &&
+      params.hasEnd() &&
+      params.hasLimit() &&
+      !params.hasAnchoredLimit()
+    ) {
       throw new Error(
-        'Query: Can\'t combine startAt(), endAt(), and limit(). Use limitToFirst() or limitToLast() instead.'
+        "Query: Can't combine startAt(), endAt(), and limit(). Use limitToFirst() or limitToLast() instead."
       );
     }
   }
@@ -114,7 +144,7 @@ export class Query {
    */
   private validateNoPreviousOrderByCall_(fnName: string) {
     if (this.orderByCalled_ === true) {
-      throw new Error(fnName + ': You can\'t combine multiple orderBy calls.');
+      throw new Error(fnName + ": You can't combine multiple orderBy calls.");
     }
   }
 
@@ -129,11 +159,11 @@ export class Query {
    * @return {!Reference}
    */
   getRef(): Reference {
-    validateArgCount('Query.ref', 0, 0, arguments.length);
+    validateArgCount("Query.ref", 0, 0, arguments.length);
     // This is a slight hack. We cannot goog.require('fb.api.Firebase'), since Firebase requires fb.api.Query.
     // However, we will always export 'Firebase' to the global namespace, so it's guaranteed to exist by the time this
     // method gets called.
-    return <Reference>(new Query.__referenceConstructor(this.repo, this.path));
+    return <Reference>new Query.__referenceConstructor(this.repo, this.path);
   }
 
   /**
@@ -143,15 +173,23 @@ export class Query {
    * @param {Object=} context
    * @return {!function(DataSnapshot, string=)}
    */
-  on(eventType: string, callback: (a: DataSnapshot, b?: string) => any,
-     cancelCallbackOrContext?: ((a: Error) => any) | Object, context?: Object): (a: DataSnapshot, b?: string) => any {
-    validateArgCount('Query.on', 2, 4, arguments.length);
-    validateEventType('Query.on', 1, eventType, false);
-    validateCallback('Query.on', 2, callback, false);
+  on(
+    eventType: string,
+    callback: (a: DataSnapshot, b?: string) => any,
+    cancelCallbackOrContext?: ((a: Error) => any) | Object,
+    context?: Object
+  ): (a: DataSnapshot, b?: string) => any {
+    validateArgCount("Query.on", 2, 4, arguments.length);
+    validateEventType("Query.on", 1, eventType, false);
+    validateCallback("Query.on", 2, callback, false);
 
-    const ret = Query.getCancelAndContextArgs_('Query.on', cancelCallbackOrContext, context);
+    const ret = Query.getCancelAndContextArgs_(
+      "Query.on",
+      cancelCallbackOrContext,
+      context
+    );
 
-    if (eventType === 'value') {
+    if (eventType === "value") {
       this.onValueEvent(callback, ret.cancel, ret.context);
     } else {
       const callbacks = {};
@@ -167,8 +205,16 @@ export class Query {
    * @param {?Object} context
    * @protected
    */
-  onValueEvent(callback: (a: DataSnapshot) => any, cancelCallback: ((a: Error) => any) | null, context: Object | null) {
-    const container = new ValueEventRegistration(callback, cancelCallback || null, context || null);
+  onValueEvent(
+    callback: (a: DataSnapshot) => any,
+    cancelCallback: ((a: Error) => any) | null,
+    context: Object | null
+  ) {
+    const container = new ValueEventRegistration(
+      callback,
+      cancelCallback || null,
+      context || null
+    );
     this.repo.addEventCallbackForQuery(this, container);
   }
 
@@ -177,9 +223,16 @@ export class Query {
    * @param {?function(Error)} cancelCallback
    * @param {?Object} context
    */
-  onChildEvent(callbacks: { [k: string]: (a: DataSnapshot, b: string | null) => any },
-               cancelCallback: ((a: Error) => any) | null, context: Object | null) {
-    const container = new ChildEventRegistration(callbacks, cancelCallback, context);
+  onChildEvent(
+    callbacks: { [k: string]: (a: DataSnapshot, b: string | null) => any },
+    cancelCallback: ((a: Error) => any) | null,
+    context: Object | null
+  ) {
+    const container = new ChildEventRegistration(
+      callbacks,
+      cancelCallback,
+      context
+    );
     this.repo.addEventCallbackForQuery(this, container);
   }
 
@@ -188,17 +241,26 @@ export class Query {
    * @param {(function(!DataSnapshot, ?string=))=} callback
    * @param {Object=} context
    */
-  off(eventType?: string, callback?: (a: DataSnapshot, b?: string | null) => any, context?: Object) {
-    validateArgCount('Query.off', 0, 3, arguments.length);
-    validateEventType('Query.off', 1, eventType, true);
-    validateCallback('Query.off', 2, callback, true);
-    validateContextObject('Query.off', 3, context, true);
+  off(
+    eventType?: string,
+    callback?: (a: DataSnapshot, b?: string | null) => any,
+    context?: Object
+  ) {
+    validateArgCount("Query.off", 0, 3, arguments.length);
+    validateEventType("Query.off", 1, eventType, true);
+    validateCallback("Query.off", 2, callback, true);
+    validateContextObject("Query.off", 3, context, true);
 
     let container = null;
     let callbacks = null;
-    if (eventType === 'value') {
-      const valueCallback = /** @type {function(!DataSnapshot)} */ (callback) || null;
-      container = new ValueEventRegistration(valueCallback, null, context || null);
+    if (eventType === "value") {
+      const valueCallback =
+        /** @type {function(!DataSnapshot)} */ callback || null;
+      container = new ValueEventRegistration(
+        valueCallback,
+        null,
+        context || null
+      );
     } else if (eventType) {
       if (callback) {
         callbacks = {};
@@ -217,15 +279,21 @@ export class Query {
    * @param context
    * @return {!firebase.Promise}
    */
-  once(eventType: string, 
-       userCallback?: (a: DataSnapshot, b?: string) => any,
-       cancelOrContext?, 
-       context?: Object): Promise<DataSnapshot> {
-    validateArgCount('Query.once', 1, 4, arguments.length);
-    validateEventType('Query.once', 1, eventType, false);
-    validateCallback('Query.once', 2, userCallback, true);
+  once(
+    eventType: string,
+    userCallback?: (a: DataSnapshot, b?: string) => any,
+    cancelOrContext?,
+    context?: Object
+  ): Promise<DataSnapshot> {
+    validateArgCount("Query.once", 1, 4, arguments.length);
+    validateEventType("Query.once", 1, eventType, false);
+    validateCallback("Query.once", 2, userCallback, true);
 
-    const ret = Query.getCancelAndContextArgs_('Query.once', cancelOrContext, context);
+    const ret = Query.getCancelAndContextArgs_(
+      "Query.once",
+      cancelOrContext,
+      context
+    );
 
     // TODO: Implement this more efficiently (in particular, use 'get' wire protocol for 'value' event)
     // TODO: consider actually wiring the callbacks into the promise. We cannot do this without a breaking change
@@ -235,7 +303,7 @@ export class Query {
     const deferred = new Deferred();
     attachDummyErrorHandler(deferred.promise);
 
-    const onceCallback = (snapshot) => {
+    const onceCallback = snapshot => {
       // NOTE: Even though we unsubscribe, we may get called multiple times if a single action (e.g. set() with JSON)
       // triggers multiple events (e.g. child_added or child_changed).
       if (firstCall) {
@@ -249,13 +317,16 @@ export class Query {
       }
     };
 
-    this.on(eventType, onceCallback, /*cancel=*/ (err) => {
-      this.off(eventType, onceCallback);
+    this.on(
+      eventType,
+      onceCallback,
+      /*cancel=*/ err => {
+        this.off(eventType, onceCallback);
 
-      if (ret.cancel)
-        ret.cancel.bind(ret.context)(err);
-      deferred.reject(err);
-    });
+        if (ret.cancel) ret.cancel.bind(ret.context)(err);
+        deferred.reject(err);
+      }
+    );
     return deferred.promise;
   }
 
@@ -265,16 +336,29 @@ export class Query {
    * @return {!Query}
    */
   limitToFirst(limit: number): Query {
-    validateArgCount('Query.limitToFirst', 1, 1, arguments.length);
-    if (typeof limit !== 'number' || Math.floor(limit) !== limit || limit <= 0) {
-      throw new Error('Query.limitToFirst: First argument must be a positive integer.');
+    validateArgCount("Query.limitToFirst", 1, 1, arguments.length);
+    if (
+      typeof limit !== "number" ||
+      Math.floor(limit) !== limit ||
+      limit <= 0
+    ) {
+      throw new Error(
+        "Query.limitToFirst: First argument must be a positive integer."
+      );
     }
     if (this.queryParams_.hasLimit()) {
-      throw new Error('Query.limitToFirst: Limit was already set (by another call to limit, ' +
-        'limitToFirst, or limitToLast).');
+      throw new Error(
+        "Query.limitToFirst: Limit was already set (by another call to limit, " +
+          "limitToFirst, or limitToLast)."
+      );
     }
 
-    return new Query(this.repo, this.path, this.queryParams_.limitToFirst(limit), this.orderByCalled_);
+    return new Query(
+      this.repo,
+      this.path,
+      this.queryParams_.limitToFirst(limit),
+      this.orderByCalled_
+    );
   }
 
   /**
@@ -283,17 +367,29 @@ export class Query {
    * @return {!Query}
    */
   limitToLast(limit: number): Query {
-    validateArgCount('Query.limitToLast', 1, 1, arguments.length);
-    if (typeof limit !== 'number' || Math.floor(limit) !== limit || limit <= 0) {
-      throw new Error('Query.limitToLast: First argument must be a positive integer.');
+    validateArgCount("Query.limitToLast", 1, 1, arguments.length);
+    if (
+      typeof limit !== "number" ||
+      Math.floor(limit) !== limit ||
+      limit <= 0
+    ) {
+      throw new Error(
+        "Query.limitToLast: First argument must be a positive integer."
+      );
     }
     if (this.queryParams_.hasLimit()) {
-      throw new Error('Query.limitToLast: Limit was already set (by another call to limit, ' +
-        'limitToFirst, or limitToLast).');
+      throw new Error(
+        "Query.limitToLast: Limit was already set (by another call to limit, " +
+          "limitToFirst, or limitToLast)."
+      );
     }
 
-    return new Query(this.repo, this.path, this.queryParams_.limitToLast(limit),
-      this.orderByCalled_);
+    return new Query(
+      this.repo,
+      this.path,
+      this.queryParams_.limitToLast(limit),
+      this.orderByCalled_
+    );
   }
 
   /**
@@ -302,25 +398,33 @@ export class Query {
    * @return {!Query}
    */
   orderByChild(path: string): Query {
-    validateArgCount('Query.orderByChild', 1, 1, arguments.length);
-    if (path === '$key') {
-      throw new Error('Query.orderByChild: "$key" is invalid.  Use Query.orderByKey() instead.');
-    } else if (path === '$priority') {
-      throw new Error('Query.orderByChild: "$priority" is invalid.  Use Query.orderByPriority() instead.');
-    } else if (path === '$value') {
-      throw new Error('Query.orderByChild: "$value" is invalid.  Use Query.orderByValue() instead.');
+    validateArgCount("Query.orderByChild", 1, 1, arguments.length);
+    if (path === "$key") {
+      throw new Error(
+        'Query.orderByChild: "$key" is invalid.  Use Query.orderByKey() instead.'
+      );
+    } else if (path === "$priority") {
+      throw new Error(
+        'Query.orderByChild: "$priority" is invalid.  Use Query.orderByPriority() instead.'
+      );
+    } else if (path === "$value") {
+      throw new Error(
+        'Query.orderByChild: "$value" is invalid.  Use Query.orderByValue() instead.'
+      );
     }
-    validatePathString('Query.orderByChild', 1, path, false);
-    this.validateNoPreviousOrderByCall_('Query.orderByChild');
+    validatePathString("Query.orderByChild", 1, path, false);
+    this.validateNoPreviousOrderByCall_("Query.orderByChild");
     const parsedPath = new Path(path);
     if (parsedPath.isEmpty()) {
-      throw new Error('Query.orderByChild: cannot pass in empty path.  Use Query.orderByValue() instead.');
+      throw new Error(
+        "Query.orderByChild: cannot pass in empty path.  Use Query.orderByValue() instead."
+      );
     }
     const index = new PathIndex(parsedPath);
     const newParams = this.queryParams_.orderBy(index);
     Query.validateQueryEndpoints_(newParams);
 
-    return new Query(this.repo, this.path, newParams, /*orderByCalled=*/true);
+    return new Query(this.repo, this.path, newParams, /*orderByCalled=*/ true);
   }
 
   /**
@@ -328,11 +432,11 @@ export class Query {
    * @return {!Query}
    */
   orderByKey(): Query {
-    validateArgCount('Query.orderByKey', 0, 0, arguments.length);
-    this.validateNoPreviousOrderByCall_('Query.orderByKey');
+    validateArgCount("Query.orderByKey", 0, 0, arguments.length);
+    this.validateNoPreviousOrderByCall_("Query.orderByKey");
     const newParams = this.queryParams_.orderBy(KEY_INDEX);
     Query.validateQueryEndpoints_(newParams);
-    return new Query(this.repo, this.path, newParams, /*orderByCalled=*/true);
+    return new Query(this.repo, this.path, newParams, /*orderByCalled=*/ true);
   }
 
   /**
@@ -340,11 +444,11 @@ export class Query {
    * @return {!Query}
    */
   orderByPriority(): Query {
-    validateArgCount('Query.orderByPriority', 0, 0, arguments.length);
-    this.validateNoPreviousOrderByCall_('Query.orderByPriority');
+    validateArgCount("Query.orderByPriority", 0, 0, arguments.length);
+    this.validateNoPreviousOrderByCall_("Query.orderByPriority");
     const newParams = this.queryParams_.orderBy(PRIORITY_INDEX);
     Query.validateQueryEndpoints_(newParams);
-    return new Query(this.repo, this.path, newParams, /*orderByCalled=*/true);
+    return new Query(this.repo, this.path, newParams, /*orderByCalled=*/ true);
   }
 
   /**
@@ -352,11 +456,11 @@ export class Query {
    * @return {!Query}
    */
   orderByValue(): Query {
-    validateArgCount('Query.orderByValue', 0, 0, arguments.length);
-    this.validateNoPreviousOrderByCall_('Query.orderByValue');
+    validateArgCount("Query.orderByValue", 0, 0, arguments.length);
+    this.validateNoPreviousOrderByCall_("Query.orderByValue");
     const newParams = this.queryParams_.orderBy(VALUE_INDEX);
     Query.validateQueryEndpoints_(newParams);
-    return new Query(this.repo, this.path, newParams, /*orderByCalled=*/true);
+    return new Query(this.repo, this.path, newParams, /*orderByCalled=*/ true);
   }
 
   /**
@@ -364,17 +468,22 @@ export class Query {
    * @param {?string=} name
    * @return {!Query}
    */
-  startAt(value: number | string | boolean | null = null, name?: string | null): Query {
-    validateArgCount('Query.startAt', 0, 2, arguments.length);
-    validateFirebaseDataArg('Query.startAt', 1, value, this.path, true);
-    validateKey('Query.startAt', 2, name, true);
+  startAt(
+    value: number | string | boolean | null = null,
+    name?: string | null
+  ): Query {
+    validateArgCount("Query.startAt", 0, 2, arguments.length);
+    validateFirebaseDataArg("Query.startAt", 1, value, this.path, true);
+    validateKey("Query.startAt", 2, name, true);
 
     const newParams = this.queryParams_.startAt(value, name);
     Query.validateLimit_(newParams);
     Query.validateQueryEndpoints_(newParams);
     if (this.queryParams_.hasStart()) {
-      throw new Error('Query.startAt: Starting point was already set (by another call to startAt ' +
-        'or equalTo).');
+      throw new Error(
+        "Query.startAt: Starting point was already set (by another call to startAt " +
+          "or equalTo)."
+      );
     }
 
     // Calling with no params tells us to start at the beginning.
@@ -390,17 +499,22 @@ export class Query {
    * @param {?string=} name
    * @return {!Query}
    */
-  endAt(value: number | string | boolean | null = null, name?: string | null): Query {
-    validateArgCount('Query.endAt', 0, 2, arguments.length);
-    validateFirebaseDataArg('Query.endAt', 1, value, this.path, true);
-    validateKey('Query.endAt', 2, name, true);
+  endAt(
+    value: number | string | boolean | null = null,
+    name?: string | null
+  ): Query {
+    validateArgCount("Query.endAt", 0, 2, arguments.length);
+    validateFirebaseDataArg("Query.endAt", 1, value, this.path, true);
+    validateKey("Query.endAt", 2, name, true);
 
     const newParams = this.queryParams_.endAt(value, name);
     Query.validateLimit_(newParams);
     Query.validateQueryEndpoints_(newParams);
     if (this.queryParams_.hasEnd()) {
-      throw new Error('Query.endAt: Ending point was already set (by another call to endAt or ' +
-        'equalTo).');
+      throw new Error(
+        "Query.endAt: Ending point was already set (by another call to endAt or " +
+          "equalTo)."
+      );
     }
 
     return new Query(this.repo, this.path, newParams, this.orderByCalled_);
@@ -414,16 +528,20 @@ export class Query {
    * @return {!Query}
    */
   equalTo(value: number | string | boolean | null, name?: string) {
-    validateArgCount('Query.equalTo', 1, 2, arguments.length);
-    validateFirebaseDataArg('Query.equalTo', 1, value, this.path, false);
-    validateKey('Query.equalTo', 2, name, true);
+    validateArgCount("Query.equalTo", 1, 2, arguments.length);
+    validateFirebaseDataArg("Query.equalTo", 1, value, this.path, false);
+    validateKey("Query.equalTo", 2, name, true);
     if (this.queryParams_.hasStart()) {
-      throw new Error('Query.equalTo: Starting point was already set (by another call to startAt or ' +
-        'equalTo).');
+      throw new Error(
+        "Query.equalTo: Starting point was already set (by another call to startAt or " +
+          "equalTo)."
+      );
     }
     if (this.queryParams_.hasEnd()) {
-      throw new Error('Query.equalTo: Ending point was already set (by another call to endAt or ' +
-        'equalTo).');
+      throw new Error(
+        "Query.equalTo: Ending point was already set (by another call to endAt or " +
+          "equalTo)."
+      );
     }
     return this.startAt(value, name).endAt(value, name);
   }
@@ -432,7 +550,7 @@ export class Query {
    * @return {!string} URL for this location.
    */
   toString(): string {
-    validateArgCount('Query.toString', 0, 0, arguments.length);
+    validateArgCount("Query.toString", 0, 0, arguments.length);
 
     return this.repo.toString() + this.path.toUrlEncodedString();
   }
@@ -441,7 +559,7 @@ export class Query {
   // for end-users.
   toJSON() {
     // An optional spacer argument is unnecessary for a string.
-    validateArgCount('Query.toJSON', 0, 1, arguments.length);
+    validateArgCount("Query.toJSON", 0, 1, arguments.length);
     return this.toString();
   }
 
@@ -459,7 +577,7 @@ export class Query {
   queryIdentifier(): string {
     const obj = this.queryObject();
     const id = ObjectToUniqueKey(obj);
-    return (id === '{}') ? 'default' : id;
+    return id === "{}" ? "default" : id;
   }
 
   /**
@@ -468,17 +586,19 @@ export class Query {
    * @return {boolean}
    */
   isEqual(other: Query): boolean {
-    validateArgCount('Query.isEqual', 1, 1, arguments.length);
+    validateArgCount("Query.isEqual", 1, 1, arguments.length);
     if (!(other instanceof Query)) {
-      const error = 'Query.isEqual failed: First argument must be an instance of firebase.database.Query.';
+      const error =
+        "Query.isEqual failed: First argument must be an instance of firebase.database.Query.";
       throw new Error(error);
     }
 
-    const sameRepo = (this.repo === other.repo);
+    const sameRepo = this.repo === other.repo;
     const samePath = this.path.equals(other.path);
-    const sameQueryIdentifier = (this.queryIdentifier() === other.queryIdentifier());
+    const sameQueryIdentifier =
+      this.queryIdentifier() === other.queryIdentifier();
 
-    return (sameRepo && samePath && sameQueryIdentifier);
+    return sameRepo && samePath && sameQueryIdentifier;
   }
 
   /**
@@ -489,23 +609,30 @@ export class Query {
    * @return {{cancel: ?function(Error), context: ?Object}}
    * @private
    */
-  private static getCancelAndContextArgs_(fnName: string, cancelOrContext?: ((a: Error) => any) | Object,
-                                   context?: Object): { cancel: ((a: Error) => any) | null, context: Object | null } {
-    const ret = {cancel: null, context: null};
+  private static getCancelAndContextArgs_(
+    fnName: string,
+    cancelOrContext?: ((a: Error) => any) | Object,
+    context?: Object
+  ): { cancel: ((a: Error) => any) | null; context: Object | null } {
+    const ret = { cancel: null, context: null };
     if (cancelOrContext && context) {
-      ret.cancel = /** @type {function(Error)} */ (cancelOrContext);
+      ret.cancel /** @type {function(Error)} */ = cancelOrContext;
       validateCallback(fnName, 3, ret.cancel, true);
 
       ret.context = context;
       validateContextObject(fnName, 4, ret.context, true);
-    } else if (cancelOrContext) { // we have either a cancel callback or a context.
-      if (typeof cancelOrContext === 'object' && cancelOrContext !== null) { // it's a context!
+    } else if (cancelOrContext) {
+      // we have either a cancel callback or a context.
+      if (typeof cancelOrContext === "object" && cancelOrContext !== null) {
+        // it's a context!
         ret.context = cancelOrContext;
-      } else if (typeof cancelOrContext === 'function') {
+      } else if (typeof cancelOrContext === "function") {
         ret.cancel = cancelOrContext;
       } else {
-        throw new Error(errorPrefix(fnName, 3, true) +
-          ' must either be a cancel callback or a context object.');
+        throw new Error(
+          errorPrefix(fnName, 3, true) +
+            " must either be a cancel callback or a context object."
+        );
       }
     }
     return ret;

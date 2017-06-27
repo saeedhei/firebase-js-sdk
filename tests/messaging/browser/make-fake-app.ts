@@ -14,9 +14,9 @@
 * limitations under the License.
 */
 export default (options = {}) => {
-  window['firebase'] = window['firebase'] || {};
-  let app = /** @type {!firebase.app.App} */ ({});
-  (app as any).INTERNAL = window['firebase'].INTERNAL;
+  window["firebase"] = window["firebase"] || {};
+  let app /** @type {!firebase.app.App} */ = {};
+  (app as any).INTERNAL = window["firebase"].INTERNAL;
   (app as any).options = options;
   return app;
 };

@@ -13,16 +13,16 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-'use strict';
+"use strict";
 
-import WindowController from './messaging/controllers/window-controller';
-import SWController from './messaging/controllers/sw-controller';
-import firebase from './app';
+import WindowController from "./messaging/controllers/window-controller";
+import SWController from "./messaging/controllers/sw-controller";
+import firebase from "./app";
 
 export function registerMessaging(instance) {
-  const messagingName = 'messaging';
+  const messagingName = "messaging";
   const factoryMethod = app => {
-    if (self && 'ServiceWorkerGlobalScope' in self) {
+    if (self && "ServiceWorkerGlobalScope" in self) {
       return new SWController(app);
     }
 
@@ -32,10 +32,14 @@ export function registerMessaging(instance) {
 
   const namespaceExports = {
     // no-inline
-    'Messaging': WindowController
+    Messaging: WindowController
   };
 
-  instance.INTERNAL.registerService(messagingName, factoryMethod, namespaceExports);
+  instance.INTERNAL.registerService(
+    messagingName,
+    factoryMethod,
+    namespaceExports
+  );
 }
 
 registerMessaging(firebase);

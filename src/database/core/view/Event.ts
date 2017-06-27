@@ -1,7 +1,7 @@
-import { stringify } from '../../../utils/json';
-import { Path } from '../util/Path';
-import { EventRegistration } from './EventRegistration';
-import { DataSnapshot } from '../../api/DataSnapshot';
+import { stringify } from "../../../utils/json";
+import { Path } from "../util/Path";
+import { EventRegistration } from "./EventRegistration";
+import { DataSnapshot } from "../../api/DataSnapshot";
 
 /**
  * Encapsulates the data needed to raise an event
@@ -29,7 +29,6 @@ export interface Event {
   toString(): string;
 }
 
-
 /**
  * Encapsulates the data needed to raise an event
  * @implements {Event}
@@ -41,18 +40,24 @@ export class DataEvent implements Event {
    * @param {!DataSnapshot} snapshot The data backing the event
    * @param {?string=} prevName Optional, the name of the previous child for child_* events.
    */
-  constructor(public eventType: 'value' | ' child_added' | ' child_changed' | ' child_moved' | ' child_removed',
-              public eventRegistration: EventRegistration,
-              public snapshot: DataSnapshot,
-              public prevName?: string | null) {
-  }
+  constructor(
+    public eventType:
+      | "value"
+      | " child_added"
+      | " child_changed"
+      | " child_moved"
+      | " child_removed",
+    public eventRegistration: EventRegistration,
+    public snapshot: DataSnapshot,
+    public prevName?: string | null
+  ) {}
 
   /**
    * @inheritDoc
    */
   getPath(): Path {
     const ref = this.snapshot.getRef();
-    if (this.eventType === 'value') {
+    if (this.eventType === "value") {
       return ref.path;
     } else {
       return ref.getParent().path;
@@ -77,11 +82,15 @@ export class DataEvent implements Event {
    * @inheritDoc
    */
   toString(): string {
-    return this.getPath().toString() + ':' + this.eventType + ':' +
-      stringify(this.snapshot.exportVal());
+    return (
+      this.getPath().toString() +
+      ":" +
+      this.eventType +
+      ":" +
+      stringify(this.snapshot.exportVal())
+    );
   }
 }
-
 
 export class CancelEvent implements Event {
   /**
@@ -89,10 +98,11 @@ export class CancelEvent implements Event {
    * @param {Error} error
    * @param {!Path} path
    */
-  constructor(public eventRegistration: EventRegistration,
-              public error: Error,
-              public path: Path) {
-  }
+  constructor(
+    public eventRegistration: EventRegistration,
+    public error: Error,
+    public path: Path
+  ) {}
 
   /**
    * @inheritDoc
@@ -105,7 +115,7 @@ export class CancelEvent implements Event {
    * @inheritDoc
    */
   getEventType(): string {
-    return 'cancel';
+    return "cancel";
   }
 
   /**
@@ -119,6 +129,6 @@ export class CancelEvent implements Event {
    * @inheritDoc
    */
   toString(): string {
-    return this.path.toString() + ':cancel';
+    return this.path.toString() + ":cancel";
   }
 }

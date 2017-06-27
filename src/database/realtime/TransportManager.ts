@@ -18,26 +18,27 @@ export class TransportManager {
    * @type {!Array.<function(new:Transport, string, RepoInfo, string=)>}
    */
   static get ALL_TRANSPORTS() {
-    return [
-      BrowserPollConnection,
-      WebSocketConnection
-    ];
+    return [BrowserPollConnection, WebSocketConnection];
   }
   constructor(repoInfo) {
     this.initTransports_(repoInfo);
-  };
+  }
 
   /**
    * @param {!RepoInfo} repoInfo
    * @private
    */
   initTransports_(repoInfo) {
-    const isWebSocketsAvailable = WebSocketConnection && WebSocketConnection['isAvailable']();
-    let isSkipPollConnection = isWebSocketsAvailable && !WebSocketConnection.previouslyFailed();
+    const isWebSocketsAvailable =
+      WebSocketConnection && WebSocketConnection["isAvailable"]();
+    let isSkipPollConnection =
+      isWebSocketsAvailable && !WebSocketConnection.previouslyFailed();
 
     if (repoInfo.webSocketOnly) {
       if (!isWebSocketsAvailable)
-        warn('wss:// URL used, but browser isn\'t known to support websockets.  Trying anyway.');
+        warn(
+          "wss:// URL used, but browser isn't known to support websockets.  Trying anyway."
+        );
 
       isSkipPollConnection = true;
     }
@@ -45,9 +46,9 @@ export class TransportManager {
     if (isSkipPollConnection) {
       this.transports_ = [WebSocketConnection];
     } else {
-      const transports = this.transports_ = [];
+      const transports = (this.transports_ = []);
       each(TransportManager.ALL_TRANSPORTS, function(i, transport) {
-        if (transport && transport['isAvailable']()) {
+        if (transport && transport["isAvailable"]()) {
           transports.push(transport);
         }
       });
@@ -62,7 +63,7 @@ export class TransportManager {
     if (this.transports_.length > 0) {
       return this.transports_[0];
     } else {
-      throw new Error('No transports available');
+      throw new Error("No transports available");
     }
   }
 
@@ -78,4 +79,3 @@ export class TransportManager {
     }
   }
 }
-

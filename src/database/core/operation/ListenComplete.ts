@@ -1,5 +1,5 @@
 import { Path } from "../util/Path";
-import { Operation, OperationSource, OperationType } from './Operation';
+import { Operation, OperationSource, OperationType } from "./Operation";
 
 /**
  * @param {!OperationSource} source
@@ -11,8 +11,7 @@ export class ListenComplete implements Operation {
   /** @inheritDoc */
   type = OperationType.LISTEN_COMPLETE;
 
-  constructor(public source: OperationSource, public path: Path) {
-  }
+  constructor(public source: OperationSource, public path: Path) {}
 
   operationForChild(childName: string): ListenComplete {
     if (this.path.isEmpty()) {

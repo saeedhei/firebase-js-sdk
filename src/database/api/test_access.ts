@@ -9,8 +9,11 @@ export const DataConnection = PersistentConnection;
  * @param {!string} pathString
  * @param {function(*)} onComplete
  */
-(PersistentConnection.prototype as any).simpleListen = function(pathString, onComplete) {
-  this.sendRequest('q', {'p': pathString}, onComplete);
+(PersistentConnection.prototype as any).simpleListen = function(
+  pathString,
+  onComplete
+) {
+  this.sendRequest("q", { p: pathString }, onComplete);
 };
 
 /**
@@ -18,7 +21,7 @@ export const DataConnection = PersistentConnection;
  * @param {function(*)} onEcho
  */
 (PersistentConnection.prototype as any).echo = function(data, onEcho) {
-  this.sendRequest('echo', {'d': data}, onEcho);
+  this.sendRequest("echo", { d: data }, onEcho);
 };
 
 // RealTimeConnection properties that we use in tests.
@@ -30,7 +33,12 @@ export const RealTimeConnection = Connection;
  */
 export const hijackHash = function(newHash) {
   var oldPut = PersistentConnection.prototype.put;
-  PersistentConnection.prototype.put = function(pathString, data, opt_onComplete, opt_hash) {
+  PersistentConnection.prototype.put = function(
+    pathString,
+    data,
+    opt_onComplete,
+    opt_hash
+  ) {
     if (opt_hash !== undefined) {
       opt_hash = newHash();
     }
@@ -38,7 +46,7 @@ export const hijackHash = function(newHash) {
   };
   return function() {
     PersistentConnection.prototype.put = oldPut;
-  }
+  };
 };
 
 /**

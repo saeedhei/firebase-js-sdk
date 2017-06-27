@@ -1,17 +1,12 @@
 import { assert } from "../../../utils/assert";
-import { 
-  sha1,
-  MAX_NAME,
-  MIN_NAME
-} from "../util/util";
+import { sha1, MAX_NAME, MIN_NAME } from "../util/util";
 import { SortedMap } from "../util/SortedMap";
 import { Node, NamedNode } from "./Node";
-import { 
-  validatePriorityNode, 
-  priorityHashText,
-  setMaxNode
-} from "./snap";
-import { PRIORITY_INDEX, setMaxNode as setPriorityMaxNode } from "./indexes/PriorityIndex";
+import { validatePriorityNode, priorityHashText, setMaxNode } from "./snap";
+import {
+  PRIORITY_INDEX,
+  setMaxNode as setPriorityMaxNode
+} from "./indexes/PriorityIndex";
 import { KEY_INDEX, KeyIndex } from "./indexes/KeyIndex";
 import { IndexMap } from "./IndexMap";
 import { LeafNode } from "./LeafNode";
@@ -39,9 +34,16 @@ export class ChildrenNode implements Node {
   priorityNode_;
   indexMap_;
   lazyHash_;
-  
+
   static get EMPTY_NODE() {
-    return EMPTY_NODE || (EMPTY_NODE = new ChildrenNode(new SortedMap(NAME_COMPARATOR), null, IndexMap.Default));
+    return (
+      EMPTY_NODE ||
+      (EMPTY_NODE = new ChildrenNode(
+        new SortedMap(NAME_COMPARATOR),
+        null,
+        IndexMap.Default
+      ))
+    );
   }
 
   constructor(children, priorityNode, indexMap) {
@@ -67,7 +69,10 @@ export class ChildrenNode implements Node {
     }
 
     if (children.isEmpty()) {
-      assert(!this.priorityNode_ || this.priorityNode_.isEmpty(), 'An empty node cannot have a priority');
+      assert(
+        !this.priorityNode_ || this.priorityNode_.isEmpty(),
+        "An empty node cannot have a priority"
+      );
     }
 
     /**
@@ -83,17 +88,17 @@ export class ChildrenNode implements Node {
      * @private
      */
     this.lazyHash_ = null;
-  };
+  }
 
   /** @inheritDoc */
   isLeafNode() {
     return false;
-  };
+  }
 
   /** @inheritDoc */
   getPriority() {
     return this.priorityNode_ || EMPTY_NODE;
-  };
+  }
 
   /** @inheritDoc */
   updatePriority(newPriorityNode) {
@@ -103,44 +108,45 @@ export class ChildrenNode implements Node {
     } else {
       return new ChildrenNode(this.children_, newPriorityNode, this.indexMap_);
     }
-  };
+  }
 
   /** @inheritDoc */
   getImmediateChild(childName) {
     // Hack to treat priority as a regular child
-    if (childName === '.priority') {
+    if (childName === ".priority") {
       return this.getPriority();
     } else {
       var child = this.children_.get(childName);
       return child === null ? EMPTY_NODE : child;
     }
-  };
+  }
 
   /** @inheritDoc */
   getChild(path) {
     var front = path.getFront();
-    if (front === null)
-      return this;
+    if (front === null) return this;
 
     return this.getImmediateChild(front).getChild(path.popFront());
-  };
+  }
 
   /** @inheritDoc */
   hasChild(childName) {
     return this.children_.get(childName) !== null;
-  };
+  }
 
   /** @inheritDoc */
   updateImmediateChild(childName, newChildNode) {
-    assert(newChildNode, 'We should always be passing snapshot nodes');
-    if (childName === '.priority') {
+    assert(newChildNode, "We should always be passing snapshot nodes");
+    if (childName === ".priority") {
       return this.updatePriority(newChildNode);
     } else {
       var namedNode = new NamedNode(childName, newChildNode);
       var newChildren, newIndexMap, newPriority;
       if (newChildNode.isEmpty()) {
         newChildren = this.children_.remove(childName);
-        newIndexMap = this.indexMap_.removeFromIndexes(namedNode, this.children_
+        newIndexMap = this.indexMap_.removeFromIndexes(
+          namedNode,
+          this.children_
         );
       } else {
         newChildren = this.children_.insert(childName, newChildNode);
@@ -150,7 +156,7 @@ export class ChildrenNode implements Node {
       newPriority = newChildren.isEmpty() ? EMPTY_NODE : this.priorityNode_;
       return new ChildrenNode(newChildren, newPriority, newIndexMap);
     }
-  };
+  }
 
   /** @inheritDoc */
   updateChild(path, newChildNode) {
@@ -158,23 +164,27 @@ export class ChildrenNode implements Node {
     if (front === null) {
       return newChildNode;
     } else {
-      assert(path.getFront() !== '.priority' || path.getLength() === 1,
-          '.priority must be the last token in a path');
-      var newImmediateChild = this.getImmediateChild(front).
-        updateChild(path.popFront(), newChildNode);
+      assert(
+        path.getFront() !== ".priority" || path.getLength() === 1,
+        ".priority must be the last token in a path"
+      );
+      var newImmediateChild = this.getImmediateChild(front).updateChild(
+        path.popFront(),
+        newChildNode
+      );
       return this.updateImmediateChild(front, newImmediateChild);
     }
-  };
+  }
 
   /** @inheritDoc */
   isEmpty() {
     return this.children_.isEmpty();
-  };
+  }
 
   /** @inheritDoc */
   numChildren() {
     return this.children_.count();
-  };
+  }
 
   /**
    * @private
@@ -184,11 +194,12 @@ export class ChildrenNode implements Node {
 
   /** @inheritDoc */
   val(opt_exportFormat) {
-    if (this.isEmpty())
-      return null;
+    if (this.isEmpty()) return null;
 
-    var obj = { };
-    var numKeys = 0, maxKey = 0, allIntegerKeys = true;
+    var obj = {};
+    var numKeys = 0,
+      maxKey = 0,
+      allIntegerKeys = true;
     this.forEachChild(PRIORITY_INDEX, function(key, childNode) {
       obj[key] = childNode.val(opt_exportFormat);
 
@@ -203,49 +214,51 @@ export class ChildrenNode implements Node {
     if (!opt_exportFormat && allIntegerKeys && maxKey < 2 * numKeys) {
       // convert to array.
       var array = [];
-      for (var key in obj)
-        array[key] = obj[key];
+      for (var key in obj) array[key] = obj[key];
 
       return array;
     } else {
       if (opt_exportFormat && !this.getPriority().isEmpty()) {
-        obj['.priority'] = this.getPriority().val();
+        obj[".priority"] = this.getPriority().val();
       }
       return obj;
     }
-  };
-
+  }
 
   /** @inheritDoc */
   hash() {
     if (this.lazyHash_ === null) {
-      var toHash = '';
+      var toHash = "";
       if (!this.getPriority().isEmpty())
-        toHash += 'priority:' + priorityHashText(
-            /**@type {(!string|!number)} */ (this.getPriority().val())) + ':';
+        toHash +=
+          "priority:" +
+          priorityHashText(
+            /**@type {(!string|!number)} */ this.getPriority().val()
+          ) +
+          ":";
 
       this.forEachChild(PRIORITY_INDEX, function(key, childNode) {
         var childHash = childNode.hash();
-        if (childHash !== '')
-          toHash += ':' + key + ':' + childHash;
+        if (childHash !== "") toHash += ":" + key + ":" + childHash;
       });
 
-      this.lazyHash_ = (toHash === '') ? '' : sha1(toHash);
+      this.lazyHash_ = toHash === "" ? "" : sha1(toHash);
     }
     return this.lazyHash_;
-  };
-
+  }
 
   /** @inheritDoc */
   getPredecessorChildName(childName, childNode, index) {
     var idx = this.resolveIndex_(index);
     if (idx) {
-      var predecessor = idx.getPredecessorKey(new NamedNode(childName, childNode));
+      var predecessor = idx.getPredecessorKey(
+        new NamedNode(childName, childNode)
+      );
       return predecessor ? predecessor.name : null;
     } else {
       return this.children_.getPredecessorKey(childName);
     }
-  };
+  }
 
   /**
    * @param {!fb.core.snap.Index} indexDefinition
@@ -259,7 +272,7 @@ export class ChildrenNode implements Node {
     } else {
       return this.children_.minKey();
     }
-  };
+  }
 
   /**
    * @param {!fb.core.snap.Index} indexDefinition
@@ -272,7 +285,7 @@ export class ChildrenNode implements Node {
     } else {
       return null;
     }
-  };
+  }
 
   /**
    * Given an index, return the key name of the largest value we have, according to that index
@@ -287,7 +300,7 @@ export class ChildrenNode implements Node {
     } else {
       return this.children_.maxKey();
     }
-  };
+  }
 
   /**
    * @param {!fb.core.snap.Index} indexDefinition
@@ -300,8 +313,7 @@ export class ChildrenNode implements Node {
     } else {
       return null;
     }
-  };
-
+  }
 
   /**
    * @inheritDoc
@@ -315,7 +327,7 @@ export class ChildrenNode implements Node {
     } else {
       return this.children_.inorderTraversal(action);
     }
-  };
+  }
 
   /**
    * @param {!fb.core.snap.Index} indexDefinition
@@ -323,7 +335,7 @@ export class ChildrenNode implements Node {
    */
   getIterator(indexDefinition) {
     return this.getIteratorFrom(indexDefinition.minPost(), indexDefinition);
-  };
+  }
 
   /**
    *
@@ -334,9 +346,14 @@ export class ChildrenNode implements Node {
   getIteratorFrom(startPost, indexDefinition) {
     var idx = this.resolveIndex_(indexDefinition);
     if (idx) {
-      return idx.getIteratorFrom(startPost, function(key) { return key; });
+      return idx.getIteratorFrom(startPost, function(key) {
+        return key;
+      });
     } else {
-      var iterator = this.children_.getIteratorFrom(startPost.name, NamedNode.Wrap);
+      var iterator = this.children_.getIteratorFrom(
+        startPost.name,
+        NamedNode.Wrap
+      );
       var next = iterator.peek();
       while (next != null && indexDefinition.compare(next, startPost) < 0) {
         iterator.getNext();
@@ -344,15 +361,18 @@ export class ChildrenNode implements Node {
       }
       return iterator;
     }
-  };
+  }
 
   /**
    * @param {!fb.core.snap.Index} indexDefinition
    * @return {!SortedMapIterator}
    */
   getReverseIterator(indexDefinition) {
-    return this.getReverseIteratorFrom(indexDefinition.maxPost(), indexDefinition);
-  };
+    return this.getReverseIteratorFrom(
+      indexDefinition.maxPost(),
+      indexDefinition
+    );
+  }
 
   /**
    * @param {!NamedNode} endPost
@@ -362,9 +382,14 @@ export class ChildrenNode implements Node {
   getReverseIteratorFrom(endPost, indexDefinition) {
     var idx = this.resolveIndex_(indexDefinition);
     if (idx) {
-      return idx.getReverseIteratorFrom(endPost, function(key) { return key; });
+      return idx.getReverseIteratorFrom(endPost, function(key) {
+        return key;
+      });
     } else {
-      var iterator = this.children_.getReverseIteratorFrom(endPost.name, NamedNode.Wrap);
+      var iterator = this.children_.getReverseIteratorFrom(
+        endPost.name,
+        NamedNode.Wrap
+      );
       var next = iterator.peek();
       while (next != null && indexDefinition.compare(next, endPost) > 0) {
         iterator.getNext();
@@ -372,7 +397,7 @@ export class ChildrenNode implements Node {
       }
       return iterator;
     }
-  };
+  }
 
   /**
    * @inheritDoc
@@ -392,26 +417,32 @@ export class ChildrenNode implements Node {
       // Must be another node with children.
       return 0;
     }
-  };
+  }
 
   /**
    * @inheritDoc
    */
   withIndex(indexDefinition) {
-    if (indexDefinition === KEY_INDEX || this.indexMap_.hasIndex(indexDefinition)) {
+    if (
+      indexDefinition === KEY_INDEX ||
+      this.indexMap_.hasIndex(indexDefinition)
+    ) {
       return this;
     } else {
-      var newIndexMap = this.indexMap_.addIndex(indexDefinition, this.children_);
+      var newIndexMap = this.indexMap_.addIndex(
+        indexDefinition,
+        this.children_
+      );
       return new ChildrenNode(this.children_, this.priorityNode_, newIndexMap);
     }
-  };
+  }
 
   /**
    * @inheritDoc
    */
   isIndexed(index) {
     return index === KEY_INDEX || this.indexMap_.hasIndex(index);
-  };
+  }
 
   /**
    * @inheritDoc
@@ -419,20 +450,24 @@ export class ChildrenNode implements Node {
   equals(other) {
     if (other === this) {
       return true;
-    }
-    else if (other.isLeafNode()) {
+    } else if (other.isLeafNode()) {
       return false;
     } else {
-      var otherChildrenNode = /** @type {!ChildrenNode} */ (other);
+      var otherChildrenNode /** @type {!ChildrenNode} */ = other;
       if (!this.getPriority().equals(otherChildrenNode.getPriority())) {
         return false;
-      } else if (this.children_.count() === otherChildrenNode.children_.count()) {
+      } else if (
+        this.children_.count() === otherChildrenNode.children_.count()
+      ) {
         var thisIter = this.getIterator(PRIORITY_INDEX);
         var otherIter = otherChildrenNode.getIterator(PRIORITY_INDEX);
         var thisCurrent = thisIter.getNext();
         var otherCurrent = otherIter.getNext();
         while (thisCurrent && otherCurrent) {
-          if (thisCurrent.name !== otherCurrent.name || !thisCurrent.node.equals(otherCurrent.node)) {
+          if (
+            thisCurrent.name !== otherCurrent.name ||
+            !thisCurrent.node.equals(otherCurrent.node)
+          ) {
             return false;
           }
           thisCurrent = thisIter.getNext();
@@ -443,8 +478,7 @@ export class ChildrenNode implements Node {
         return false;
       }
     }
-  };
-
+  }
 
   /**
    * Returns a SortedMap ordered by index, or null if the default (by-key) ordering can be used
@@ -460,8 +494,7 @@ export class ChildrenNode implements Node {
     } else {
       return this.indexMap_.get(indexDefinition.toString());
     }
-  };
-
+  }
 }
 
 /**
@@ -469,9 +502,13 @@ export class ChildrenNode implements Node {
  * @extends {ChildrenNode}
  * @private
  */
-export class MaxNode extends ChildrenNode { 
+export class MaxNode extends ChildrenNode {
   constructor() {
-    super(new SortedMap(NAME_COMPARATOR), ChildrenNode.EMPTY_NODE, IndexMap.Default);
+    super(
+      new SortedMap(NAME_COMPARATOR),
+      ChildrenNode.EMPTY_NODE,
+      IndexMap.Default
+    );
   }
 
   compareTo(other) {
@@ -480,28 +517,24 @@ export class MaxNode extends ChildrenNode {
     } else {
       return 1;
     }
-  };
-
+  }
 
   equals(other) {
     // Not that we every compare it, but MAX_NODE is only ever equal to itself
     return other === this;
-  };
-
+  }
 
   getPriority() {
     return this;
-  };
-
+  }
 
   getImmediateChild(childName) {
     return ChildrenNode.EMPTY_NODE;
-  };
-
+  }
 
   isEmpty() {
     return false;
-  };
+  }
 }
 
 /**
@@ -514,10 +547,10 @@ export const MAX_NODE = new MaxNode();
 /**
  * Document NamedNode extensions
  */
-declare module './Node' {
+declare module "./Node" {
   interface NamedNode {
-    MIN: NamedNode,
-    MAX: NamedNode
+    MIN: NamedNode;
+    MAX: NamedNode;
   }
 }
 

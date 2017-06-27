@@ -24,11 +24,11 @@ import { Query } from "../../api/Query";
  * @constructor
  */
 export class View {
-  query_: Query
-  processor_
-  viewCache_
-  eventRegistrations_
-  eventGenerator_
+  query_: Query;
+  processor_;
+  viewCache_;
+  eventRegistrations_;
+  eventGenerator_;
   constructor(query, initialViewCache) {
     /**
      * @type {!fb.api.Query}
@@ -50,12 +50,26 @@ export class View {
     var initialEventCache = initialViewCache.getEventCache();
 
     // Don't filter server node with other filter than index, wait for tagged listen
-    var serverSnap = indexFilter.updateFullNode(ChildrenNode.EMPTY_NODE, initialServerCache.getNode(), null);
-    var eventSnap = filter.updateFullNode(ChildrenNode.EMPTY_NODE, initialEventCache.getNode(), null);
-    var newServerCache = new CacheNode(serverSnap, initialServerCache.isFullyInitialized(),
-        indexFilter.filtersNodes());
-    var newEventCache = new CacheNode(eventSnap, initialEventCache.isFullyInitialized(),
-        filter.filtersNodes());
+    var serverSnap = indexFilter.updateFullNode(
+      ChildrenNode.EMPTY_NODE,
+      initialServerCache.getNode(),
+      null
+    );
+    var eventSnap = filter.updateFullNode(
+      ChildrenNode.EMPTY_NODE,
+      initialEventCache.getNode(),
+      null
+    );
+    var newServerCache = new CacheNode(
+      serverSnap,
+      initialServerCache.isFullyInitialized(),
+      indexFilter.filtersNodes()
+    );
+    var newEventCache = new CacheNode(
+      eventSnap,
+      initialEventCache.isFullyInitialized(),
+      filter.filtersNodes()
+    );
 
     /**
      * @type {!ViewCache}
@@ -74,20 +88,20 @@ export class View {
      * @private
      */
     this.eventGenerator_ = new EventGenerator(query);
-  };
+  }
   /**
    * @return {!fb.api.Query}
    */
   getQuery() {
     return this.query_;
-  };
+  }
 
   /**
    * @return {?fb.core.snap.Node}
    */
   getServerCache() {
     return this.viewCache_.getServerCache().getNode();
-  };
+  }
 
   /**
    * @param {!Path} path
@@ -98,27 +112,29 @@ export class View {
     if (cache) {
       // If this isn't a "loadsAllData" view, then cache isn't actually a complete cache and
       // we need to see if it contains the child we're interested in.
-      if (this.query_.getQueryParams().loadsAllData() ||
-          (!path.isEmpty() && !cache.getImmediateChild(path.getFront()).isEmpty())) {
+      if (
+        this.query_.getQueryParams().loadsAllData() ||
+        (!path.isEmpty() && !cache.getImmediateChild(path.getFront()).isEmpty())
+      ) {
         return cache.getChild(path);
       }
     }
     return null;
-  };
+  }
 
   /**
    * @return {boolean}
    */
   isEmpty() {
     return this.eventRegistrations_.length === 0;
-  };
+  }
 
   /**
    * @param {!fb.core.view.EventRegistration} eventRegistration
    */
   addEventRegistration(eventRegistration) {
     this.eventRegistrations_.push(eventRegistration);
-  };
+  }
 
   /**
    * @param {?fb.core.view.EventRegistration} eventRegistration If null, remove all callbacks.
@@ -128,10 +144,13 @@ export class View {
   removeEventRegistration(eventRegistration, cancelError) {
     var cancelEvents = [];
     if (cancelError) {
-      assert(eventRegistration == null, 'A cancel should cancel all event registrations.');
+      assert(
+        eventRegistration == null,
+        "A cancel should cancel all event registrations."
+      );
       var path = this.query_.path;
       this.eventRegistrations_.forEach(function(registration) {
-        cancelError = /** @type {!Error} */ (cancelError);
+        cancelError /** @type {!Error} */ = cancelError;
         var maybeEvent = registration.createCancelEvent(cancelError, path);
         if (maybeEvent) {
           cancelEvents.push(maybeEvent);
@@ -156,7 +175,7 @@ export class View {
       this.eventRegistrations_ = [];
     }
     return cancelEvents;
-  };
+  }
 
   /**
    * Applies the given Operation, updates our cache, and returns the appropriate events.
@@ -167,27 +186,43 @@ export class View {
    * @return {!Array.<!fb.core.view.Event>}
    */
   applyOperation(operation, writesCache, optCompleteServerCache) {
-    if (operation.type === OperationType.MERGE &&
-        operation.source.queryId !== null) {
-
-      assert(this.viewCache_.getCompleteServerSnap(),
-          'We should always have a full cache before handling merges');
-      assert(this.viewCache_.getCompleteEventSnap(),
-          'Missing event cache, even though we have a server cache');
+    if (
+      operation.type === OperationType.MERGE &&
+      operation.source.queryId !== null
+    ) {
+      assert(
+        this.viewCache_.getCompleteServerSnap(),
+        "We should always have a full cache before handling merges"
+      );
+      assert(
+        this.viewCache_.getCompleteEventSnap(),
+        "Missing event cache, even though we have a server cache"
+      );
     }
 
     var oldViewCache = this.viewCache_;
-    var result = this.processor_.applyOperation(oldViewCache, operation, writesCache, optCompleteServerCache);
+    var result = this.processor_.applyOperation(
+      oldViewCache,
+      operation,
+      writesCache,
+      optCompleteServerCache
+    );
     this.processor_.assertIndexed(result.viewCache);
 
-    assert(result.viewCache.getServerCache().isFullyInitialized() ||
+    assert(
+      result.viewCache.getServerCache().isFullyInitialized() ||
         !oldViewCache.getServerCache().isFullyInitialized(),
-        'Once a server snap is complete, it should never go back');
+      "Once a server snap is complete, it should never go back"
+    );
 
     this.viewCache_ = result.viewCache;
 
-    return this.generateEventsForChanges_(result.changes, result.viewCache.getEventCache().getNode(), null);
-  };
+    return this.generateEventsForChanges_(
+      result.changes,
+      result.viewCache.getEventCache().getNode(),
+      null
+    );
+  }
 
   /**
    * @param {!fb.core.view.EventRegistration} registration
@@ -197,7 +232,7 @@ export class View {
     var eventSnap = this.viewCache_.getEventCache();
     var initialChanges = [];
     if (!eventSnap.getNode().isLeafNode()) {
-      var eventNode = /** @type {!fb.core.snap.ChildrenNode} */ (eventSnap.getNode());
+      var eventNode /** @type {!fb.core.snap.ChildrenNode} */ = eventSnap.getNode();
       eventNode.forEachChild(PRIORITY_INDEX, function(key, childNode) {
         initialChanges.push(Change.childAddedChange(key, childNode));
       });
@@ -205,8 +240,12 @@ export class View {
     if (eventSnap.isFullyInitialized()) {
       initialChanges.push(Change.valueChange(eventSnap.getNode()));
     }
-    return this.generateEventsForChanges_(initialChanges, eventSnap.getNode(), registration);
-  };
+    return this.generateEventsForChanges_(
+      initialChanges,
+      eventSnap.getNode(),
+      registration
+    );
+  }
 
   /**
    * @private
@@ -216,8 +255,13 @@ export class View {
    * @return {!Array.<!fb.core.view.Event>}
    */
   generateEventsForChanges_(changes, eventCache, opt_eventRegistration) {
-    var registrations = opt_eventRegistration ? [opt_eventRegistration] : this.eventRegistrations_;
-    return this.eventGenerator_.generateEventsForChanges(changes, eventCache, registrations);
-  };
+    var registrations = opt_eventRegistration
+      ? [opt_eventRegistration]
+      : this.eventRegistrations_;
+    return this.eventGenerator_.generateEventsForChanges(
+      changes,
+      eventCache,
+      registrations
+    );
+  }
 }
-

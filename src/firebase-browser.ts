@@ -15,10 +15,10 @@
 */
 
 import firebase from "./app";
-import './auth';
-import './database';
-import './storage';
-import './messaging';
+import "./auth";
+import "./database";
+import "./storage";
+import "./messaging";
 
 // Export the single instance of firebase
 export default firebase;

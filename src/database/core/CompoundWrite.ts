@@ -15,12 +15,12 @@ import { assert } from "../../utils/assert";
  * @param {!ImmutableTree.<!Node>} writeTree
  */
 export class CompoundWrite {
-  constructor(private writeTree_: ImmutableTree) {};
+  constructor(private writeTree_: ImmutableTree) {}
   /**
    * @type {!CompoundWrite}
    */
   static Empty = new CompoundWrite(new ImmutableTree(null));
-  
+
   /**
    * @param {!Path} path
    * @param {!Node} node
@@ -32,7 +32,7 @@ export class CompoundWrite {
     } else {
       var rootmost = this.writeTree_.findRootMostValueAndPath(path);
       if (rootmost != null) {
-        var rootMostPath = rootmost.path
+        var rootMostPath = rootmost.path;
         var value = rootmost.value;
         var relativePath = Path.relativePath(rootMostPath, path);
         value = value.updateChild(relativePath, node);
@@ -43,7 +43,7 @@ export class CompoundWrite {
         return new CompoundWrite(newWriteTree);
       }
     }
-  };
+  }
 
   /**
    * @param {!Path} path
@@ -56,7 +56,7 @@ export class CompoundWrite {
       newWrite = newWrite.addWrite(path.child(childKey), node);
     });
     return newWrite;
-  };
+  }
 
   /**
    * Will remove a write at the given path and deeper paths. This will <em>not</em> modify a write at a higher
@@ -72,7 +72,7 @@ export class CompoundWrite {
       var newWriteTree = this.writeTree_.setTree(path, ImmutableTree.Empty);
       return new CompoundWrite(newWriteTree);
     }
-  };
+  }
 
   /**
    * Returns whether this CompoundWrite will fully overwrite a node at a given location and can therefore be
@@ -83,7 +83,7 @@ export class CompoundWrite {
    */
   hasCompleteWrite(path: Path): boolean {
     return this.getCompleteNode(path) != null;
-  };
+  }
 
   /**
    * Returns a node for a path if and only if the node is a "complete" overwrite at that path. This will not aggregate
@@ -95,11 +95,13 @@ export class CompoundWrite {
   getCompleteNode(path: Path): Node {
     var rootmost = this.writeTree_.findRootMostValueAndPath(path);
     if (rootmost != null) {
-      return this.writeTree_.get(rootmost.path).getChild(Path.relativePath(rootmost.path, path));
+      return this.writeTree_
+        .get(rootmost.path)
+        .getChild(Path.relativePath(rootmost.path, path));
     } else {
       return null;
     }
-  };
+  }
 
   /**
    * Returns all children that are guaranteed to be a complete overwrite.
@@ -112,7 +114,7 @@ export class CompoundWrite {
     if (node != null) {
       // If it's a leaf node, it has no children; so nothing to do.
       if (!node.isLeafNode()) {
-        node = /** @type {!ChildrenNode} */ (node);
+        node /** @type {!ChildrenNode} */ = node;
         node.forEachChild(PRIORITY_INDEX, function(childName, childNode) {
           children.push(new NamedNode(childName, childNode));
         });
@@ -125,7 +127,7 @@ export class CompoundWrite {
       });
     }
     return children;
-  };
+  }
 
   /**
    * @param {!Path} path
@@ -142,7 +144,7 @@ export class CompoundWrite {
         return new CompoundWrite(this.writeTree_.subtree(path));
       }
     }
-  };
+  }
 
   /**
    * Returns true if this CompoundWrite is empty and therefore does not modify any nodes.
@@ -150,7 +152,7 @@ export class CompoundWrite {
    */
   isEmpty() {
     return this.writeTree_.isEmpty();
-  };
+  }
 
   /**
    * Applies this CompoundWrite to a node. The node is returned with all writes from this CompoundWrite applied to the
@@ -160,7 +162,7 @@ export class CompoundWrite {
    */
   apply(node: Node) {
     return CompoundWrite.applySubtreeWrite_(Path.Empty, this.writeTree_, node);
-  };
+  }
 
   /**
    * @param {!Path} relativePath
@@ -169,28 +171,38 @@ export class CompoundWrite {
    * @return {!Node}
    * @private
    */
-  static applySubtreeWrite_ = function(relativePath: Path, writeTree: ImmutableTree, node: Node) {
+  static applySubtreeWrite_ = function(
+    relativePath: Path,
+    writeTree: ImmutableTree,
+    node: Node
+  ) {
     if (writeTree.value != null) {
       // Since there a write is always a leaf, we're done here
       return node.updateChild(relativePath, writeTree.value);
     } else {
       var priorityWrite = null;
       writeTree.children.inorderTraversal(function(childKey, childTree) {
-        if (childKey === '.priority') {
+        if (childKey === ".priority") {
           // Apply priorities at the end so we don't update priorities for either empty nodes or forget
           // to apply priorities to empty nodes that are later filled
-          assert(childTree.value !== null, 'Priority writes must always be leaf nodes');
+          assert(
+            childTree.value !== null,
+            "Priority writes must always be leaf nodes"
+          );
           priorityWrite = childTree.value;
         } else {
-          node = CompoundWrite.applySubtreeWrite_(relativePath.child(childKey), childTree, node);
+          node = CompoundWrite.applySubtreeWrite_(
+            relativePath.child(childKey),
+            childTree,
+            node
+          );
         }
       });
       // If there was a priority write, we only apply it if the node is not empty
       if (!node.getChild(relativePath).isEmpty() && priorityWrite !== null) {
-        node = node.updateChild(relativePath.child('.priority'), priorityWrite);
+        node = node.updateChild(relativePath.child(".priority"), priorityWrite);
       }
       return node;
     }
   };
 }
-

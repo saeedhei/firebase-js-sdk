@@ -1,5 +1,5 @@
-import { Node } from '../snap/Node';
-import { Path } from '../util/Path';
+import { Node } from "../snap/Node";
+import { Path } from "../util/Path";
 
 /**
  * A cache node only stores complete children. Additionally it holds a flag whether the node can be considered fully
@@ -13,11 +13,11 @@ export class CacheNode {
    * @param {boolean} fullyInitialized_
    * @param {boolean} filtered_
    */
-  constructor(private node_: Node,
-              private fullyInitialized_: boolean,
-              private filtered_: boolean) {
-
-  }
+  constructor(
+    private node_: Node,
+    private fullyInitialized_: boolean,
+    private filtered_: boolean
+  ) {}
 
   /**
    * Returns whether this node was fully initialized with either server data or a complete overwrite by the client
@@ -53,7 +53,9 @@ export class CacheNode {
    * @return {boolean}
    */
   isCompleteForChild(key: string): boolean {
-    return (this.isFullyInitialized() && !this.filtered_) || this.node_.hasChild(key);
+    return (
+      (this.isFullyInitialized() && !this.filtered_) || this.node_.hasChild(key)
+    );
   }
 
   /**
@@ -62,5 +64,4 @@ export class CacheNode {
   getNode(): Node {
     return this.node_;
   }
-
 }

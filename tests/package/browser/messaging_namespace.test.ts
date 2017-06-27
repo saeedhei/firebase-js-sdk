@@ -29,16 +29,20 @@ const appConfig = {
   messagingSenderId: "012345678910"
 };
 
-describe('Namespace Test', () => {
+describe("Namespace Test", () => {
   let firebase: FirebaseNamespace;
   beforeEach(() => {
     firebase = createFirebaseNamespace();
     registerMessaging(firebase);
     firebase.initializeApp(appConfig);
   });
-  describe('firebase.messaging() Verification', () => {
-    it('firebase.messaging() should expose proper namespace', () => {
-      checkProps('firebase.messaging()', (firebase as any).messaging(), messagingInstanceSpec);
+  describe("firebase.messaging() Verification", () => {
+    it("firebase.messaging() should expose proper namespace", () => {
+      checkProps(
+        "firebase.messaging()",
+        (firebase as any).messaging(),
+        messagingInstanceSpec
+      );
     });
   });
 });

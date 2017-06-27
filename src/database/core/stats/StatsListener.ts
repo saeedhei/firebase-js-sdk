@@ -1,4 +1,4 @@
-import { clone, forEach } from '../../../utils/obj';
+import { clone, forEach } from "../../../utils/obj";
 
 /**
  * Returns the delta from the previous call to get stats.
@@ -8,9 +8,8 @@ import { clone, forEach } from '../../../utils/obj';
  */
 export class StatsListener {
   private last_ = null;
-  
-  constructor(private collection_) {
-  }
+
+  constructor(private collection_) {}
 
   get() {
     const newStats = this.collection_.get();
@@ -26,4 +25,3 @@ export class StatsListener {
     return delta;
   }
 }
-

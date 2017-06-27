@@ -22,7 +22,7 @@ export class SparseSnapshotTree {
      * @type {CountedSet}
      */
     this.children_ = null;
-  };
+  }
   /**
    * Gets the node stored at the given path if one exists.
    *
@@ -44,8 +44,7 @@ export class SparseSnapshotTree {
     } else {
       return null;
     }
-  };
-
+  }
 
   /**
    * Stores the given node at the specified path. If there is already a node
@@ -74,8 +73,7 @@ export class SparseSnapshotTree {
       path = path.popFront();
       child.remember(path, data);
     }
-  };
-
+  }
 
   /**
    * Purge the data at path from the cache.
@@ -120,12 +118,11 @@ export class SparseSnapshotTree {
         } else {
           return false;
         }
-
       } else {
         return true;
       }
     }
-  };
+  }
 
   /**
    * Recursively iterates through all of the stored tree and calls the
@@ -139,12 +136,11 @@ export class SparseSnapshotTree {
       func(prefixPath, this.value_);
     } else {
       this.forEachChild(function(key, tree) {
-        var path = new Path(prefixPath.toString() + '/' + key);
+        var path = new Path(prefixPath.toString() + "/" + key);
         tree.forEachTree(path, func);
       });
     }
-  };
-
+  }
 
   /**
    * Iterates through each immediate child and triggers the callback.
@@ -157,5 +153,5 @@ export class SparseSnapshotTree {
         func(key, tree);
       });
     }
-  };
+  }
 }

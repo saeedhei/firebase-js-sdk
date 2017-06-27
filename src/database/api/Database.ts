@@ -20,10 +20,10 @@ export class Database {
   INTERNAL;
 
   static ServerValue = {
-    'TIMESTAMP': {
-      '.sv' : 'timestamp'
+    TIMESTAMP: {
+      ".sv": "timestamp"
     }
-  }
+  };
 
   /**
    * The constructor should not be called by users of our public API.
@@ -31,7 +31,9 @@ export class Database {
    */
   constructor(repo) {
     if (!(repo instanceof Repo)) {
-      fatal("Don't call new Database() directly - please use firebase.database().");
+      fatal(
+        "Don't call new Database() directly - please use firebase.database()."
+      );
     }
 
     /** @type {Repo} */
@@ -43,7 +45,7 @@ export class Database {
     this.INTERNAL = new DatabaseInternals(this);
   }
 
-  app: null
+  app: null;
 
   /**
    * Returns a reference to the root or the path specified in opt_pathString.
@@ -51,8 +53,8 @@ export class Database {
    * @return {!Firebase} Firebase reference.
    */
   ref(pathString?: string): Reference {
-    this.checkDeleted_('ref');
-    validateArgCount('database.ref', 0, 1, arguments.length);
+    this.checkDeleted_("ref");
+    validateArgCount("database.ref", 0, 1, arguments.length);
 
     return pathString !== undefined ? this.root_.child(pathString) : this.root_;
   }
@@ -66,7 +68,7 @@ export class Database {
    */
   refFromURL(url) {
     /** @const {string} */
-    var apiName = 'database.refFromURL';
+    var apiName = "database.refFromURL";
     this.checkDeleted_(apiName);
     validateArgCount(apiName, 1, 1, arguments.length);
     var parsedURL = parseRepoInfo(url);
@@ -74,8 +76,15 @@ export class Database {
 
     var repoInfo = parsedURL.repoInfo;
     if (repoInfo.host !== this.repo_.repoInfo_.host) {
-      fatal(apiName + ": Host name does not match the current database: " +
-                         "(found " + repoInfo.host + " but expected " + this.repo_.repoInfo_.host + ")");
+      fatal(
+        apiName +
+          ": Host name does not match the current database: " +
+          "(found " +
+          repoInfo.host +
+          " but expected " +
+          this.repo_.repoInfo_.host +
+          ")"
+      );
     }
 
     return this.ref(parsedURL.path.toString());
@@ -93,20 +102,20 @@ export class Database {
 
   // Make individual repo go offline.
   goOffline() {
-    validateArgCount('database.goOffline', 0, 0, arguments.length);
-    this.checkDeleted_('goOffline');
+    validateArgCount("database.goOffline", 0, 0, arguments.length);
+    this.checkDeleted_("goOffline");
     this.repo_.interrupt();
   }
 
-  goOnline () {
-    validateArgCount('database.goOnline', 0, 0, arguments.length);
-    this.checkDeleted_('goOnline');
+  goOnline() {
+    validateArgCount("database.goOnline", 0, 0, arguments.length);
+    this.checkDeleted_("goOnline");
     this.repo_.resume();
   }
-};
+}
 
 // Note: This is an un-minfied property of the Database only.
-Object.defineProperty(Database.prototype, 'app', {
+Object.defineProperty(Database.prototype, "app", {
   /**
    * @this {!Database}
    * @return {!firebase.app.App}
@@ -116,14 +125,14 @@ Object.defineProperty(Database.prototype, 'app', {
   }
 });
 
-Object.defineProperty(Repo.prototype, 'database', {
+Object.defineProperty(Repo.prototype, "database", {
   get() {
     return this.__database || (this.__database = new Database(this));
   }
 });
 
 class DatabaseInternals {
-  database
+  database;
   /** @param {!Database} database */
   constructor(database) {
     this.database = database;
@@ -131,8 +140,11 @@ class DatabaseInternals {
 
   /** @return {firebase.Promise<void>} */
   delete() {
-    this.database.checkDeleted_('delete');
-    RepoManager.getInstance().deleteRepo(/** @type {!Repo} */ (this.database.repo_));
+    this.database.checkDeleted_("delete");
+    RepoManager.getInstance().deleteRepo(
+      /** @type {!Repo} */
+      this.database.repo_
+    );
 
     this.database.repo_ = null;
     this.database.root_ = null;
@@ -140,5 +152,4 @@ class DatabaseInternals {
     this.database = null;
     return PromiseImpl.resolve();
   }
-};
-
+}

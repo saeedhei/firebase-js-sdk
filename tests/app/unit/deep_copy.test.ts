@@ -13,14 +13,14 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-import {assert} from 'chai';
-import {deepCopy, deepExtend} from '../../../src/app/deep_copy';
+import { assert } from "chai";
+import { deepCopy, deepExtend } from "../../../src/app/deep_copy";
 
 describe("deepCopy()", () => {
   it("Scalars", () => {
     assert.strictEqual(deepCopy(true), true);
     assert.strictEqual(deepCopy(123), 123);
-    assert.strictEqual(deepCopy('abc'), 'abc');
+    assert.strictEqual(deepCopy("abc"), "abc");
   });
 
   it("Date", () => {
@@ -30,8 +30,8 @@ describe("deepCopy()", () => {
 
   it("Object", () => {
     assert.deepEqual(deepCopy({}), {});
-    assert.deepEqual(deepCopy({a: 123}), {a: 123});
-    assert.deepEqual(deepCopy({a: {b: 123}}), {a: {b: 123}});
+    assert.deepEqual(deepCopy({ a: 123 }), { a: 123 });
+    assert.deepEqual(deepCopy({ a: { b: 123 } }), { a: { b: 123 } });
   });
 
   it("Array", () => {
@@ -45,7 +45,7 @@ describe("deepExtend", () => {
   it("Scalars", () => {
     assert.strictEqual(deepExtend(1, true), true);
     assert.strictEqual(deepExtend(undefined, 123), 123);
-    assert.strictEqual(deepExtend('was', 'abc'), 'abc');
+    assert.strictEqual(deepExtend("was", "abc"), "abc");
   });
 
   it("Date", () => {
@@ -54,12 +54,15 @@ describe("deepExtend", () => {
   });
 
   it("Object", () => {
-    assert.deepEqual(deepExtend({old: 123}, {}), {old: 123});
-    assert.deepEqual(deepExtend({old: 123}, {s: 'hello'}),
-                     {old: 123, s: 'hello'});
-    assert.deepEqual(deepExtend({old: 123, a: {c: 'in-old'}},
-                                {a: {b: 123}}),
-                                {old: 123, a: {b: 123, c: 'in-old'}});
+    assert.deepEqual(deepExtend({ old: 123 }, {}), { old: 123 });
+    assert.deepEqual(deepExtend({ old: 123 }, { s: "hello" }), {
+      old: 123,
+      s: "hello"
+    });
+    assert.deepEqual(
+      deepExtend({ old: 123, a: { c: "in-old" } }, { a: { b: 123 } }),
+      { old: 123, a: { b: 123, c: "in-old" } }
+    );
   });
 
   it("Array", () => {
@@ -69,26 +72,34 @@ describe("deepExtend", () => {
   });
 
   it("Array is copied - not referenced", () => {
-    let o1 = {a: [1]};
-    let o2 = {a: [2]};
+    let o1 = { a: [1] };
+    let o2 = { a: [2] };
 
-    assert.deepEqual(deepExtend(o1, o2), {a: [2]});
+    assert.deepEqual(deepExtend(o1, o2), { a: [2] });
     o2.a.push(3);
-    assert.deepEqual(o1, {a: [2]});
+    assert.deepEqual(o1, { a: [2] });
   });
 
   it("Array with undefined elements", () => {
     let a: any = [];
     a[3] = "3";
     let b = deepExtend(undefined, a);
-    assert.deepEqual(b, [,,,"3"]);
+    assert.deepEqual(b, [, , , "3"]);
   });
 
   it("Function", () => {
-    let source:any = () => {/*_*/};
-    let target:any = deepExtend({a: () => {/*_*/}},
-                                {a: source});
-    assert.deepEqual({a: source}, target);
+    let source: any = () => {
+      /*_*/
+    };
+    let target: any = deepExtend(
+      {
+        a: () => {
+          /*_*/
+        }
+      },
+      { a: source }
+    );
+    assert.deepEqual({ a: source }, target);
     assert.strictEqual(source, target.a);
   });
 });

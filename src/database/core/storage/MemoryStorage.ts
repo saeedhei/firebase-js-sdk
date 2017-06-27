@@ -17,18 +17,18 @@ export class MemoryStorage {
     } else {
       this.cache_[key] = value;
     }
-  };
+  }
 
   get(key) {
     if (contains(this.cache_, key)) {
       return this.cache_[key];
     }
     return null;
-  };
+  }
 
   remove(key) {
     delete this.cache_[key];
-  };
+  }
 
   isInMemoryStorage = true;
 }

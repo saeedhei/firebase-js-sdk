@@ -20,28 +20,28 @@
 /**
  * Domain and scheme for API calls.
  */
-export const domainBase: string = 'https://firebasestorage.googleapis.com';
+export const domainBase: string = "https://firebasestorage.googleapis.com";
 
 /**
  * Domain and scheme for object downloads.
  */
-export const downloadBase: string = 'https://firebasestorage.googleapis.com';
+export const downloadBase: string = "https://firebasestorage.googleapis.com";
 
 /**
  * Base URL for non-upload calls to the API.
  */
-export const apiBaseUrl: string = '/v0';
+export const apiBaseUrl: string = "/v0";
 
 /**
  * Base URL for upload calls to the API.
  */
-export const apiUploadBaseUrl: string = '/v0';
+export const apiUploadBaseUrl: string = "/v0";
 
 export function setDomainBase(domainBase: string) {
   domainBase = domainBase;
 }
 
-export const configOption: string = 'storageBucket';
+export const configOption: string = "storageBucket";
 
 /**
  * 1 minute

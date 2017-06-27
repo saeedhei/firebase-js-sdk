@@ -24,11 +24,16 @@ export class IndexMap {
    * @const
    */
   static get Default() {
-    assert(fallbackObject && PRIORITY_INDEX, 'ChildrenNode.ts has not been loaded');
-    _defaultIndexMap = _defaultIndexMap || new IndexMap(
-      { '.priority': fallbackObject }, 
-      { '.priority': PRIORITY_INDEX }
+    assert(
+      fallbackObject && PRIORITY_INDEX,
+      "ChildrenNode.ts has not been loaded"
     );
+    _defaultIndexMap =
+      _defaultIndexMap ||
+      new IndexMap(
+        { ".priority": fallbackObject },
+        { ".priority": PRIORITY_INDEX }
+      );
     return _defaultIndexMap;
   }
 
@@ -43,7 +48,7 @@ export class IndexMap {
    */
   get(indexKey) {
     var sortedMap = safeGet(this.indexes_, indexKey);
-    if (!sortedMap) throw new Error('No index defined for ' + indexKey);
+    if (!sortedMap) throw new Error("No index defined for " + indexKey);
 
     if (sortedMap === fallbackObject) {
       // The index exists, but it falls back to just name comparison. Return null so that the calling code uses the
@@ -52,7 +57,7 @@ export class IndexMap {
     } else {
       return sortedMap;
     }
-  };
+  }
 
   /**
    * @param {!Index} indexDefinition
@@ -60,7 +65,7 @@ export class IndexMap {
    */
   hasIndex(indexDefinition) {
     return contains(this.indexSet_, indexDefinition.toString());
-  };
+  }
 
   /**
    * @param {!Index} indexDefinition
@@ -68,14 +73,17 @@ export class IndexMap {
    * @return {!IndexMap}
    */
   addIndex(indexDefinition, existingChildren) {
-    assert(indexDefinition !== KEY_INDEX,
-        "KeyIndex always exists and isn't meant to be added to the IndexMap.");
+    assert(
+      indexDefinition !== KEY_INDEX,
+      "KeyIndex always exists and isn't meant to be added to the IndexMap."
+    );
     var childList = [];
     var sawIndexedValue = false;
     var iter = existingChildren.getIterator(NamedNode.Wrap);
     var next = iter.getNext();
     while (next) {
-      sawIndexedValue = sawIndexedValue || indexDefinition.isDefinedOn(next.node);
+      sawIndexedValue =
+        sawIndexedValue || indexDefinition.isDefinedOn(next.node);
       childList.push(next);
       next = iter.getNext();
     }
@@ -91,8 +99,7 @@ export class IndexMap {
     var newIndexes = clone(this.indexes_);
     newIndexes[indexName] = newIndex;
     return new IndexMap(newIndexes, newIndexSet);
-  };
-
+  }
 
   /**
    * Ensure that this node is properly tracked in any indexes that we're maintaining
@@ -104,7 +111,7 @@ export class IndexMap {
     var self = this;
     var newIndexes = map(this.indexes_, function(indexedChildren, indexName) {
       var index = safeGet(self.indexSet_, indexName);
-      assert(index, 'Missing index implementation for ' + indexName);
+      assert(index, "Missing index implementation for " + indexName);
       if (indexedChildren === fallbackObject) {
         // Check to see if we need to index everything
         if (index.isDefinedOn(namedNode.node)) {
@@ -128,13 +135,15 @@ export class IndexMap {
         var existingSnap = existingChildren.get(namedNode.name);
         var newChildren = indexedChildren;
         if (existingSnap) {
-          newChildren = newChildren.remove(new NamedNode(namedNode.name, existingSnap));
+          newChildren = newChildren.remove(
+            new NamedNode(namedNode.name, existingSnap)
+          );
         }
         return newChildren.insert(namedNode, namedNode.node);
       }
     });
     return new IndexMap(newIndexes, this.indexSet_);
-  };
+  }
 
   /**
    * Create a new IndexMap instance with the given value removed
@@ -150,7 +159,9 @@ export class IndexMap {
       } else {
         var existingSnap = existingChildren.get(namedNode.name);
         if (existingSnap) {
-          return indexedChildren.remove(new NamedNode(namedNode.name, existingSnap));
+          return indexedChildren.remove(
+            new NamedNode(namedNode.name, existingSnap)
+          );
         } else {
           // No record of this child
           return indexedChildren;
@@ -158,5 +169,5 @@ export class IndexMap {
       }
     });
     return new IndexMap(newIndexes, this.indexSet_);
-  };
+  }
 }

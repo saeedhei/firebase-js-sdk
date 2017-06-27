@@ -18,7 +18,7 @@ FakeRegistration.prototype = ServiceWorkerRegistration.prototype;
 
 export default function(selectedState?, desiredValue?) {
   const fakeReg = new FakeRegistration();
-  const states = ['installing', 'waiting', 'active'];
+  const states = ["installing", "waiting", "active"];
   states.forEach(state => {
     let finalValue = undefined;
     if (state === selectedState) {
@@ -30,4 +30,4 @@ export default function(selectedState?, desiredValue?) {
   });
 
   return fakeReg;
-};
+}

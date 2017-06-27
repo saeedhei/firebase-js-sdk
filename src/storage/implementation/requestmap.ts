@@ -13,16 +13,16 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-import * as object from './object';
-import * as RequestExports from './request';
-import {Request} from './request';
-import * as constants from './constants';
+import * as object from "./object";
+import * as RequestExports from "./request";
+import { Request } from "./request";
+import * as constants from "./constants";
 
 /**
  * @struct
  */
 export class RequestMap {
-  private map_: {[key: number]: Request<any>} = {};
+  private map_: { [key: number]: Request<any> } = {};
   private id_: number;
 
   constructor() {

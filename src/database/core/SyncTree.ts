@@ -1,4 +1,4 @@
-import { assert } from '../../utils/assert';
+import { assert } from "../../utils/assert";
 import { errorForServerCode } from "./util/util";
 import { AckUserWrite } from "./operation/AckUserWrite";
 import { ChildrenNode } from "./snap/ChildrenNode";
@@ -74,7 +74,7 @@ export class SyncTree {
     this.tagToQueryMap_ = {};
     this.queryToTagMap_ = {};
     this.listenProvider_ = listenProvider;
-  };
+  }
 
   /**
    * Apply the data changes for a user-generated set() or transaction() call.
@@ -93,9 +93,10 @@ export class SyncTree {
       return [];
     } else {
       return this.applyOperationToSyncPoints_(
-          new Overwrite(OperationSource.User, path, newData));
+        new Overwrite(OperationSource.User, path, newData)
+      );
     }
-  };
+  }
 
   /**
    * Apply the data from a user-generated update() call
@@ -112,8 +113,9 @@ export class SyncTree {
     var changeTree = ImmutableTree.fromObject(changedChildren);
 
     return this.applyOperationToSyncPoints_(
-        new Merge(OperationSource.User, path, changeTree));
-  };
+      new Merge(OperationSource.User, path, changeTree)
+    );
+  }
 
   /**
    * Acknowledge a pending user write that was previously registered with applyUserOverwrite() or applyUserMerge().
@@ -131,16 +133,19 @@ export class SyncTree {
       return [];
     } else {
       var affectedTree = ImmutableTree.Empty;
-      if (write.snap != null) { // overwrite
+      if (write.snap != null) {
+        // overwrite
         affectedTree = affectedTree.set(Path.Empty, true);
       } else {
         forEach(write.children, function(pathString, node) {
           affectedTree = affectedTree.set(new Path(pathString), node);
         });
       }
-      return this.applyOperationToSyncPoints_(new AckUserWrite(write.path, affectedTree, revert));
+      return this.applyOperationToSyncPoints_(
+        new AckUserWrite(write.path, affectedTree, revert)
+      );
     }
-  };
+  }
 
   /**
    * Apply new server data for the specified path..
@@ -151,8 +156,9 @@ export class SyncTree {
    */
   applyServerOverwrite(path, newData) {
     return this.applyOperationToSyncPoints_(
-        new Overwrite(OperationSource.Server, path, newData));
-  };
+      new Overwrite(OperationSource.Server, path, newData)
+    );
+  }
 
   /**
    * Apply new server data to be merged in at the specified path.
@@ -165,8 +171,9 @@ export class SyncTree {
     var changeTree = ImmutableTree.fromObject(changedChildren);
 
     return this.applyOperationToSyncPoints_(
-        new Merge(OperationSource.Server, path, changeTree));
-  };
+      new Merge(OperationSource.Server, path, changeTree)
+    );
+  }
 
   /**
    * Apply a listen complete for a query
@@ -176,8 +183,9 @@ export class SyncTree {
    */
   applyListenComplete(path) {
     return this.applyOperationToSyncPoints_(
-        new ListenComplete(OperationSource.Server, path));
-  };
+      new ListenComplete(OperationSource.Server, path)
+    );
+  }
 
   /**
    * Apply new server data for the specified tagged query.
@@ -191,16 +199,20 @@ export class SyncTree {
     var queryKey = this.queryKeyForTag_(tag);
     if (queryKey != null) {
       var r = this.parseQueryKey_(queryKey);
-      var queryPath = r.path, queryId = r.queryId;
+      var queryPath = r.path,
+        queryId = r.queryId;
       var relativePath = Path.relativePath(queryPath, path);
-      var op = new Overwrite(OperationSource.forServerTaggedQuery(queryId),
-          relativePath, snap);
+      var op = new Overwrite(
+        OperationSource.forServerTaggedQuery(queryId),
+        relativePath,
+        snap
+      );
       return this.applyTaggedOperation_(queryPath, queryId, op);
     } else {
       // Query must have been removed already
       return [];
     }
-  };
+  }
 
   /**
    * Apply server data to be merged in for the specified tagged query.
@@ -214,17 +226,21 @@ export class SyncTree {
     var queryKey = this.queryKeyForTag_(tag);
     if (queryKey) {
       var r = this.parseQueryKey_(queryKey);
-      var queryPath = r.path, queryId = r.queryId;
+      var queryPath = r.path,
+        queryId = r.queryId;
       var relativePath = Path.relativePath(queryPath, path);
       var changeTree = ImmutableTree.fromObject(changedChildren);
-      var op = new Merge(OperationSource.forServerTaggedQuery(queryId),
-          relativePath, changeTree);
+      var op = new Merge(
+        OperationSource.forServerTaggedQuery(queryId),
+        relativePath,
+        changeTree
+      );
       return this.applyTaggedOperation_(queryPath, queryId, op);
     } else {
       // We've already removed the query. No big deal, ignore the update
       return [];
     }
-  };
+  }
 
   /**
    * Apply a listen complete for a tagged query
@@ -237,16 +253,19 @@ export class SyncTree {
     var queryKey = this.queryKeyForTag_(tag);
     if (queryKey) {
       var r = this.parseQueryKey_(queryKey);
-      var queryPath = r.path, queryId = r.queryId;
+      var queryPath = r.path,
+        queryId = r.queryId;
       var relativePath = Path.relativePath(queryPath, path);
-      var op = new ListenComplete(OperationSource.forServerTaggedQuery(queryId),
-          relativePath);
+      var op = new ListenComplete(
+        OperationSource.forServerTaggedQuery(queryId),
+        relativePath
+      );
       return this.applyTaggedOperation_(queryPath, queryId, op);
     } else {
       // We've already removed the query. No big deal, ignore the update
       return [];
     }
-  };
+  }
 
   /**
    * Add an event callback for the specified query.
@@ -265,14 +284,16 @@ export class SyncTree {
     this.syncPointTree_.foreachOnPath(path, function(pathToSyncPoint, sp) {
       var relativePath = Path.relativePath(pathToSyncPoint, path);
       serverCache = serverCache || sp.getCompleteServerCache(relativePath);
-      foundAncestorDefaultView = foundAncestorDefaultView || sp.hasCompleteView();
+      foundAncestorDefaultView =
+        foundAncestorDefaultView || sp.hasCompleteView();
     });
     var syncPoint = this.syncPointTree_.get(path);
     if (!syncPoint) {
       syncPoint = new SyncPoint();
       this.syncPointTree_ = this.syncPointTree_.set(path, syncPoint);
     } else {
-      foundAncestorDefaultView = foundAncestorDefaultView || syncPoint.hasCompleteView();
+      foundAncestorDefaultView =
+        foundAncestorDefaultView || syncPoint.hasCompleteView();
       serverCache = serverCache || syncPoint.getCompleteServerCache(Path.Empty);
     }
 
@@ -286,7 +307,10 @@ export class SyncTree {
       subtree.foreachChild(function(childName, childSyncPoint) {
         var completeCache = childSyncPoint.getCompleteServerCache(Path.Empty);
         if (completeCache) {
-          serverCache = serverCache.updateImmediateChild(childName, completeCache);
+          serverCache = serverCache.updateImmediateChild(
+            childName,
+            completeCache
+          );
         }
       });
     }
@@ -295,21 +319,29 @@ export class SyncTree {
     if (!viewAlreadyExists && !query.getQueryParams().loadsAllData()) {
       // We need to track a tag for this query
       var queryKey = this.makeQueryKey_(query);
-      assert(!(queryKey in this.queryToTagMap_),
-        'View does not exist, but we have a tag');
+      assert(
+        !(queryKey in this.queryToTagMap_),
+        "View does not exist, but we have a tag"
+      );
       var tag = SyncTree.getNextQueryTag_();
       this.queryToTagMap_[queryKey] = tag;
       // Coerce to string to avoid sparse arrays.
-      this.tagToQueryMap_['_' + tag] = queryKey;
+      this.tagToQueryMap_["_" + tag] = queryKey;
     }
     var writesCache = this.pendingWriteTree_.childWrites(path);
-    var events = syncPoint.addEventRegistration(query, eventRegistration, writesCache, serverCache, serverCacheComplete);
+    var events = syncPoint.addEventRegistration(
+      query,
+      eventRegistration,
+      writesCache,
+      serverCache,
+      serverCacheComplete
+    );
     if (!viewAlreadyExists && !foundAncestorDefaultView) {
-      var view = /** @type !View */ (syncPoint.viewForQuery(query));
+      var view /** @type !View */ = syncPoint.viewForQuery(query);
       events = events.concat(this.setupListener_(query, view));
     }
     return events;
-  };
+  }
 
   /**
    * Remove event callback(s).
@@ -330,11 +362,19 @@ export class SyncTree {
     // A removal on a default query affects all queries at that location. A removal on an indexed query, even one without
     // other query constraints, does *not* affect all queries at that location. So this check must be for 'default', and
     // not loadsAllData().
-    if (maybeSyncPoint && (query.queryIdentifier() === 'default' || maybeSyncPoint.viewExistsForQuery(query))) {
+    if (
+      maybeSyncPoint &&
+      (query.queryIdentifier() === "default" ||
+        maybeSyncPoint.viewExistsForQuery(query))
+    ) {
       /**
        * @type {{removed: !Array.<!Query>, events: !Array.<!Event>}}
        */
-      var removedAndEvents = maybeSyncPoint.removeEventRegistration(query, eventRegistration, cancelError);
+      var removedAndEvents = maybeSyncPoint.removeEventRegistration(
+        query,
+        eventRegistration,
+        cancelError
+      );
       if (maybeSyncPoint.isEmpty()) {
         this.syncPointTree_ = this.syncPointTree_.remove(path);
       }
@@ -346,10 +386,15 @@ export class SyncTree {
       //
       // Since indexed queries can shadow if they don't have other query constraints, check for loadsAllData(), instead of
       // queryId === 'default'
-      var removingDefault = -1 !== removed.findIndex(function(query) {
-        return query.getQueryParams().loadsAllData();
-      });
-      var covered = this.syncPointTree_.findOnPath(path, function(relativePath, parentSyncPoint) {
+      var removingDefault =
+        -1 !==
+        removed.findIndex(function(query) {
+          return query.getQueryParams().loadsAllData();
+        });
+      var covered = this.syncPointTree_.findOnPath(path, function(
+        relativePath,
+        parentSyncPoint
+      ) {
         return parentSyncPoint.hasCompleteView();
       });
 
@@ -363,10 +408,15 @@ export class SyncTree {
 
           // Ok, we've collected all the listens we need. Set them up.
           for (var i = 0; i < newViews.length; ++i) {
-            var view = newViews[i], newQuery = view.getQuery();
+            var view = newViews[i],
+              newQuery = view.getQuery();
             var listener = this.createListenerForView_(view);
-            this.listenProvider_.startListening(this.queryForListening_(newQuery), this.tagForQuery_(newQuery),
-                listener.hashFn, listener.onComplete);
+            this.listenProvider_.startListening(
+              this.queryForListening_(newQuery),
+              this.tagForQuery_(newQuery),
+              listener.hashFn,
+              listener.onComplete
+            );
           }
         } else {
           // There's nothing below us, so nothing we need to start listening on
@@ -381,13 +431,20 @@ export class SyncTree {
         if (removingDefault) {
           // We don't tag default listeners
           var defaultTag = null;
-          this.listenProvider_.stopListening(this.queryForListening_(query), defaultTag);
+          this.listenProvider_.stopListening(
+            this.queryForListening_(query),
+            defaultTag
+          );
         } else {
           var self = this;
           removed.forEach(function(queryToRemove) {
             var queryIdToRemove = queryToRemove.queryIdentifier();
-            var tagToRemove = self.queryToTagMap_[self.makeQueryKey_(queryToRemove)];
-            self.listenProvider_.stopListening(self.queryForListening_(queryToRemove), tagToRemove);
+            var tagToRemove =
+              self.queryToTagMap_[self.makeQueryKey_(queryToRemove)];
+            self.listenProvider_.stopListening(
+              self.queryForListening_(queryToRemove),
+              tagToRemove
+            );
           });
         }
       }
@@ -397,7 +454,7 @@ export class SyncTree {
       // No-op, this listener must've been already removed
     }
     return cancelEvents;
-  };
+  }
 
   /**
    * Returns a complete cache, if we have one, of the data at a particular path. The location must have a listener above
@@ -411,15 +468,23 @@ export class SyncTree {
   calcCompleteEventCache(path, writeIdsToExclude) {
     var includeHiddenSets = true;
     var writeTree = this.pendingWriteTree_;
-    var serverCache = this.syncPointTree_.findOnPath(path, function(pathSoFar, syncPoint) {
+    var serverCache = this.syncPointTree_.findOnPath(path, function(
+      pathSoFar,
+      syncPoint
+    ) {
       var relativePath = Path.relativePath(pathSoFar, path);
       var serverCache = syncPoint.getCompleteServerCache(relativePath);
       if (serverCache) {
         return serverCache;
       }
     });
-    return writeTree.calcCompleteEventCache(path, serverCache, writeIdsToExclude, includeHiddenSets);
-  };
+    return writeTree.calcCompleteEventCache(
+      path,
+      serverCache,
+      writeIdsToExclude,
+      includeHiddenSets
+    );
+  }
 
   /**
    * This collapses multiple unfiltered views into a single view, since we only need a single
@@ -446,7 +511,7 @@ export class SyncTree {
         return views;
       }
     });
-  };
+  }
 
   /**
    * @param {!Array.<!Query>} queries
@@ -460,11 +525,10 @@ export class SyncTree {
         var removedQueryKey = this.makeQueryKey_(removedQuery);
         var removedQueryTag = this.queryToTagMap_[removedQueryKey];
         delete this.queryToTagMap_[removedQueryKey];
-        delete this.tagToQueryMap_['_' + removedQueryTag];
+        delete this.tagToQueryMap_["_" + removedQueryTag];
       }
     }
-  };
-
+  }
 
   /**
    * Normalizes a query to a query we send the server for listening
@@ -473,16 +537,18 @@ export class SyncTree {
    * @private
    */
   queryForListening_(query: Query) {
-    if (query.getQueryParams().loadsAllData() && !query.getQueryParams().isDefault()) {
+    if (
+      query.getQueryParams().loadsAllData() &&
+      !query.getQueryParams().isDefault()
+    ) {
       // We treat queries that load all data as default queries
       // Cast is necessary because ref() technically returns Firebase which is actually fb.api.Firebase which inherits
       // from Query
-      return /** @type {!Query} */(query.getRef());
+      return /** @type {!Query} */ query.getRef();
     } else {
       return query;
     }
-  };
-
+  }
 
   /**
    * For a given new listen, manage the de-duplication of outstanding subscriptions.
@@ -497,27 +563,42 @@ export class SyncTree {
     var tag = this.tagForQuery_(query);
     var listener = this.createListenerForView_(view);
 
-    var events = this.listenProvider_.startListening(this.queryForListening_(query), tag, listener.hashFn,
-        listener.onComplete);
+    var events = this.listenProvider_.startListening(
+      this.queryForListening_(query),
+      tag,
+      listener.hashFn,
+      listener.onComplete
+    );
 
     var subtree = this.syncPointTree_.subtree(path);
     // The root of this subtree has our query. We're here because we definitely need to send a listen for that, but we
     // may need to shadow other listens as well.
     if (tag) {
-      assert(!subtree.value.hasCompleteView(), "If we're adding a query, it shouldn't be shadowed");
+      assert(
+        !subtree.value.hasCompleteView(),
+        "If we're adding a query, it shouldn't be shadowed"
+      );
     } else {
       // Shadow everything at or below this location, this is a default listener.
-      var queriesToStop = subtree.fold(function(relativePath, maybeChildSyncPoint, childMap) {
-        if (!relativePath.isEmpty() && maybeChildSyncPoint && maybeChildSyncPoint.hasCompleteView()) {
+      var queriesToStop = subtree.fold(function(
+        relativePath,
+        maybeChildSyncPoint,
+        childMap
+      ) {
+        if (
+          !relativePath.isEmpty() &&
+          maybeChildSyncPoint &&
+          maybeChildSyncPoint.hasCompleteView()
+        ) {
           return [maybeChildSyncPoint.getCompleteView().getQuery()];
         } else {
           // No default listener here, flatten any deeper queries into an array
           var queries = [];
           if (maybeChildSyncPoint) {
             queries = queries.concat(
-                maybeChildSyncPoint.getQueryViews().map(function(view) {
-                  return view.getQuery();
-                })
+              maybeChildSyncPoint.getQueryViews().map(function(view) {
+                return view.getQuery();
+              })
             );
           }
           forEach(childMap, function(key, childQueries) {
@@ -528,11 +609,14 @@ export class SyncTree {
       });
       for (var i = 0; i < queriesToStop.length; ++i) {
         var queryToStop = queriesToStop[i];
-        this.listenProvider_.stopListening(this.queryForListening_(queryToStop), this.tagForQuery_(queryToStop));
+        this.listenProvider_.stopListening(
+          this.queryForListening_(queryToStop),
+          this.tagForQuery_(queryToStop)
+        );
       }
     }
     return events;
-  };
+  }
 
   /**
    *
@@ -551,7 +635,7 @@ export class SyncTree {
         return cache.hash();
       },
       onComplete: function(status, data) {
-        if (status === 'ok') {
+        if (status === "ok") {
           if (tag) {
             return self.applyTaggedListenComplete(query.path, tag);
           } else {
@@ -561,11 +645,15 @@ export class SyncTree {
           // If a listen failed, kill all of the listeners here, not just the one that triggered the error.
           // Note that this may need to be scoped to just this listener if we change permissions on filtered children
           var error = errorForServerCode(status, query);
-          return self.removeEventRegistration(query, /*eventRegistration*/null, error);
+          return self.removeEventRegistration(
+            query,
+            /*eventRegistration*/ null,
+            error
+          );
         }
       }
     };
-  };
+  }
 
   /**
    * Given a query, computes a "queryKey" suitable for use in our queryToTagMap_.
@@ -574,8 +662,8 @@ export class SyncTree {
    * @return {string}
    */
   makeQueryKey_(query) {
-    return query.path.toString() + '$' + query.queryIdentifier();
-  };
+    return query.path.toString() + "$" + query.queryIdentifier();
+  }
 
   /**
    * Given a queryKey (created by makeQueryKey), parse it back into a path and queryId.
@@ -584,13 +672,16 @@ export class SyncTree {
    * @return {{queryId: !string, path: !Path}}
    */
   parseQueryKey_(queryKey) {
-    var splitIndex = queryKey.indexOf('$');
-    assert(splitIndex !== -1 && splitIndex < queryKey.length - 1, 'Bad queryKey.');
+    var splitIndex = queryKey.indexOf("$");
+    assert(
+      splitIndex !== -1 && splitIndex < queryKey.length - 1,
+      "Bad queryKey."
+    );
     return {
       queryId: queryKey.substr(splitIndex + 1),
       path: new Path(queryKey.substr(0, splitIndex))
     };
-  };
+  }
 
   /**
    * Return the query associated with the given tag, if we have one
@@ -599,8 +690,8 @@ export class SyncTree {
    * @private
    */
   queryKeyForTag_(tag) {
-    return this.tagToQueryMap_['_' + tag];
-  };
+    return this.tagToQueryMap_["_" + tag];
+  }
 
   /**
    * Return the tag associated with the given query.
@@ -611,7 +702,7 @@ export class SyncTree {
   tagForQuery_(query) {
     var queryKey = this.makeQueryKey_(query);
     return safeGet(this.queryToTagMap_, queryKey);
-  };
+  }
 
   /**
    * Static tracker for next query tag.
@@ -639,10 +730,14 @@ export class SyncTree {
    * @private
    */
   applyTaggedOperation_(queryPath, queryId, operation) {
-      var syncPoint = this.syncPointTree_.get(queryPath);
-      assert(syncPoint, "Missing sync point for query tag that we're tracking");
-      var writesCache = this.pendingWriteTree_.childWrites(queryPath);
-      return syncPoint.applyOperation(operation, writesCache, /*serverCache=*/null);
+    var syncPoint = this.syncPointTree_.get(queryPath);
+    assert(syncPoint, "Missing sync point for query tag that we're tracking");
+    var writesCache = this.pendingWriteTree_.childWrites(queryPath);
+    return syncPoint.applyOperation(
+      operation,
+      writesCache,
+      /*serverCache=*/ null
+    );
   }
 
   /**
@@ -663,10 +758,13 @@ export class SyncTree {
   * @private
   */
   applyOperationToSyncPoints_(operation) {
-    return this.applyOperationHelper_(operation, this.syncPointTree_, /*serverCache=*/ null,
-        this.pendingWriteTree_.childWrites(Path.Empty));
-
-  };
+    return this.applyOperationHelper_(
+      operation,
+      this.syncPointTree_,
+      /*serverCache=*/ null,
+      this.pendingWriteTree_.childWrites(Path.Empty)
+    );
+  }
 
   /**
    * Recursive helper for applyOperationToSyncPoints_
@@ -679,9 +777,13 @@ export class SyncTree {
    * @return {!Array.<!Event>}
    */
   applyOperationHelper_(operation, syncPointTree, serverCache, writesCache) {
-
     if (operation.path.isEmpty()) {
-      return this.applyOperationDescendantsHelper_(operation, syncPointTree, serverCache, writesCache);
+      return this.applyOperationDescendantsHelper_(
+        operation,
+        syncPointTree,
+        serverCache,
+        writesCache
+      );
     } else {
       var syncPoint = syncPointTree.get(Path.Empty);
 
@@ -695,19 +797,29 @@ export class SyncTree {
       var childOperation = operation.operationForChild(childName);
       var childTree = syncPointTree.children.get(childName);
       if (childTree && childOperation) {
-        var childServerCache = serverCache ? serverCache.getImmediateChild(childName) : null;
+        var childServerCache = serverCache
+          ? serverCache.getImmediateChild(childName)
+          : null;
         var childWritesCache = writesCache.child(childName);
         events = events.concat(
-            this.applyOperationHelper_(childOperation, childTree, childServerCache, childWritesCache));
+          this.applyOperationHelper_(
+            childOperation,
+            childTree,
+            childServerCache,
+            childWritesCache
+          )
+        );
       }
 
       if (syncPoint) {
-        events = events.concat(syncPoint.applyOperation(operation, writesCache, serverCache));
+        events = events.concat(
+          syncPoint.applyOperation(operation, writesCache, serverCache)
+        );
       }
 
       return events;
     }
-  };
+  }
 
   /**
    * Recursive helper for applyOperationToSyncPoints_
@@ -719,8 +831,12 @@ export class SyncTree {
    * @param {!WriteTreeRef} writesCache
    * @return {!Array.<!Event>}
    */
-  applyOperationDescendantsHelper_(operation, syncPointTree,
-                                                                        serverCache, writesCache) {
+  applyOperationDescendantsHelper_(
+    operation,
+    syncPointTree,
+    serverCache,
+    writesCache
+  ) {
     var syncPoint = syncPointTree.get(Path.Empty);
 
     // If we don't have cached server data, see if we can get it from this SyncPoint.
@@ -731,19 +847,29 @@ export class SyncTree {
     var events = [];
     var self = this;
     syncPointTree.children.inorderTraversal(function(childName, childTree) {
-      var childServerCache = serverCache ? serverCache.getImmediateChild(childName) : null;
+      var childServerCache = serverCache
+        ? serverCache.getImmediateChild(childName)
+        : null;
       var childWritesCache = writesCache.child(childName);
       var childOperation = operation.operationForChild(childName);
       if (childOperation) {
         events = events.concat(
-            self.applyOperationDescendantsHelper_(childOperation, childTree, childServerCache, childWritesCache));
+          self.applyOperationDescendantsHelper_(
+            childOperation,
+            childTree,
+            childServerCache,
+            childWritesCache
+          )
+        );
       }
     });
 
     if (syncPoint) {
-      events = events.concat(syncPoint.applyOperation(operation, writesCache, serverCache));
+      events = events.concat(
+        syncPoint.applyOperation(operation, writesCache, serverCache)
+      );
     }
 
     return events;
-  };
+  }
 }

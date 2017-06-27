@@ -23,37 +23,39 @@ export function nodeFromJSON(json, priority?) {
   }
 
   priority = priority !== undefined ? priority : null;
-  if (typeof json === 'object' && '.priority' in json) {
-    priority = json['.priority'];
+  if (typeof json === "object" && ".priority" in json) {
+    priority = json[".priority"];
   }
-  
+
   assert(
-      priority === null ||
-      typeof priority === 'string' ||
-      typeof priority === 'number' ||
-      (typeof priority === 'object' && '.sv' in priority),
-    'Invalid priority type found: ' + (typeof priority)
+    priority === null ||
+      typeof priority === "string" ||
+      typeof priority === "number" ||
+      (typeof priority === "object" && ".sv" in priority),
+    "Invalid priority type found: " + typeof priority
   );
 
-  if (typeof json === 'object' && '.value' in json && json['.value'] !== null) {
-    json = json['.value'];
+  if (typeof json === "object" && ".value" in json && json[".value"] !== null) {
+    json = json[".value"];
   }
 
   // Valid leaf nodes include non-objects or server-value wrapper objects
-  if (typeof json !== 'object' || '.sv' in json) {
-    var jsonLeaf = /** @type {!(string|number|boolean|Object)} */ (json);
+  if (typeof json !== "object" || ".sv" in json) {
+    var jsonLeaf /** @type {!(string|number|boolean|Object)} */ = json;
     return new LeafNode(jsonLeaf, nodeFromJSON(priority));
   }
 
   if (!(json instanceof Array) && USE_HINZE) {
     var children = [];
     var childrenHavePriority = false;
-    var hinzeJsonObj = /** @type {!Object} */ (json);
+    var hinzeJsonObj /** @type {!Object} */ = json;
     forEach(hinzeJsonObj, function(key, child) {
-      if (typeof key !== 'string' || key.substring(0, 1) !== '.') { // Ignore metadata nodes
+      if (typeof key !== "string" || key.substring(0, 1) !== ".") {
+        // Ignore metadata nodes
         var childNode = nodeFromJSON(hinzeJsonObj[key]);
         if (!childNode.isEmpty()) {
-          childrenHavePriority = childrenHavePriority || !childNode.getPriority().isEmpty();
+          childrenHavePriority =
+            childrenHavePriority || !childNode.getPriority().isEmpty();
           children.push(new NamedNode(key, childNode));
         }
       }
@@ -63,24 +65,38 @@ export function nodeFromJSON(json, priority?) {
       return ChildrenNode.EMPTY_NODE;
     }
 
-    var childSet = /**@type {!SortedMap.<string, !Node>} */ (buildChildSet(
-      children, NAME_ONLY_COMPARATOR, function(namedNode) { return namedNode.name; },
+    var childSet /**@type {!SortedMap.<string, !Node>} */ = buildChildSet(
+      children,
+      NAME_ONLY_COMPARATOR,
+      function(namedNode) {
+        return namedNode.name;
+      },
       NAME_COMPARATOR
-    ));
+    );
     if (childrenHavePriority) {
       var sortedChildSet = buildChildSet(children, PRIORITY_INDEX.getCompare());
-      return new ChildrenNode(childSet, nodeFromJSON(priority),
-        new IndexMap({'.priority': sortedChildSet}, {'.priority': PRIORITY_INDEX}));
+      return new ChildrenNode(
+        childSet,
+        nodeFromJSON(priority),
+        new IndexMap(
+          { ".priority": sortedChildSet },
+          { ".priority": PRIORITY_INDEX }
+        )
+      );
     } else {
-      return new ChildrenNode(childSet, nodeFromJSON(priority),
-          IndexMap.Default);
+      return new ChildrenNode(
+        childSet,
+        nodeFromJSON(priority),
+        IndexMap.Default
+      );
     }
   } else {
     var node = ChildrenNode.EMPTY_NODE;
-    var jsonObj = /** @type {!Object} */ (json);
+    var jsonObj /** @type {!Object} */ = json;
     forEach(jsonObj, function(key, childData) {
       if (contains(jsonObj, key)) {
-        if (key.substring(0, 1) !== '.') { // ignore metadata nodes.
+        if (key.substring(0, 1) !== ".") {
+          // ignore metadata nodes.
           var childNode = nodeFromJSON(childData);
           if (childNode.isLeafNode() || !childNode.isEmpty())
             node = node.updateImmediateChild(key, childNode);
@@ -90,6 +106,6 @@ export function nodeFromJSON(json, priority?) {
 
     return node.updatePriority(nodeFromJSON(priority));
   }
-};
+}
 
 setNodeFromJSON(nodeFromJSON);

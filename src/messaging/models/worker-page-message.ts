@@ -13,20 +13,20 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-'use strict';
+"use strict";
 
 // These fields are strings to prevent closure from thinking goog.getMsg
 // should be used to initialise the values
 const PARAMS = {
-  TYPE_OF_MSG: 'firebase-messaging-msg-type',
-  DATA: 'firebase-messaging-msg-data'
+  TYPE_OF_MSG: "firebase-messaging-msg-type",
+  DATA: "firebase-messaging-msg-data"
 };
 
 // This value isn't using the TYPE_OF_MSG short hand as closure
 // expects the variable to be defined via goog.getMsg
 const msgType = {
-  PUSH_MSG_RECEIVED: 'push-msg-received',
-  NOTIFICATION_CLICKED: 'notification-clicked'
+  PUSH_MSG_RECEIVED: "push-msg-received",
+  NOTIFICATION_CLICKED: "notification-clicked"
 };
 
 const createNewMsg = (msgType, msgData) => {

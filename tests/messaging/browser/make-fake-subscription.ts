@@ -24,7 +24,7 @@ FakeSubscription.prototype = PushSubscription.prototype;
  * @param  {string} string String to convert to ArrayBuffer.
  * @return {ArrayBuffer} ArrayBuffer containing bytes from supplied string.
  */
-const stringToArrayBuffer = (string) => {
+const stringToArrayBuffer = string => {
   // String char codes are 16 bits (See MDN).
   const arrayBuffer = new ArrayBuffer(string.length * 2);
   const bufferView = new Uint16Array(arrayBuffer);
@@ -43,34 +43,41 @@ export default function(options = {}) {
   const fakeSub = new FakeSubscription();
 
   // Set endpoint
-  const endpoint = (options as any).endpoint ?
-    (options as any).endpoint :
-    'https://example-push-endpoint.com/';
+  const endpoint = (options as any).endpoint
+    ? (options as any).endpoint
+    : "https://example-push-endpoint.com/";
 
-  Object.defineProperty(fakeSub, 'endpoint', {
+  Object.defineProperty(fakeSub, "endpoint", {
     value: endpoint
   });
 
   // Set getKey
-  Object.defineProperty(fakeSub, 'getKey', {
-    value: (keyName) => {
+  Object.defineProperty(fakeSub, "getKey", {
+    value: keyName => {
       let keyString = null;
-      switch(keyName) {
-        case 'auth': {
-          keyString = (options as any).auth ? (options as any).auth : 'auth-secret';
+      switch (keyName) {
+        case "auth": {
+          keyString = (options as any).auth
+            ? (options as any).auth
+            : "auth-secret";
           break;
         }
-        case 'p256dh': {
-          keyString = (options as any).p256dh ? (options as any).p256dh : 'the-user-public-key';
+        case "p256dh": {
+          keyString = (options as any).p256dh
+            ? (options as any).p256dh
+            : "the-user-public-key";
           break;
         }
         default:
-          throw new Error('Error from MakeFakeSubscription, unexpected ' +
-            'getKey() key name: ' + keyName);
+          throw new Error(
+            "Error from MakeFakeSubscription, unexpected " +
+              "getKey() key name: " +
+              keyName
+          );
       }
       return stringToArrayBuffer(keyString);
     }
   });
 
   return fakeSub;
-};
+}

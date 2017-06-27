@@ -18,17 +18,17 @@
  * We don't include goog.fs because it pulls in a bunch of Deferred code that
  * bloats the size of the released binary.
  */
-import * as array from './array';
-import * as type from './type';
+import * as array from "./array";
+import * as type from "./type";
 
 declare var IBlobBuilder;
 declare var BlobBuilder;
 declare var WebKitBlobBuilder;
 
-function getBlobBuilder(): (typeof IBlobBuilder)|undefined {
-  if (typeof BlobBuilder !== 'undefined') {
+function getBlobBuilder(): (typeof IBlobBuilder) | undefined {
+  if (typeof BlobBuilder !== "undefined") {
     return BlobBuilder;
-  } else if (typeof WebKitBlobBuilder !== 'undefined') {
+  } else if (typeof WebKitBlobBuilder !== "undefined") {
     return WebKitBlobBuilder;
   } else {
     return undefined;
@@ -41,7 +41,7 @@ function getBlobBuilder(): (typeof IBlobBuilder)|undefined {
  * @param var_args The values that will make up the resulting blob.
  * @return The blob.
  */
-export function getBlob(...var_args: (string|Blob|ArrayBuffer)[]): Blob {
+export function getBlob(...var_args: (string | Blob | ArrayBuffer)[]): Blob {
   let BlobBuilder = getBlobBuilder();
   if (BlobBuilder !== undefined) {
     let bb = new BlobBuilder();
@@ -53,7 +53,7 @@ export function getBlob(...var_args: (string|Blob|ArrayBuffer)[]): Blob {
     if (type.isNativeBlobDefined()) {
       return new Blob(var_args);
     } else {
-      throw Error('This browser doesn\'t seem to support creating Blobs');
+      throw Error("This browser doesn't seem to support creating Blobs");
     }
   }
 }
@@ -67,7 +67,7 @@ export function getBlob(...var_args: (string|Blob|ArrayBuffer)[]): Blob {
  * @param end Index of the ending byte.
  * @return The blob slice or null if not supported.
  */
-export function sliceBlob(blob: Blob, start: number, end: number): Blob|null {
+export function sliceBlob(blob: Blob, start: number, end: number): Blob | null {
   if ((blob as any).webkitSlice) {
     return (blob as any).webkitSlice(start, end);
   } else if ((blob as any).mozSlice) {

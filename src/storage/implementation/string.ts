@@ -13,18 +13,18 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-import * as errorsExports from './error';
-import {errors} from './error';
+import * as errorsExports from "./error";
+import { errors } from "./error";
 
 /**
  * @enum {string}
  */
 export type StringFormat = string;
 export const StringFormat = {
-  RAW: 'raw',
-  BASE64: 'base64',
-  BASE64URL: 'base64url',
-  DATA_URL: 'data_url'
+  RAW: "raw",
+  BASE64: "base64",
+  BASE64URL: "base64url",
+  DATA_URL: "data_url"
 };
 
 export function formatValidator(stringFormat: string) {
@@ -35,9 +35,15 @@ export function formatValidator(stringFormat: string) {
     case StringFormat.DATA_URL:
       return;
     default:
-      throw 'Expected one of the event types: [' + StringFormat.RAW + ', ' +
-          StringFormat.BASE64 + ', ' + StringFormat.BASE64URL + ', ' +
-          StringFormat.DATA_URL + '].';
+      throw "Expected one of the event types: [" +
+        StringFormat.RAW +
+        ", " +
+        StringFormat.BASE64 +
+        ", " +
+        StringFormat.BASE64URL +
+        ", " +
+        StringFormat.DATA_URL +
+        "].";
   }
 }
 
@@ -45,15 +51,17 @@ export function formatValidator(stringFormat: string) {
  * @struct
  */
 export class StringData {
-  contentType: string|null;
+  contentType: string | null;
 
-  constructor(public data: Uint8Array, opt_contentType?: string|null) {
+  constructor(public data: Uint8Array, opt_contentType?: string | null) {
     this.contentType = opt_contentType || null;
   }
 }
 
 export function dataFromString(
-    format: StringFormat, string: string): StringData {
+  format: StringFormat,
+  string: string
+): StringData {
   switch (format) {
     case StringFormat.RAW:
       return new StringData(utf8Bytes_(string));
@@ -76,29 +84,33 @@ export function utf8Bytes_(string: string): Uint8Array {
       b.push(c);
     } else {
       if (c <= 2047) {
-        b.push(192 | c >> 6, 128 | c & 63);
+        b.push(192 | (c >> 6), 128 | (c & 63));
       } else {
         if ((c & 64512) == 55296) {
           // The start of a surrogate pair.
-          let valid = i < string.length - 1 &&
-              (string.charCodeAt(i + 1) & 64512) == 56320;
+          let valid =
+            i < string.length - 1 &&
+            (string.charCodeAt(i + 1) & 64512) == 56320;
           if (!valid) {
             // The second surrogate wasn't there.
             b.push(239, 191, 189);
           } else {
             let hi = c;
             let lo = string.charCodeAt(++i);
-            c = 65536 | (hi & 1023) << 10 | lo & 1023;
+            c = 65536 | ((hi & 1023) << 10) | (lo & 1023);
             b.push(
-                240 | c >> 18, 128 | c >> 12 & 63, 128 | c >> 6 & 63,
-                128 | c & 63);
+              240 | (c >> 18),
+              128 | ((c >> 12) & 63),
+              128 | ((c >> 6) & 63),
+              128 | (c & 63)
+            );
           }
         } else {
           if ((c & 64512) == 56320) {
             // Invalid low surrogate.
             b.push(239, 191, 189);
           } else {
-            b.push(224 | c >> 12, 128 | c >> 6 & 63, 128 | c & 63);
+            b.push(224 | (c >> 12), 128 | ((c >> 6) & 63), 128 | (c & 63));
           }
         }
       }
@@ -113,7 +125,9 @@ export function percentEncodedBytes_(string: string): Uint8Array {
     decoded = decodeURIComponent(string);
   } catch (e) {
     throw errorsExports.invalidFormat(
-        StringFormat.DATA_URL, 'Malformed data URL.');
+      StringFormat.DATA_URL,
+      "Malformed data URL."
+    );
   }
   return utf8Bytes_(decoded);
 }
@@ -121,28 +135,30 @@ export function percentEncodedBytes_(string: string): Uint8Array {
 export function base64Bytes_(format: StringFormat, string: string): Uint8Array {
   switch (format) {
     case StringFormat.BASE64: {
-      let hasMinus = string.indexOf('-') !== -1;
-      let hasUnder = string.indexOf('_') !== -1;
+      let hasMinus = string.indexOf("-") !== -1;
+      let hasUnder = string.indexOf("_") !== -1;
       if (hasMinus || hasUnder) {
-        let invalidChar = hasMinus ? '-' : '_';
+        let invalidChar = hasMinus ? "-" : "_";
         throw errorsExports.invalidFormat(
-            format,
-            'Invalid character \'' + invalidChar +
-                '\' found: is it base64url encoded?');
+          format,
+          "Invalid character '" +
+            invalidChar +
+            "' found: is it base64url encoded?"
+        );
       }
       break;
     }
     case StringFormat.BASE64URL: {
-      let hasPlus = string.indexOf('+') !== -1;
-      let hasSlash = string.indexOf('/') !== -1;
+      let hasPlus = string.indexOf("+") !== -1;
+      let hasSlash = string.indexOf("/") !== -1;
       if (hasPlus || hasSlash) {
-        let invalidChar = hasPlus ? '+' : '/';
+        let invalidChar = hasPlus ? "+" : "/";
         throw errorsExports.invalidFormat(
-            format,
-            'Invalid character \'' + invalidChar +
-                '\' found: is it base64 encoded?');
+          format,
+          "Invalid character '" + invalidChar + "' found: is it base64 encoded?"
+        );
       }
-      string = string.replace(/-/g, '+').replace(/_/g, '/');
+      string = string.replace(/-/g, "+").replace(/_/g, "/");
       break;
     }
   }
@@ -150,7 +166,7 @@ export function base64Bytes_(format: StringFormat, string: string): Uint8Array {
   try {
     bytes = atob(string);
   } catch (e) {
-    throw errorsExports.invalidFormat(format, 'Invalid character found');
+    throw errorsExports.invalidFormat(format, "Invalid character found");
   }
   let array = new Uint8Array(bytes.length);
   for (let i = 0; i < bytes.length; i++) {
@@ -164,24 +180,25 @@ export function base64Bytes_(format: StringFormat, string: string): Uint8Array {
  */
 class DataURLParts {
   base64: boolean = false;
-  contentType: string|null = null;
+  contentType: string | null = null;
   rest: string;
 
   constructor(dataURL: string) {
     let matches = dataURL.match(/^data:([^,]+)?,/);
     if (matches === null) {
       throw errorsExports.invalidFormat(
-          StringFormat.DATA_URL,
-          'Must be formatted \'data:[<mediatype>][;base64],<data>');
+        StringFormat.DATA_URL,
+        "Must be formatted 'data:[<mediatype>][;base64],<data>"
+      );
     }
     let middle = matches[1] || null;
     if (middle != null) {
-      this.base64 = endsWith(middle, ';base64');
-      this.contentType = this.base64 ?
-          middle.substring(0, middle.length - ';base64'.length) :
-          middle;
+      this.base64 = endsWith(middle, ";base64");
+      this.contentType = this.base64
+        ? middle.substring(0, middle.length - ";base64".length)
+        : middle;
     }
-    this.rest = dataURL.substring(dataURL.indexOf(',') + 1);
+    this.rest = dataURL.substring(dataURL.indexOf(",") + 1);
   }
 }
 
@@ -194,7 +211,7 @@ export function dataURLBytes_(string: string): Uint8Array {
   }
 }
 
-export function dataURLContentType_(string: string): string|null {
+export function dataURLContentType_(string: string): string | null {
   let parts = new DataURLParts(string);
   return parts.contentType;
 }

@@ -1,12 +1,6 @@
-import { assert } from '../../../utils/assert'
-import { 
-  doubleToIEEE754String,
-  sha1
-} from "../util/util";
-import {
-  priorityHashText,
-  validatePriorityNode
-} from "./snap";
+import { assert } from "../../../utils/assert";
+import { doubleToIEEE754String, sha1 } from "../util/util";
+import { priorityHashText, validatePriorityNode } from "./snap";
 import { Node } from "./Node";
 
 let __childrenNodeConstructor;
@@ -29,7 +23,7 @@ export class LeafNode implements Node {
    * @type {Array.<!string>}
    * @const
    */
-  static VALUE_TYPE_ORDER = ['object', 'boolean', 'number', 'string'];
+  static VALUE_TYPE_ORDER = ["object", "boolean", "number", "string"];
 
   value_;
   priorityNode_;
@@ -47,23 +41,26 @@ export class LeafNode implements Node {
      * @type {!(string|number|boolean|Object)}
      */
     this.value_ = value;
-    assert(this.value_ !== undefined && this.value_ !== null,
-        "LeafNode shouldn't be created with null/undefined value.");
+    assert(
+      this.value_ !== undefined && this.value_ !== null,
+      "LeafNode shouldn't be created with null/undefined value."
+    );
 
     /**
      * @private
      * @const
      * @type {!Node}
      */
-    this.priorityNode_ = opt_priorityNode || LeafNode.__childrenNodeConstructor.EMPTY_NODE;
+    this.priorityNode_ =
+      opt_priorityNode || LeafNode.__childrenNodeConstructor.EMPTY_NODE;
     validatePriorityNode(this.priorityNode_);
 
     this.lazyHash_ = null;
   }
 
   /** @inheritDoc */
-  isLeafNode() { 
-    return true; 
+  isLeafNode() {
+    return true;
   }
 
   /** @inheritDoc */
@@ -79,7 +76,7 @@ export class LeafNode implements Node {
   /** @inheritDoc */
   getImmediateChild(childName) {
     // Hack to treat priority as a regular child
-    if (childName === '.priority') {
+    if (childName === ".priority") {
       return this.priorityNode_;
     } else {
       return LeafNode.__childrenNodeConstructor.EMPTY_NODE;
@@ -90,7 +87,7 @@ export class LeafNode implements Node {
   getChild(path) {
     if (path.isEmpty()) {
       return this;
-    } else if (path.getFront() === '.priority') {
+    } else if (path.getFront() === ".priority") {
       return this.priorityNode_;
     } else {
       return LeafNode.__childrenNodeConstructor.EMPTY_NODE;
@@ -111,14 +108,14 @@ export class LeafNode implements Node {
 
   /** @inheritDoc */
   updateImmediateChild(childName, newChildNode) {
-    if (childName === '.priority') {
+    if (childName === ".priority") {
       return this.updatePriority(newChildNode);
-    } else if (newChildNode.isEmpty() && childName !== '.priority') {
+    } else if (newChildNode.isEmpty() && childName !== ".priority") {
       return this;
     } else {
       return LeafNode.__childrenNodeConstructor.EMPTY_NODE
-          .updateImmediateChild(childName, newChildNode)
-          .updatePriority(this.priorityNode_);
+        .updateImmediateChild(childName, newChildNode)
+        .updatePriority(this.priorityNode_);
     }
   }
 
@@ -127,13 +124,21 @@ export class LeafNode implements Node {
     var front = path.getFront();
     if (front === null) {
       return newChildNode;
-    } else if (newChildNode.isEmpty() && front !== '.priority') {
+    } else if (newChildNode.isEmpty() && front !== ".priority") {
       return this;
     } else {
-      assert(front !== '.priority' || path.getLength() === 1,
-          '.priority must be the last token in a path');
+      assert(
+        front !== ".priority" || path.getLength() === 1,
+        ".priority must be the last token in a path"
+      );
 
-      return this.updateImmediateChild(front, LeafNode.__childrenNodeConstructor.EMPTY_NODE.updateChild(path.popFront(), newChildNode));
+      return this.updateImmediateChild(
+        front,
+        LeafNode.__childrenNodeConstructor.EMPTY_NODE.updateChild(
+          path.popFront(),
+          newChildNode
+        )
+      );
     }
   }
 
@@ -157,29 +162,35 @@ export class LeafNode implements Node {
    */
   val(opt_exportFormat) {
     if (opt_exportFormat && !this.getPriority().isEmpty())
-      return { '.value': this.getValue(), '.priority' : this.getPriority().val() };
-    else
-      return this.getValue();
+      return {
+        ".value": this.getValue(),
+        ".priority": this.getPriority().val()
+      };
+    else return this.getValue();
   }
 
   /** @inheritDoc */
   hash() {
     if (this.lazyHash_ === null) {
-      var toHash = '';
+      var toHash = "";
       if (!this.priorityNode_.isEmpty())
-        toHash += 'priority:' + priorityHashText(
-            /** @type {(number|string)} */ (this.priorityNode_.val())) + ':';
+        toHash +=
+          "priority:" +
+          priorityHashText(
+            /** @type {(number|string)} */ this.priorityNode_.val()
+          ) +
+          ":";
 
       var type = typeof this.value_;
-      toHash += type + ':';
-      if (type === 'number') {
-        toHash += doubleToIEEE754String(/** @type {number} */ (this.value_));
+      toHash += type + ":";
+      if (type === "number") {
+        toHash += doubleToIEEE754String /** @type {number} */(this.value_);
       } else {
         toHash += this.value_;
       }
       this.lazyHash_ = sha1(toHash);
     }
-    return /**@type {!string} */ (this.lazyHash_);
+    return /**@type {!string} */ this.lazyHash_;
   }
 
   /**
@@ -199,8 +210,8 @@ export class LeafNode implements Node {
     } else if (other instanceof LeafNode.__childrenNodeConstructor) {
       return -1;
     } else {
-      assert(other.isLeafNode(), 'Unknown node type');
-      return this.compareToLeafNode_(/** @type {!LeafNode} */ (other));
+      assert(other.isLeafNode(), "Unknown node type");
+      return this.compareToLeafNode_ /** @type {!LeafNode} */(other);
     }
   }
 
@@ -215,11 +226,11 @@ export class LeafNode implements Node {
     var thisLeafType = typeof this.value_;
     var otherIndex = LeafNode.VALUE_TYPE_ORDER.indexOf(otherLeafType);
     var thisIndex = LeafNode.VALUE_TYPE_ORDER.indexOf(thisLeafType);
-    assert(otherIndex >= 0, 'Unknown leaf type: ' + otherLeafType);
-    assert(thisIndex >= 0, 'Unknown leaf type: ' + thisLeafType);
+    assert(otherIndex >= 0, "Unknown leaf type: " + otherLeafType);
+    assert(thisIndex >= 0, "Unknown leaf type: " + thisLeafType);
     if (otherIndex === thisIndex) {
       // Same type, compare values
-      if (thisLeafType === 'object') {
+      if (thisLeafType === "object") {
         // Deferred value nodes are all equal, but we should also never get to this point...
         return 0;
       } else {
@@ -260,12 +271,14 @@ export class LeafNode implements Node {
      */
     if (other === this) {
       return true;
-    }
-    else if (other.isLeafNode()) {
-      var otherLeaf = /** @type {!LeafNode} */ (other);
-      return this.value_ === otherLeaf.value_ && this.priorityNode_.equals(otherLeaf.priorityNode_);
+    } else if (other.isLeafNode()) {
+      var otherLeaf /** @type {!LeafNode} */ = other;
+      return (
+        this.value_ === otherLeaf.value_ &&
+        this.priorityNode_.equals(otherLeaf.priorityNode_)
+      );
     } else {
       return false;
     }
   }
-}; // end LeafNode
+} // end LeafNode

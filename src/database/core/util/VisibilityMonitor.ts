@@ -12,22 +12,25 @@ export class VisibilityMonitor extends EventEmitter {
   }
 
   constructor() {
-    super(['visible']);
+    super(["visible"]);
     var hidden, visibilityChange;
-    if (typeof document !== 'undefined' && typeof document.addEventListener !== 'undefined') {
-      if (typeof document['hidden'] !== 'undefined') {
+    if (
+      typeof document !== "undefined" &&
+      typeof document.addEventListener !== "undefined"
+    ) {
+      if (typeof document["hidden"] !== "undefined") {
         // Opera 12.10 and Firefox 18 and later support
-        visibilityChange = 'visibilitychange';
-        hidden = 'hidden';
-      } else if (typeof document['mozHidden'] !== 'undefined') {
-        visibilityChange = 'mozvisibilitychange';
-        hidden = 'mozHidden';
-      } else if (typeof document['msHidden'] !== 'undefined') {
-        visibilityChange = 'msvisibilitychange';
-        hidden = 'msHidden';
-      } else if (typeof document['webkitHidden'] !== 'undefined') {
-        visibilityChange = 'webkitvisibilitychange';
-        hidden = 'webkitHidden';
+        visibilityChange = "visibilitychange";
+        hidden = "hidden";
+      } else if (typeof document["mozHidden"] !== "undefined") {
+        visibilityChange = "mozvisibilitychange";
+        hidden = "mozHidden";
+      } else if (typeof document["msHidden"] !== "undefined") {
+        visibilityChange = "msvisibilitychange";
+        hidden = "msHidden";
+      } else if (typeof document["webkitHidden"] !== "undefined") {
+        visibilityChange = "webkitvisibilitychange";
+        hidden = "webkitHidden";
       }
     }
 
@@ -39,13 +42,17 @@ export class VisibilityMonitor extends EventEmitter {
 
     if (visibilityChange) {
       var self = this;
-      document.addEventListener(visibilityChange, function() {
-        var visible = !document[hidden];
-        if (visible !== self.visible_) {
-          self.visible_ = visible;
-          self.trigger('visible', visible);
-        }
-      }, false);
+      document.addEventListener(
+        visibilityChange,
+        function() {
+          var visible = !document[hidden];
+          if (visible !== self.visible_) {
+            self.visible_ = visible;
+            self.trigger("visible", visible);
+          }
+        },
+        false
+      );
     }
   }
 
@@ -54,7 +61,7 @@ export class VisibilityMonitor extends EventEmitter {
    * @return {Array.<boolean>}
    */
   getInitialEvent(eventType) {
-    assert(eventType === 'visible', 'Unknown event type: ' + eventType);
+    assert(eventType === "visible", "Unknown event type: " + eventType);
     return [this.visible_];
   }
-}; // end VisibilityMonitor
+} // end VisibilityMonitor

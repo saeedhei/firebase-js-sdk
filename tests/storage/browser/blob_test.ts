@@ -14,21 +14,21 @@
 * limitations under the License.
 */
 
-import {assert} from 'chai';
-import * as sinon from 'sinon';
-import {FbsBlob} from '../../../src/storage/implementation/blob';
-import * as type from '../../../src/storage/implementation/type';
-import * as testShared from './testshared';
+import { assert } from "chai";
+import * as sinon from "sinon";
+import { FbsBlob } from "../../../src/storage/implementation/blob";
+import * as type from "../../../src/storage/implementation/type";
+import * as testShared from "./testshared";
 
 describe("Firebase Storage > Blob", () => {
   let stubs = [];
   before(() => {
-    const definedStub = sinon.stub(type, 'isNativeBlobDefined');
+    const definedStub = sinon.stub(type, "isNativeBlobDefined");
     definedStub.returns(false);
     stubs.push(definedStub);
 
-    const blobStub = sinon.stub(window, 'Blob');
-    blobStub.throws(Error('I don\'t exist'));
+    const blobStub = sinon.stub(window, "Blob");
+    blobStub.throws(Error("I don't exist"));
     stubs.push(blobStub);
   });
   after(() => {
@@ -41,13 +41,32 @@ describe("Firebase Storage > Blob", () => {
   it("Slicing works", () => {
     const blob = new FbsBlob(new Uint8Array([1, 2, 3, 4, 5, 6, 7]));
     const sliced = blob.slice(1, 5);
-    testShared.assertUint8ArrayEquals(sliced.uploadData() as Uint8Array, new Uint8Array([2, 3, 4, 5]));
+    testShared.assertUint8ArrayEquals(
+      sliced.uploadData() as Uint8Array,
+      new Uint8Array([2, 3, 4, 5])
+    );
   });
   it("Blobs are merged with strings correctly", () => {
     const blob = new FbsBlob(new Uint8Array([1, 2, 3, 4]));
-    const merged = FbsBlob.getBlob('what', blob, '\ud83d\ude0a ');
-    testShared.assertUint8ArrayEquals(merged.uploadData() as Uint8Array,
-        new Uint8Array([0x77, 0x68, 0x61, 0x74, 0x1, 0x2, 0x3, 0x4, 0xF0, 0x9F, 0x98, 0x8A, 0x20]));
+    const merged = FbsBlob.getBlob("what", blob, "\ud83d\ude0a ");
+    testShared.assertUint8ArrayEquals(
+      merged.uploadData() as Uint8Array,
+      new Uint8Array([
+        0x77,
+        0x68,
+        0x61,
+        0x74,
+        0x1,
+        0x2,
+        0x3,
+        0x4,
+        0xf0,
+        0x9f,
+        0x98,
+        0x8a,
+        0x20
+      ])
+    );
   });
 
   it("Respects windowed views of ArrayBuffers when merging", () => {

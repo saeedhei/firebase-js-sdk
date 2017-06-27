@@ -11,13 +11,13 @@ class Base12Num {
   count;
   current_;
   bits_;
-  
+
   constructor(length) {
     var logBase2 = function(num) {
-      return parseInt((Math.log(num) / LOG_2 as any), 10);
+      return parseInt((Math.log(num) / LOG_2) as any, 10);
     };
     var bitMask = function(bits) {
-      return parseInt(Array(bits + 1).join('1'), 2);
+      return parseInt(Array(bits + 1).join("1"), 2);
     };
     this.count = logBase2(length + 1);
     this.current_ = this.count - 1;
@@ -33,7 +33,7 @@ class Base12Num {
     var result = !(this.bits_ & (0x1 << this.current_));
     this.current_--;
     return result;
-  };
+  }
 }
 
 /**
@@ -63,7 +63,7 @@ export const buildChildSet = function(childList, cmp, keyFn?, mapSortFn?) {
       var key = keyFn ? keyFn(namedNode) : namedNode;
       return new LLRBNode(key, namedNode.node, LLRBNode.BLACK, null, null);
     } else {
-      var middle = parseInt((length / 2 as any), 10) + low;
+      var middle = parseInt((length / 2) as any, 10) + low;
       var left = buildBalancedTree(low, middle);
       var right = buildBalancedTree(middle + 1, high);
       namedNode = childList[middle];

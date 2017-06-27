@@ -23,35 +23,35 @@ export class ValueIndex extends Index {
     } else {
       return indexCmp;
     }
-  };
+  }
 
   /**
    * @inheritDoc
    */
   isDefinedOn(node) {
     return true;
-  };
+  }
 
   /**
    * @inheritDoc
    */
   indexedValueChanged(oldNode, newNode) {
     return !oldNode.equals(newNode);
-  };
+  }
 
   /**
    * @inheritDoc
    */
   minPost() {
     return (NamedNode as any).MIN;
-  };
+  }
 
   /**
    * @inheritDoc
    */
   maxPost() {
     return (NamedNode as any).MAX;
-  };
+  }
 
   /**
    * @param {*} indexValue
@@ -61,14 +61,14 @@ export class ValueIndex extends Index {
   makePost(indexValue, name) {
     var valueNode = nodeFromJSON(indexValue);
     return new NamedNode(name, valueNode);
-  };
+  }
 
   /**
    * @return {!string} String representation for inclusion in a query spec
    */
   toString() {
-    return '.value';
-  };
-};
+    return ".value";
+  }
+}
 
 export const VALUE_INDEX = new ValueIndex();

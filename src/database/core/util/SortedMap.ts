@@ -12,13 +12,11 @@
  * Invariant 3: Only the left child can be red (left leaning)
  */
 
-
 // TODO: There are some improvements I'd like to make to improve memory / perf:
 //  * Create two prototypes, LLRedNode and LLBlackNode, instead of storing a
 //    color property in every node.
 // TODO: It would also be good (and possibly necessary) to create a base
 // interface for LLRBNode and LLRBEmptyNode.
-
 
 /**
  * An iterator over an LLRBNode.
@@ -85,14 +83,13 @@ export class SortedMapIterator {
   }
 
   getNext() {
-    if (this.nodeStack_.length === 0)
-      return null;
+    if (this.nodeStack_.length === 0) return null;
 
-    var node = this.nodeStack_.pop(), result;
+    var node = this.nodeStack_.pop(),
+      result;
     if (this.resultGenerator_)
       result = this.resultGenerator_(node.key, node.value);
-    else
-      result = {key: node.key, value: node.value};
+    else result = { key: node.key, value: node.value };
 
     if (this.isReverse_) {
       node = node.left;
@@ -116,8 +113,7 @@ export class SortedMapIterator {
   }
 
   peek() {
-    if (this.nodeStack_.length === 0)
-      return null;
+    if (this.nodeStack_.length === 0) return null;
 
     var node = this.nodeStack_[this.nodeStack_.length - 1];
     if (this.resultGenerator_) {
@@ -126,8 +122,7 @@ export class SortedMapIterator {
       return { key: node.key, value: node.value };
     }
   }
-}; // end SortedMapIterator
-
+} // end SortedMapIterator
 
 /**
  * Represents a node in a Left-leaning Red-Black tree.
@@ -170,11 +165,12 @@ export class LLRBNode {
    */
   copy(key, value, color, left, right) {
     return new LLRBNode(
-        (key != null) ? key : this.key,
-        (value != null) ? value : this.value,
-        (color != null) ? color : this.color,
-        (left != null) ? left : this.left,
-        (right != null) ? right : this.right);
+      key != null ? key : this.key,
+      value != null ? value : this.value,
+      color != null ? color : this.color,
+      left != null ? left : this.left,
+      right != null ? right : this.right
+    );
   }
 
   /**
@@ -201,9 +197,11 @@ export class LLRBNode {
    *   value returned by action
    */
   inorderTraversal(action) {
-    return this.left.inorderTraversal(action) ||
-        action(this.key, this.value) ||
-        this.right.inorderTraversal(action);
+    return (
+      this.left.inorderTraversal(action) ||
+      action(this.key, this.value) ||
+      this.right.inorderTraversal(action)
+    );
   }
 
   /**
@@ -215,9 +213,11 @@ export class LLRBNode {
    * @return {*} True if traversal was aborted.
    */
   reverseTraversal(action) {
-    return this.right.reverseTraversal(action) ||
-        action(this.key, this.value) ||
-        this.left.reverseTraversal(action);
+    return (
+      this.right.reverseTraversal(action) ||
+      action(this.key, this.value) ||
+      this.left.reverseTraversal(action)
+    );
   }
 
   /**
@@ -266,7 +266,13 @@ export class LLRBNode {
     } else if (cmp === 0) {
       n = n.copy(null, value, null, null, null);
     } else {
-      n = n.copy(null, null, null, null, n.right.insert(key, value, comparator));
+      n = n.copy(
+        null,
+        null,
+        null,
+        null,
+        n.right.insert(key, value, comparator)
+      );
     }
     return n.fixUp_();
   }
@@ -281,8 +287,7 @@ export class LLRBNode {
       return SortedMap.EMPTY_NODE_;
     }
     n = this;
-    if (!n.left.isRed_() && !n.left.left.isRed_())
-      n = n.moveRedLeft_();
+    if (!n.left.isRed_() && !n.left.left.isRed_()) n = n.moveRedLeft_();
     n = n.copy(null, null, null, n.left.removeMin_(), null);
     return n.fixUp_();
   }
@@ -310,8 +315,13 @@ export class LLRBNode {
           return SortedMap.EMPTY_NODE_;
         } else {
           smallest = n.right.min_();
-          n = n.copy(smallest.key, smallest.value, null, null,
-                     n.right.removeMin_());
+          n = n.copy(
+            smallest.key,
+            smallest.value,
+            null,
+            null,
+            n.right.removeMin_()
+          );
         }
       }
       n = n.copy(null, null, null, null, n.right.remove(key, comparator));
@@ -420,22 +430,23 @@ export class LLRBNode {
   check_() {
     var blackDepth;
     if (this.isRed_() && this.left.isRed_()) {
-      throw new Error('Red node has red child(' + this.key + ',' +
-                      this.value + ')');
+      throw new Error(
+        "Red node has red child(" + this.key + "," + this.value + ")"
+      );
     }
     if (this.right.isRed_()) {
-      throw new Error('Right child of (' + this.key + ',' +
-                      this.value + ') is red');
+      throw new Error(
+        "Right child of (" + this.key + "," + this.value + ") is red"
+      );
     }
     blackDepth = this.left.check_();
     if (blackDepth !== this.right.check_()) {
-      throw new Error('Black depths differ');
+      throw new Error("Black depths differ");
     } else {
       return blackDepth + (this.isRed_() ? 0 : 1);
     }
   }
-}; // end LLRBNode
-
+} // end LLRBNode
 
 /**
  * Represents an empty node (a leaf node in the Red-Black Tree).
@@ -533,14 +544,18 @@ export class LLRBEmptyNode {
    * @private
    * @return {number} Not sure what this returns exactly. :-).
    */
-  check_() { return 0; }
+  check_() {
+    return 0;
+  }
 
   /**
    * @private
    * @return {boolean} Whether this node is red.
    */
-  isRed_() { return false; }
-}; // end LLRBEmptyNode
+  isRed_() {
+    return false;
+  }
+} // end LLRBEmptyNode
 
 /**
  * An immutable sorted map implementation, based on a Left-leaning Red-Black
@@ -583,9 +598,11 @@ export class SortedMap {
    */
   insert(key, value) {
     return new SortedMap(
-        this.comparator_,
-        this.root_.insert(key, value, this.comparator_)
-            .copy(null, null, LLRBNode.BLACK, null, null));
+      this.comparator_,
+      this.root_
+        .insert(key, value, this.comparator_)
+        .copy(null, null, LLRBNode.BLACK, null, null)
+    );
   }
 
   /**
@@ -596,9 +613,11 @@ export class SortedMap {
    */
   remove(key) {
     return new SortedMap(
-        this.comparator_,
-        this.root_.remove(key, this.comparator_)
-            .copy(null, null, LLRBNode.BLACK, null, null));
+      this.comparator_,
+      this.root_
+        .remove(key, this.comparator_)
+        .copy(null, null, LLRBNode.BLACK, null, null)
+    );
   }
 
   /**
@@ -630,14 +649,15 @@ export class SortedMap {
    * @return {?K} The predecessor key.
    */
   getPredecessorKey(key) {
-    var cmp, node = this.root_, rightParent = null;
+    var cmp,
+      node = this.root_,
+      rightParent = null;
     while (!node.isEmpty()) {
       cmp = this.comparator_(key, node.key);
       if (cmp === 0) {
         if (!node.left.isEmpty()) {
           node = node.left;
-          while (!node.right.isEmpty())
-            node = node.right;
+          while (!node.right.isEmpty()) node = node.right;
           return node.key;
         } else if (rightParent) {
           return rightParent.key;
@@ -652,7 +672,9 @@ export class SortedMap {
       }
     }
 
-    throw new Error('Attempted to find predecessor key for a nonexistent key.  What gives?');
+    throw new Error(
+      "Attempted to find predecessor key for a nonexistent key.  What gives?"
+    );
   }
 
   /**
@@ -715,34 +737,42 @@ export class SortedMap {
    * @return {SortedMapIterator.<K, V, T>} The iterator.
    */
   getIterator(resultGnerator?) {
-    return new SortedMapIterator(this.root_,
-                                              null,
-                                              this.comparator_,
-                                              false,
-                                              resultGnerator);
+    return new SortedMapIterator(
+      this.root_,
+      null,
+      this.comparator_,
+      false,
+      resultGnerator
+    );
   }
 
   getIteratorFrom(key, resultGnerator?) {
-    return new SortedMapIterator(this.root_,
-                                              key,
-                                              this.comparator_,
-                                              false,
-                                              resultGnerator);
+    return new SortedMapIterator(
+      this.root_,
+      key,
+      this.comparator_,
+      false,
+      resultGnerator
+    );
   }
 
   getReverseIteratorFrom(key, resultGnerator?) {
-    return new SortedMapIterator(this.root_,
-                                              key,
-                                              this.comparator_,
-                                              true,
-                                              resultGnerator);
+    return new SortedMapIterator(
+      this.root_,
+      key,
+      this.comparator_,
+      true,
+      resultGnerator
+    );
   }
 
   getReverseIterator(resultGnerator?) {
-    return new SortedMapIterator(this.root_,
-                                              null,
-                                              this.comparator_,
-                                              true,
-                                              resultGnerator);
+    return new SortedMapIterator(
+      this.root_,
+      null,
+      this.comparator_,
+      true,
+      resultGnerator
+    );
   }
-}; // end SortedMap
+} // end SortedMap

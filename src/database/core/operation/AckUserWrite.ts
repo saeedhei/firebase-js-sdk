@@ -1,7 +1,7 @@
 import { assert } from "../../../utils/assert";
 import { Path } from "../util/Path";
-import { Operation, OperationSource, OperationType } from './Operation';
-import { ImmutableTree } from '../util/ImmutableTree';
+import { Operation, OperationSource, OperationType } from "./Operation";
+import { ImmutableTree } from "../util/ImmutableTree";
 
 export class AckUserWrite implements Operation {
   /** @inheritDoc */
@@ -16,22 +16,31 @@ export class AckUserWrite implements Operation {
    * @param {!ImmutableTree<!boolean>} affectedTree A tree containing true for each affected path. Affected paths can't overlap.
    * @param {!boolean} revert
    */
-  constructor(/**@inheritDoc */ public path: Path,
-              /**@inheritDoc */ public affectedTree: ImmutableTree,
-              /**@inheritDoc */ public revert: boolean) {
-
-  }
+  constructor(
+    /**@inheritDoc */ public path: Path,
+    /**@inheritDoc */ public affectedTree: ImmutableTree,
+    /**@inheritDoc */ public revert: boolean
+  ) {}
 
   /**
    * @inheritDoc
    */
   operationForChild(childName: string): AckUserWrite {
     if (!this.path.isEmpty()) {
-      assert(this.path.getFront() === childName, 'operationForChild called for unrelated child.');
-      return new AckUserWrite(this.path.popFront(), this.affectedTree, this.revert);
+      assert(
+        this.path.getFront() === childName,
+        "operationForChild called for unrelated child."
+      );
+      return new AckUserWrite(
+        this.path.popFront(),
+        this.affectedTree,
+        this.revert
+      );
     } else if (this.affectedTree.value != null) {
-      assert(this.affectedTree.children.isEmpty(),
-        'affectedTree should not have overlapping affected paths.');
+      assert(
+        this.affectedTree.children.isEmpty(),
+        "affectedTree should not have overlapping affected paths."
+      );
       // All child locations are affected as well; just return same operation.
       return this;
     } else {

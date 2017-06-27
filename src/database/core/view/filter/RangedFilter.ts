@@ -43,29 +43,32 @@ export class RangedFilter {
     this.index_ = params.getIndex();
     this.startPost_ = this.getStartPost_(params);
     this.endPost_ = this.getEndPost_(params);
-  };
+  }
 
   /**
    * @return {!NamedNode}
    */
   getStartPost() {
     return this.startPost_;
-  };
+  }
 
   /**
    * @return {!NamedNode}
    */
   getEndPost() {
     return this.endPost_;
-  };
+  }
 
   /**
    * @param {!NamedNode} node
    * @return {boolean}
    */
   matches(node) {
-    return (this.index_.compare(this.getStartPost(), node) <= 0 && this.index_.compare(node, this.getEndPost()) <= 0);
-  };
+    return (
+      this.index_.compare(this.getStartPost(), node) <= 0 &&
+      this.index_.compare(node, this.getEndPost()) <= 0
+    );
+  }
 
   /**
    * @inheritDoc
@@ -74,8 +77,15 @@ export class RangedFilter {
     if (!this.matches(new NamedNode(key, newChild))) {
       newChild = ChildrenNode.EMPTY_NODE;
     }
-    return this.indexedFilter_.updateChild(snap, key, newChild, affectedPath, source, optChangeAccumulator);
-  };
+    return this.indexedFilter_.updateChild(
+      snap,
+      key,
+      newChild,
+      affectedPath,
+      source,
+      optChangeAccumulator
+    );
+  }
 
   /**
    * @inheritDoc
@@ -94,8 +104,12 @@ export class RangedFilter {
         filtered = filtered.updateImmediateChild(key, ChildrenNode.EMPTY_NODE);
       }
     });
-    return this.indexedFilter_.updateFullNode(oldSnap, filtered, optChangeAccumulator);
-  };
+    return this.indexedFilter_.updateFullNode(
+      oldSnap,
+      filtered,
+      optChangeAccumulator
+    );
+  }
 
   /**
    * @inheritDoc
@@ -103,28 +117,28 @@ export class RangedFilter {
   updatePriority(oldSnap, newPriority) {
     // Don't support priorities on queries
     return oldSnap;
-  };
+  }
 
   /**
    * @inheritDoc
    */
   filtersNodes() {
     return true;
-  };
+  }
 
   /**
    * @inheritDoc
    */
   getIndexedFilter() {
     return this.indexedFilter_;
-  };
+  }
 
   /**
    * @inheritDoc
    */
   getIndex() {
     return this.index_;
-  };
+  }
 
   /**
    * @param {!fb.core.view.QueryParams} params
@@ -138,7 +152,7 @@ export class RangedFilter {
     } else {
       return params.getIndex().minPost();
     }
-  };
+  }
 
   /**
    * @param {!fb.core.view.QueryParams} params
@@ -152,5 +166,5 @@ export class RangedFilter {
     } else {
       return params.getIndex().maxPost();
     }
-  };
+  }
 }

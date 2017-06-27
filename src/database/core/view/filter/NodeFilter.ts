@@ -1,8 +1,8 @@
-import { Node } from '../../snap/Node';
-import { Path } from '../../util/Path';
-import { CompleteChildSource } from '../CompleteChildSource';
-import { ChildChangeAccumulator } from '../ChildChangeAccumulator';
-import { Index } from '../../snap/indexes/Index';
+import { Node } from "../../snap/Node";
+import { Path } from "../../util/Path";
+import { CompleteChildSource } from "../CompleteChildSource";
+import { ChildChangeAccumulator } from "../ChildChangeAccumulator";
+import { Index } from "../../snap/indexes/Index";
 
 /**
  * NodeFilter is used to update nodes and complete children of nodes while applying queries on the fly and keeping
@@ -11,7 +11,6 @@ import { Index } from '../../snap/indexes/Index';
  * @interface
  */
 export interface NodeFilter {
-
   /**
    * Update a single complete child in the snap. If the child equals the old child in the snap, this is a no-op.
    * The method expects an indexed snap.
@@ -24,9 +23,14 @@ export interface NodeFilter {
    * @param {?ChildChangeAccumulator} optChangeAccumulator
    * @return {!Node}
    */
-  updateChild(snap: Node, key: string, newChild: Node, affectedPath: Path,
-              source: CompleteChildSource,
-              optChangeAccumulator: ChildChangeAccumulator | null): Node;
+  updateChild(
+    snap: Node,
+    key: string,
+    newChild: Node,
+    affectedPath: Path,
+    source: CompleteChildSource,
+    optChangeAccumulator: ChildChangeAccumulator | null
+  ): Node;
 
   /**
    * Update a node in full and output any resulting change from this complete update.
@@ -36,8 +40,11 @@ export interface NodeFilter {
    * @param {?ChildChangeAccumulator} optChangeAccumulator
    * @return {!Node}
    */
-  updateFullNode(oldSnap: Node, newSnap: Node,
-                 optChangeAccumulator: ChildChangeAccumulator | null): Node;
+  updateFullNode(
+    oldSnap: Node,
+    newSnap: Node,
+    optChangeAccumulator: ChildChangeAccumulator | null
+  ): Node;
 
   /**
    * Update the priority of the root node

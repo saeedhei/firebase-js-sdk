@@ -11,10 +11,9 @@ import { PRIORITY_INDEX } from "../snap/indexes/PriorityIndex";
  */
 export const generateWithValues = function(values) {
   values = values || {};
-  values['timestamp'] = values['timestamp'] || new Date().getTime();
+  values["timestamp"] = values["timestamp"] || new Date().getTime();
   return values;
 };
-
 
 /**
  * Value to use when firing local events. When writing server values, fire
@@ -24,14 +23,13 @@ export const generateWithValues = function(values) {
  * @return {!(string|number|boolean)}
  */
 export const resolveDeferredValue = function(value, serverValues) {
-  if (!value || (typeof value !== 'object')) {
-    return /** @type {(string|number|boolean)} */ (value);
+  if (!value || typeof value !== "object") {
+    return /** @type {(string|number|boolean)} */ value;
   } else {
-    assert('.sv' in value, 'Unexpected leaf node or priority contents');
-    return serverValues[value['.sv']];
+    assert(".sv" in value, "Unexpected leaf node or priority contents");
+    return serverValues[value[".sv"]];
   }
 };
-
 
 /**
  * Recursively replace all deferred values and priorities in the tree with the
@@ -42,12 +40,14 @@ export const resolveDeferredValue = function(value, serverValues) {
  */
 export const resolveDeferredValueTree = function(tree, serverValues) {
   var resolvedTree = new SparseSnapshotTree();
-  tree.forEachTree(new Path(''), function(path, node) {
-    resolvedTree.remember(path, resolveDeferredValueSnapshot(node, serverValues));
+  tree.forEachTree(new Path(""), function(path, node) {
+    resolvedTree.remember(
+      path,
+      resolveDeferredValueSnapshot(node, serverValues)
+    );
   });
   return resolvedTree;
 };
-
 
 /**
  * Recursively replace all deferred values and priorities in the node with the
@@ -58,20 +58,25 @@ export const resolveDeferredValueTree = function(tree, serverValues) {
  * @return {!fb.core.snap.Node}
  */
 export const resolveDeferredValueSnapshot = function(node, serverValues) {
-  var rawPri = /** @type {Object|boolean|null|number|string} */ (node.getPriority().val()),
-      priority = resolveDeferredValue(rawPri, serverValues),
-      newNode;
+  var rawPri /** @type {Object|boolean|null|number|string} */ = node
+      .getPriority()
+      .val(),
+    priority = resolveDeferredValue(rawPri, serverValues),
+    newNode;
 
   if (node.isLeafNode()) {
-    var leafNode = /** @type {!LeafNode} */ (node);
+    var leafNode /** @type {!LeafNode} */ = node;
     var value = resolveDeferredValue(leafNode.getValue(), serverValues);
-    if (value !== leafNode.getValue() || priority !== leafNode.getPriority().val()) {
+    if (
+      value !== leafNode.getValue() ||
+      priority !== leafNode.getPriority().val()
+    ) {
       return new LeafNode(value, nodeFromJSON(priority));
     } else {
       return node;
     }
   } else {
-    var childrenNode = /** @type {!fb.core.snap.ChildrenNode} */ (node);
+    var childrenNode /** @type {!fb.core.snap.ChildrenNode} */ = node;
     newNode = childrenNode;
     if (priority !== childrenNode.getPriority().val()) {
       newNode = newNode.updatePriority(new LeafNode(priority));

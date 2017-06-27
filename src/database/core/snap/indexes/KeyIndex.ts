@@ -21,8 +21,7 @@ export class KeyIndex extends Index {
    */
   compare(a, b) {
     return nameCompare(a.name, b.name);
-  };
-
+  }
 
   /**
    * @inheritDoc
@@ -30,25 +29,22 @@ export class KeyIndex extends Index {
   isDefinedOn(node: Node): boolean {
     // We could probably return true here (since every node has a key), but it's never called
     // so just leaving unimplemented for now.
-    throw assertionError('KeyIndex.isDefinedOn not expected to be called.');
-  };
-
+    throw assertionError("KeyIndex.isDefinedOn not expected to be called.");
+  }
 
   /**
    * @inheritDoc
    */
   indexedValueChanged(oldNode, newNode) {
     return false; // The key for a node never changes.
-  };
-
+  }
 
   /**
    * @inheritDoc
    */
   minPost() {
     return (NamedNode as any).MIN;
-  };
-
+  }
 
   /**
    * @inheritDoc
@@ -57,8 +53,7 @@ export class KeyIndex extends Index {
     // TODO: This should really be created once and cached in a static property, but
     // NamedNode isn't defined yet, so I can't use it in a static.  Bleh.
     return new NamedNode(MAX_NAME, __EMPTY_NODE);
-  };
-
+  }
 
   /**
    * @param {*} indexValue
@@ -66,18 +61,20 @@ export class KeyIndex extends Index {
    * @return {!NamedNode}
    */
   makePost(indexValue, name) {
-    assert(typeof indexValue === 'string', 'KeyIndex indexValue must always be a string.');
+    assert(
+      typeof indexValue === "string",
+      "KeyIndex indexValue must always be a string."
+    );
     // We just use empty node, but it'll never be compared, since our comparator only looks at name.
     return new NamedNode(indexValue, __EMPTY_NODE);
-  };
-
+  }
 
   /**
    * @return {!string} String representation for inclusion in a query spec
    */
   toString() {
-    return '.key';
-  };
-};
+    return ".key";
+  }
+}
 
 export const KEY_INDEX = new KeyIndex();

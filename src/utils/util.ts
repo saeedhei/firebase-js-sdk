@@ -13,15 +13,16 @@ export const querystring = function(querystringParams) {
   forEach(querystringParams, function(key, value) {
     if (Array.isArray(value)) {
       value.forEach(function(arrayVal) {
-        params.push(encodeURIComponent(key) + '=' + encodeURIComponent(arrayVal));
+        params.push(
+          encodeURIComponent(key) + "=" + encodeURIComponent(arrayVal)
+        );
       });
     } else {
-      params.push(encodeURIComponent(key) + '=' + encodeURIComponent(value));
+      params.push(encodeURIComponent(key) + "=" + encodeURIComponent(value));
     }
   });
-  return (params.length) ? '&' + params.join('&') : '';
+  return params.length ? "&" + params.join("&") : "";
 };
-
 
 /**
  * Decodes a querystring (e.g. ?arg=val&arg2=val2) into a params object (e.g. {arg: 'val', arg2: 'val2'})
@@ -31,11 +32,11 @@ export const querystring = function(querystringParams) {
  */
 export const querystringDecode = function(querystring) {
   var obj = {};
-  var tokens = querystring.replace(/^\?/, '').split('&');
+  var tokens = querystring.replace(/^\?/, "").split("&");
 
   tokens.forEach(function(token) {
     if (token) {
-      var key = token.split('=');
+      var key = token.split("=");
       obj[key[0]] = key[1];
     }
   });

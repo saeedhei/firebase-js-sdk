@@ -14,21 +14,21 @@
 * limitations under the License.
 */
 
-import firebase from './app';
+import firebase from "./app";
 import { FirebaseApp, FirebaseNamespace } from "./app/firebase_app";
 import { Database } from "./database/api/Database";
 import { Query } from "./database/api/Query";
 import { Reference } from "./database/api/Reference";
 import { enableLogging } from "./database/core/util/util";
 import { RepoManager } from "./database/core/RepoManager";
-import * as INTERNAL from './database/api/internal';
-import * as TEST_ACCESS from './database/api/test_access';
+import * as INTERNAL from "./database/api/internal";
+import * as TEST_ACCESS from "./database/api/test_access";
 import { isNodeSdk } from "./utils/environment";
 
 export function registerDatabase(instance) {
   // Register the Database Service with the 'firebase' namespace.
   const namespace = instance.INTERNAL.registerService(
-    'database',
+    "database",
     app => RepoManager.getInstance().databaseFromApp(app),
     // firebase.database namespace properties
     {
@@ -50,23 +50,23 @@ export function registerDatabase(instance) {
 /**
  * Extensions to the FirebaseApp and FirebaseNamespaces interfaces
  */
-declare module './app/firebase_app' {
+declare module "./app/firebase_app" {
   interface FirebaseApp {
-    database?(): Database
+    database?(): Database;
   }
 }
 
-declare module './app/firebase_app' {
+declare module "./app/firebase_app" {
   interface FirebaseNamespace {
     database?: {
-      (app?: FirebaseApp): Database,
-      Database,
-      enableLogging,
-      INTERNAL,
-      Query,
-      Reference,
-      ServerValue,
-    }
+      (app?: FirebaseApp): Database;
+      Database;
+      enableLogging;
+      INTERNAL;
+      Query;
+      Reference;
+      ServerValue;
+    };
   }
 }
 

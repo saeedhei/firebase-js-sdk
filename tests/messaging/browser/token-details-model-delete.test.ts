@@ -14,21 +14,22 @@
 * limitations under the License.
 */
 import { assert } from "chai";
-import makeFakeSubscription from './make-fake-subscription';
-import dbHelpers from './db-helper';
-import Errors from '../../../src/messaging/models/errors';
-import TokenDetailsModel from '../../../src/messaging/models/token-details-model';
-import arrayBufferToBase64 from '../../../src/messaging/helpers/array-buffer-to-base64';
+import makeFakeSubscription from "./make-fake-subscription";
+import dbHelpers from "./db-helper";
+import Errors from "../../../src/messaging/models/errors";
+import TokenDetailsModel from "../../../src/messaging/models/token-details-model";
+import arrayBufferToBase64 from "../../../src/messaging/helpers/array-buffer-to-base64";
 
-describe('Firebase Messaging > TokenDetailsModel.deleteToken()', function() {
+describe("Firebase Messaging > TokenDetailsModel.deleteToken()", function() {
   const EXAMPLE_INPUT = {
-    swScope: '/example-scope',
-    vapidKey: 'BNJxw7sCGkGLOUP2cawBaBXRuWZ3lw_PmQMgreLVVvX_b' +
-        '4emEWVURkCF8fUTHEFe2xrEgTt5ilh5xD94v0pFe_I',
+    swScope: "/example-scope",
+    vapidKey:
+      "BNJxw7sCGkGLOUP2cawBaBXRuWZ3lw_PmQMgreLVVvX_b" +
+      "4emEWVURkCF8fUTHEFe2xrEgTt5ilh5xD94v0pFe_I",
     subscription: makeFakeSubscription(),
-    fcmSenderId: '1234567',
-    fcmToken: 'qwerty',
-    fcmPushSet: '7654321',
+    fcmSenderId: "1234567",
+    fcmToken: "qwerty",
+    fcmPushSet: "7654321"
   };
 
   let tokenModel;
@@ -49,73 +50,84 @@ describe('Firebase Messaging > TokenDetailsModel.deleteToken()', function() {
     });
   });
 
-  it('should handle no input', function() {
+  it("should handle no input", function() {
     tokenModel = new TokenDetailsModel();
-    return tokenModel.deleteToken()
-    .then(() => {
-      throw new Error('Expected this to throw an error due to no token');
-    }, err => {
-      assert.equal('messaging/' + Errors.codes.INVALID_DELETE_TOKEN,
-        err.code);
-    });
+    return tokenModel.deleteToken().then(
+      () => {
+        throw new Error("Expected this to throw an error due to no token");
+      },
+      err => {
+        assert.equal(
+          "messaging/" + Errors.codes.INVALID_DELETE_TOKEN,
+          err.code
+        );
+      }
+    );
   });
 
-  it('should handle empty string', function() {
+  it("should handle empty string", function() {
     tokenModel = new TokenDetailsModel();
-    return tokenModel.deleteToken('')
-    .then(() => {
-      throw new Error('Expected this to throw an error due to no token');
-    }, err => {
-      assert.equal('messaging/' + Errors.codes.INVALID_DELETE_TOKEN,
-        err.code);
-    });
+    return tokenModel.deleteToken("").then(
+      () => {
+        throw new Error("Expected this to throw an error due to no token");
+      },
+      err => {
+        assert.equal(
+          "messaging/" + Errors.codes.INVALID_DELETE_TOKEN,
+          err.code
+        );
+      }
+    );
   });
 
-  it('should delete current token', function() {
+  it("should delete current token", function() {
     tokenModel = new TokenDetailsModel();
-    return tokenModel.saveTokenDetails(EXAMPLE_INPUT)
-    .then(() => {
-      return tokenModel.deleteToken(EXAMPLE_INPUT.fcmToken);
-    })
-    .then(details => {
-      const subscriptionKeys = [
-        'endpoint',
-        'auth',
-        'p256dh'
-      ];
-      const subscriptionValues = {
-        endpoint: EXAMPLE_INPUT.subscription.endpoint,
-        auth: arrayBufferToBase64(EXAMPLE_INPUT.subscription.getKey('auth')),
-        p256dh: arrayBufferToBase64(EXAMPLE_INPUT.subscription.getKey('p256dh'))
-      };
+    return tokenModel
+      .saveTokenDetails(EXAMPLE_INPUT)
+      .then(() => {
+        return tokenModel.deleteToken(EXAMPLE_INPUT.fcmToken);
+      })
+      .then(details => {
+        const subscriptionKeys = ["endpoint", "auth", "p256dh"];
+        const subscriptionValues = {
+          endpoint: EXAMPLE_INPUT.subscription.endpoint,
+          auth: arrayBufferToBase64(EXAMPLE_INPUT.subscription.getKey("auth")),
+          p256dh: arrayBufferToBase64(
+            EXAMPLE_INPUT.subscription.getKey("p256dh")
+          )
+        };
 
-      subscriptionKeys.forEach((keyName) => {
-        assert.equal(details[keyName], subscriptionValues[keyName]);
+        subscriptionKeys.forEach(keyName => {
+          assert.equal(details[keyName], subscriptionValues[keyName]);
+        });
+
+        Object.keys(details).forEach(keyName => {
+          if (subscriptionKeys.indexOf(keyName) !== -1) {
+            return;
+          }
+
+          assert.equal(details[keyName], EXAMPLE_INPUT[keyName]);
+        });
+
+        return tokenModel.getTokenDetailsFromToken(EXAMPLE_INPUT.fcmToken);
+      })
+      .then(tokenDetails => {
+        assert.equal(null, tokenDetails);
       });
-
-      Object.keys(details).forEach((keyName) => {
-        if (subscriptionKeys.indexOf(keyName) !== -1) {
-          return;
-        }
-
-        assert.equal(details[keyName], EXAMPLE_INPUT[keyName]);
-      });
-
-      return tokenModel.getTokenDetailsFromToken(EXAMPLE_INPUT.fcmToken);
-    })
-    .then(tokenDetails => {
-      assert.equal(null, tokenDetails);
-    });
   });
 
-  it('should handle deleting a non-existant token', function() {
+  it("should handle deleting a non-existant token", function() {
     tokenModel = new TokenDetailsModel();
-    return tokenModel.deleteToken('bad-token')
-    .then(() => {
-      throw new Error('Expected this delete to throw and error.');
-    }, err => {
-      assert.equal('messaging/' + Errors.codes.DELETE_TOKEN_NOT_FOUND,
-        err.code);
-    });
+    return tokenModel.deleteToken("bad-token").then(
+      () => {
+        throw new Error("Expected this delete to throw and error.");
+      },
+      err => {
+        assert.equal(
+          "messaging/" + Errors.codes.DELETE_TOKEN_NOT_FOUND,
+          err.code
+        );
+      }
+    );
   });
 });

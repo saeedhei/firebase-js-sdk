@@ -17,7 +17,7 @@
 /**
  * @fileoverview Method for invoking a callback asynchronously.
  */
-import * as promiseimpl from './promise_external';
+import * as promiseimpl from "./promise_external";
 
 /**
  * Returns a function that invokes f with its arguments asynchronously as a

@@ -25,7 +25,7 @@
 export type TaskEvent = string;
 export const TaskEvent = {
   /** Triggered whenever the task changes or progress is updated. */
-  STATE_CHANGED: 'state_changed'
+  STATE_CHANGED: "state_changed"
 };
 
 /**
@@ -34,13 +34,13 @@ export const TaskEvent = {
  */
 export type InternalTaskState = string;
 export const InternalTaskState = {
-  RUNNING: 'running',
-  PAUSING: 'pausing',
-  PAUSED: 'paused',
-  SUCCESS: 'success',
-  CANCELING: 'canceling',
-  CANCELED: 'canceled',
-  ERROR: 'error'
+  RUNNING: "running",
+  PAUSING: "pausing",
+  PAUSED: "paused",
+  SUCCESS: "success",
+  CANCELING: "canceling",
+  CANCELED: "canceled",
+  ERROR: "error"
 };
 
 /**
@@ -50,19 +50,20 @@ export const InternalTaskState = {
 export type TaskState = string;
 export const TaskState = {
   /** The task is currently transferring data. */
-  RUNNING: 'running',
+  RUNNING: "running",
   /** The task was paused by the user. */
-  PAUSED: 'paused',
+  PAUSED: "paused",
   /** The task completed successfully. */
-  SUCCESS: 'success',
+  SUCCESS: "success",
   /** The task was canceled. */
-  CANCELED: 'canceled',
+  CANCELED: "canceled",
   /** The task failed with an error. */
-  ERROR: 'error'
+  ERROR: "error"
 };
 
-export function taskStateFromInternalTaskState(state: InternalTaskState):
-    TaskState {
+export function taskStateFromInternalTaskState(
+  state: InternalTaskState
+): TaskState {
   switch (state) {
     case InternalTaskState.RUNNING:
     case InternalTaskState.PAUSING:
@@ -77,7 +78,6 @@ export function taskStateFromInternalTaskState(state: InternalTaskState):
     case InternalTaskState.ERROR:
       return TaskState.ERROR;
     default:
-
       // TODO(andysoto): assert(false);
       return TaskState.ERROR;
   }

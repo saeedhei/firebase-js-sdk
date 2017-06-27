@@ -21,28 +21,29 @@
 /**
  * @return Null if the path is already at the root.
  */
-export function parent(path: string): string|null {
+export function parent(path: string): string | null {
   if (path.length == 0) {
     return null;
   }
-  let index = path.lastIndexOf('/');
+  let index = path.lastIndexOf("/");
   if (index === -1) {
-    return '';
+    return "";
   }
   let newPath = path.slice(0, index);
   return newPath;
 }
 
 export function child(path: string, childPath: string): string {
-  let canonicalChildPath = childPath.split('/')
-                               .filter(function(component) {
-                                 return component.length > 0;
-                               })
-                               .join('/');
+  let canonicalChildPath = childPath
+    .split("/")
+    .filter(function(component) {
+      return component.length > 0;
+    })
+    .join("/");
   if (path.length === 0) {
     return canonicalChildPath;
   } else {
-    return path + '/' + canonicalChildPath;
+    return path + "/" + canonicalChildPath;
   }
 }
 
@@ -53,7 +54,7 @@ export function child(path: string, childPath: string): string {
  * '/a' -> 'a'
  */
 export function lastComponent(path: string): string {
-  let index = path.lastIndexOf('/', path.length - 2);
+  let index = path.lastIndexOf("/", path.length - 2);
   if (index === -1) {
     return path;
   } else {

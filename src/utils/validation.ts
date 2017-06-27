@@ -10,14 +10,19 @@
 export const validateArgCount = function(fnName, minCount, maxCount, argCount) {
   var argError;
   if (argCount < minCount) {
-    argError = 'at least ' + minCount;
+    argError = "at least " + minCount;
   } else if (argCount > maxCount) {
-    argError = (maxCount === 0) ? 'none' : ('no more than ' + maxCount);
+    argError = maxCount === 0 ? "none" : "no more than " + maxCount;
   }
   if (argError) {
-    var error = fnName + ' failed: Was called with ' + argCount +
-      ((argCount === 1) ? ' argument.' : ' arguments.') +
-      ' Expects ' + argError + '.';
+    var error =
+      fnName +
+      " failed: Was called with " +
+      argCount +
+      (argCount === 1 ? " argument." : " arguments.") +
+      " Expects " +
+      argError +
+      ".";
     throw new Error(error);
   }
 };
@@ -31,29 +36,31 @@ export const validateArgCount = function(fnName, minCount, maxCount, argCount) {
  * @return {!string} The prefix to add to the error thrown for validation.
  */
 export function errorPrefix(fnName, argumentNumber, optional) {
-  var argName = '';
+  var argName = "";
   switch (argumentNumber) {
     case 1:
-      argName = optional ? 'first' : 'First';
+      argName = optional ? "first" : "First";
       break;
     case 2:
-      argName = optional ? 'second' : 'Second';
+      argName = optional ? "second" : "Second";
       break;
     case 3:
-      argName = optional ? 'third' : 'Third';
+      argName = optional ? "third" : "Third";
       break;
     case 4:
-      argName = optional ? 'fourth' : 'Fourth';
+      argName = optional ? "fourth" : "Fourth";
       break;
     default:
-      throw new Error('errorPrefix called with argumentNumber > 4.  Need to update it?');
+      throw new Error(
+        "errorPrefix called with argumentNumber > 4.  Need to update it?"
+      );
   }
 
-  var error = fnName + ' failed: ';
+  var error = fnName + " failed: ";
 
-  error += argName + ' argument ';
+  error += argName + " argument ";
   return error;
-};
+}
 
 /**
  * @param {!string} fnName
@@ -61,27 +68,46 @@ export function errorPrefix(fnName, argumentNumber, optional) {
  * @param {!string} namespace
  * @param {boolean} optional
  */
-export const validateNamespace = function(fnName, argumentNumber, namespace, optional) {
-  if (optional && !(namespace))
-    return;
-  if (typeof namespace !== 'string') {
+export const validateNamespace = function(
+  fnName,
+  argumentNumber,
+  namespace,
+  optional
+) {
+  if (optional && !namespace) return;
+  if (typeof namespace !== "string") {
     //TODO: I should do more validation here. We only allow certain chars in namespaces.
-    throw new Error(errorPrefix(fnName, argumentNumber, optional) +
-      'must be a valid firebase namespace.');
+    throw new Error(
+      errorPrefix(fnName, argumentNumber, optional) +
+        "must be a valid firebase namespace."
+    );
   }
 };
 
-export const validateCallback = function(fnName, argumentNumber, callback, optional) {
-  if (optional && !(callback))
-    return;
-  if (typeof callback !== 'function')
-    throw new Error(errorPrefix(fnName, argumentNumber, optional) + 'must be a valid function.');
+export const validateCallback = function(
+  fnName,
+  argumentNumber,
+  callback,
+  optional
+) {
+  if (optional && !callback) return;
+  if (typeof callback !== "function")
+    throw new Error(
+      errorPrefix(fnName, argumentNumber, optional) +
+        "must be a valid function."
+    );
 };
 
-export const validateContextObject = function(fnName, argumentNumber, context, optional) {
-  if (optional && !(context))
-    return;
-  if (typeof context !== 'object' || context === null)
-    throw new Error(errorPrefix(fnName, argumentNumber, optional) +
-      'must be a valid context object.');
+export const validateContextObject = function(
+  fnName,
+  argumentNumber,
+  context,
+  optional
+) {
+  if (optional && !context) return;
+  if (typeof context !== "object" || context === null)
+    throw new Error(
+      errorPrefix(fnName, argumentNumber, optional) +
+        "must be a valid context object."
+    );
 };

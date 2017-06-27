@@ -18,8 +18,8 @@
  * @fileoverview Functionality related to the parsing/composition of bucket/
  * object location.
  */
-import * as errorsExports from './error';
-import {errors} from './error';
+import * as errorsExports from "./error";
+import { errors } from "./error";
 
 /**
  * @struct
@@ -37,12 +37,12 @@ export class Location {
 
   fullServerUrl(): string {
     let encode = encodeURIComponent;
-    return '/b/' + encode(this.bucket) + '/o/' + encode(this.path);
+    return "/b/" + encode(this.bucket) + "/o/" + encode(this.path);
   }
 
   bucketOnlyServerUrl(): string {
     let encode = encodeURIComponent;
-    return '/b/' + encode(this.bucket) + '/o';
+    return "/b/" + encode(this.bucket) + "/o";
   }
 
   static makeFromBucketSpec(bucketString: string): Location {
@@ -52,9 +52,9 @@ export class Location {
     } catch (e) {
       // Not valid URL, use as-is. This lets you put bare bucket names in
       // config.
-      return new Location(bucketString, '');
+      return new Location(bucketString, "");
     }
-    if (bucketLocation.path === '') {
+    if (bucketLocation.path === "") {
       return bucketLocation;
     } else {
       throw errorsExports.invalidDefaultBucket(bucketString);
@@ -63,30 +63,35 @@ export class Location {
 
   static makeFromUrl(url: string): Location {
     let location = null;
-    let bucketDomain = '([A-Za-z0-9.\\-]+)';
+    let bucketDomain = "([A-Za-z0-9.\\-]+)";
 
     function gsModify(loc: Location) {
-      if (loc.path.charAt(loc.path.length - 1) === '/') {
+      if (loc.path.charAt(loc.path.length - 1) === "/") {
         loc.path_ = loc.path_.slice(0, -1);
       }
     }
-    let gsPath = '(/(.*))?$';
-    let path = '(/([^?#]*).*)?$';
-    let gsRegex = new RegExp('^gs://' + bucketDomain + gsPath, 'i');
-    let gsIndices = {bucket: 1, path: 3};
+    let gsPath = "(/(.*))?$";
+    let path = "(/([^?#]*).*)?$";
+    let gsRegex = new RegExp("^gs://" + bucketDomain + gsPath, "i");
+    let gsIndices = { bucket: 1, path: 3 };
 
     function httpModify(loc: Location) {
       loc.path_ = decodeURIComponent(loc.path);
     }
-    let version = 'v[A-Za-z0-9_]+';
+    let version = "v[A-Za-z0-9_]+";
     let httpRegex = new RegExp(
-        '^https?://firebasestorage\\.googleapis\\.com/' + version + '/b/' +
-            bucketDomain + '/o' + path,
-        'i');
-    let httpIndices = {bucket: 1, path: 3};
+      "^https?://firebasestorage\\.googleapis\\.com/" +
+        version +
+        "/b/" +
+        bucketDomain +
+        "/o" +
+        path,
+      "i"
+    );
+    let httpIndices = { bucket: 1, path: 3 };
     let groups = [
-      {regex: gsRegex, indices: gsIndices, postModify: gsModify},
-      {regex: httpRegex, indices: httpIndices, postModify: httpModify}
+      { regex: gsRegex, indices: gsIndices, postModify: gsModify },
+      { regex: httpRegex, indices: httpIndices, postModify: httpModify }
     ];
     for (let i = 0; i < groups.length; i++) {
       let group = groups[i];
@@ -95,7 +100,7 @@ export class Location {
         let bucketValue = captures[group.indices.bucket];
         let pathValue = captures[group.indices.path];
         if (!pathValue) {
-          pathValue = '';
+          pathValue = "";
         }
         location = new Location(bucketValue, pathValue);
         group.postModify(location);

@@ -16,7 +16,8 @@ import { assert } from "../../../utils/assert";
  */
 export const nextPushId = (function() {
   // Modeled after base64 web-safe chars, but ordered by ASCII.
-  var PUSH_CHARS = '-0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz';
+  var PUSH_CHARS =
+    "-0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz";
 
   // Timestamp of last push, used to prevent local collisions if you push twice
   // in one ms.
@@ -29,7 +30,7 @@ export const nextPushId = (function() {
   var lastRandChars = [];
 
   return function(now) {
-    var duplicateTime = (now === lastPushTime);
+    var duplicateTime = now === lastPushTime;
     lastPushTime = now;
 
     var timeStampChars = new Array(8);
@@ -39,9 +40,9 @@ export const nextPushId = (function() {
       // the upper bits.
       now = Math.floor(now / 64);
     }
-    assert(now === 0, 'Cannot push at time == 0');
+    assert(now === 0, "Cannot push at time == 0");
 
-    var id = timeStampChars.join('');
+    var id = timeStampChars.join("");
 
     if (!duplicateTime) {
       for (i = 0; i < 12; i++) {
@@ -58,7 +59,7 @@ export const nextPushId = (function() {
     for (i = 0; i < 12; i++) {
       id += PUSH_CHARS.charAt(lastRandChars[i]);
     }
-    assert(id.length === 20, 'nextPushId: Length should be 20.');
+    assert(id.length === 20, "nextPushId: Length should be 20.");
 
     return id;
   };

@@ -6,7 +6,7 @@ import { isEmpty, getCount, forEach, contains } from "../../../utils/obj";
  */
 export class CountedSet {
   set: object;
-  
+
   /**
    * @template K, V
    */
@@ -88,4 +88,4 @@ export class CountedSet {
     });
     return keys;
   }
-}; // end fb.core.util.CountedSet
+} // end fb.core.util.CountedSet

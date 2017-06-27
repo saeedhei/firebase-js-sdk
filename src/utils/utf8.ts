@@ -11,13 +11,13 @@ import { assert } from "./assert";
 // pair).
 // See http://www.ecma-international.org/ecma-262/5.1/#sec-15.1.3
 
-
 /**
  * @param {string} str
  * @return {Array}
  */
 export const stringToByteArray = function(str) {
-  var out = [], p = 0;
+  var out = [],
+    p = 0;
   for (var i = 0; i < str.length; i++) {
     var c = str.charCodeAt(i);
 
@@ -25,7 +25,7 @@ export const stringToByteArray = function(str) {
     if (c >= 0xd800 && c <= 0xdbff) {
       var high = c - 0xd800; // the high 10 bits.
       i++;
-      assert(i < str.length, 'Surrogate pair missing trail surrogate.');
+      assert(i < str.length, "Surrogate pair missing trail surrogate.");
       var low = str.charCodeAt(i) - 0xdc00; // the low 10 bits.
       c = 0x10000 + (high << 10) + low;
     }
@@ -48,7 +48,6 @@ export const stringToByteArray = function(str) {
   }
   return out;
 };
-
 
 /**
  * Calculate length without actually converting; useful for doing cheaper validation.

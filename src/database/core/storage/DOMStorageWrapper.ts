@@ -19,9 +19,9 @@ export class DOMStorageWrapper {
     this.domStorage_ = domStorage;
 
     // Use a prefix to avoid collisions with other stuff saved by the app.
-    this.prefix_ = 'firebase:';
-  };
-  
+    this.prefix_ = "firebase:";
+  }
+
   /**
    * @param {string} key The key to save the value under
    * @param {?Object} value The value being stored, or null to remove the key.
@@ -32,7 +32,7 @@ export class DOMStorageWrapper {
     } else {
       this.domStorage_.setItem(this.prefixedName_(key), stringify(value));
     }
-  };
+  }
 
   /**
    * @param {string} key
@@ -45,14 +45,14 @@ export class DOMStorageWrapper {
     } else {
       return jsonEval(storedVal);
     }
-  };
+  }
 
   /**
    * @param {string} key
    */
   remove(key) {
     this.domStorage_.removeItem(this.prefixedName_(key));
-  };
+  }
 
   isInMemoryStorage;
 
@@ -62,9 +62,9 @@ export class DOMStorageWrapper {
    */
   prefixedName_(name) {
     return this.prefix_ + name;
-  };
+  }
 
   toString() {
     return this.domStorage_.toString();
-  };
+  }
 }

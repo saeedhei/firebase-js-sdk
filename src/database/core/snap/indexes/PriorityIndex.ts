@@ -1,4 +1,4 @@
-import { Index } from './Index';
+import { Index } from "./Index";
 import { nameCompare, MAX_NAME } from "../../util/util";
 import { NamedNode } from "../Node";
 import { LeafNode } from "../LeafNode";
@@ -14,14 +14,12 @@ export function setMaxNode(val) {
   MAX_NODE = val;
 }
 
-
 /**
  * @constructor
  * @extends {Index}
  * @private
  */
 export class PriorityIndex extends Index {
-
   constructor() {
     super();
   }
@@ -38,40 +36,35 @@ export class PriorityIndex extends Index {
     } else {
       return indexCmp;
     }
-  };
-
+  }
 
   /**
    * @inheritDoc
    */
   isDefinedOn(node) {
     return !node.getPriority().isEmpty();
-  };
-
+  }
 
   /**
    * @inheritDoc
    */
   indexedValueChanged(oldNode, newNode) {
     return !oldNode.getPriority().equals(newNode.getPriority());
-  };
-
+  }
 
   /**
    * @inheritDoc
    */
   minPost() {
     return (NamedNode as any).MIN;
-  };
-
+  }
 
   /**
    * @inheritDoc
    */
   maxPost() {
-    return new NamedNode(MAX_NAME, new LeafNode('[PRIORITY-POST]', MAX_NODE));
-  };
-
+    return new NamedNode(MAX_NAME, new LeafNode("[PRIORITY-POST]", MAX_NODE));
+  }
 
   /**
    * @param {*} indexValue
@@ -80,16 +73,15 @@ export class PriorityIndex extends Index {
    */
   makePost(indexValue, name) {
     var priorityNode = nodeFromJSON(indexValue);
-    return new NamedNode(name, new LeafNode('[PRIORITY-POST]', priorityNode));
-  };
-
+    return new NamedNode(name, new LeafNode("[PRIORITY-POST]", priorityNode));
+  }
 
   /**
    * @return {!string} String representation for inclusion in a query spec
    */
   toString() {
-    return '.priority';
-  };
-};
+    return ".priority";
+  }
+}
 
 export const PRIORITY_INDEX = new PriorityIndex();

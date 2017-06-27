@@ -31,30 +31,34 @@ const appConfig = {
   messagingSenderId: "012345678910"
 };
 
-describe('Namespace Test', () => {
+describe("Namespace Test", () => {
   let firebase: FirebaseNamespace;
   beforeEach(() => {
     firebase = createFirebaseNamespace();
     registerStorage(firebase);
-    firebase.initializeApp(appConfig)
+    firebase.initializeApp(appConfig);
   });
-  describe('firebase Verification', () => {
-    it('Will be tested by integration test suite until TS migration');
+  describe("firebase Verification", () => {
+    it("Will be tested by integration test suite until TS migration");
   });
-  describe('Firebase App Verification', () => {
-    it('firebase.app() should expose proper namespace', () => {
-      checkProps('firebase.app()', firebase.app(), appInstanceSpec);
+  describe("Firebase App Verification", () => {
+    it("firebase.app() should expose proper namespace", () => {
+      checkProps("firebase.app()", firebase.app(), appInstanceSpec);
     });
   });
-  describe('firebase.auth() Verification', () => {
-    it('Will be tested by integration test suite until TS migration');
+  describe("firebase.auth() Verification", () => {
+    it("Will be tested by integration test suite until TS migration");
   });
-  describe('firebase.database() Verification', () => {
-    it('Will be tested by integration test suite until TS migration');
+  describe("firebase.database() Verification", () => {
+    it("Will be tested by integration test suite until TS migration");
   });
-  describe('firebase.storage() Verification', () => {
-    it('firebase.storage() should expose proper namespace', () => {
-      checkProps('firebase.storage()', (firebase as any).storage(), storageInstanceSpec);
+  describe("firebase.storage() Verification", () => {
+    it("firebase.storage() should expose proper namespace", () => {
+      checkProps(
+        "firebase.storage()",
+        (firebase as any).storage(),
+        storageInstanceSpec
+      );
     });
   });
 });

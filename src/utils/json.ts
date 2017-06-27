@@ -8,7 +8,6 @@ export const jsonEval = function(str) {
   return JSON.parse(str);
 };
 
-
 /**
  * Returns JSON representing a javascript object.
  * @param {*} data Javascript object to be stringified.

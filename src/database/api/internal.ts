@@ -20,7 +20,7 @@ export const forceWebSockets = function() {
 
 /* Used by App Manager */
 export const isWebSocketsAvailable = function() {
-  return WebSocketConnection['isAvailable']();
+  return WebSocketConnection["isAvailable"]();
 };
 
 export const setSecurityDebugCallback = function(ref, callback) {

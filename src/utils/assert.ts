@@ -17,5 +17,10 @@ export const assert = function(assertion, message) {
  * @return {!Error}
  */
 export const assertionError = function(message) {
-  return new Error('Firebase Database (' + CONSTANTS.SDK_VERSION + ') INTERNAL ASSERT FAILED: ' + message);
+  return new Error(
+    "Firebase Database (" +
+      CONSTANTS.SDK_VERSION +
+      ") INTERNAL ASSERT FAILED: " +
+      message
+  );
 };

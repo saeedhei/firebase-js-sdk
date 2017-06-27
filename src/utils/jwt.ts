@@ -13,17 +13,17 @@ import { jsonEval } from "./json";
  */
 export const decode = function(token) {
   var header = {},
-      claims = {},
-      data = {},
-      signature = '';
+    claims = {},
+    data = {},
+    signature = "";
 
   try {
-    var parts = token.split('.');
-    header = jsonEval(base64Decode(parts[0]) || '');
-    claims = jsonEval(base64Decode(parts[1]) || '');
+    var parts = token.split(".");
+    header = jsonEval(base64Decode(parts[0]) || "");
+    claims = jsonEval(base64Decode(parts[1]) || "");
     signature = parts[2];
-    data = claims['d'] || {};
-    delete claims['d'];
+    data = claims["d"] || {};
+    delete claims["d"];
   } catch (e) {}
 
   return {
@@ -47,26 +47,28 @@ export const decode = function(token) {
  */
 export const isValidTimestamp = function(token) {
   var claims = decode(token).claims,
-      now = Math.floor(new Date().getTime() / 1000),
-      validSince, validUntil;
+    now = Math.floor(new Date().getTime() / 1000),
+    validSince,
+    validUntil;
 
-  if (typeof claims === 'object') {
-    if (claims.hasOwnProperty('nbf')) {
-      validSince = claims['nbf'];
-    } else if (claims.hasOwnProperty('iat')) {
-      validSince = claims['iat'];
+  if (typeof claims === "object") {
+    if (claims.hasOwnProperty("nbf")) {
+      validSince = claims["nbf"];
+    } else if (claims.hasOwnProperty("iat")) {
+      validSince = claims["iat"];
     }
 
-    if (claims.hasOwnProperty('exp')) {
-      validUntil = claims['exp'];
+    if (claims.hasOwnProperty("exp")) {
+      validUntil = claims["exp"];
     } else {
       // token will expire after 24h by default
       validUntil = validSince + 86400;
     }
   }
 
-  return now && validSince && validUntil &&
-        (now >= validSince) && (now <= validUntil);
+  return (
+    now && validSince && validUntil && now >= validSince && now <= validUntil
+  );
 };
 
 /**
@@ -81,8 +83,8 @@ export const isValidTimestamp = function(token) {
  */
 export const issuedAtTime = function(token) {
   var claims = decode(token).claims;
-  if (typeof claims === 'object' && claims.hasOwnProperty('iat')) {
-    return claims['iat'];
+  if (typeof claims === "object" && claims.hasOwnProperty("iat")) {
+    return claims["iat"];
   }
   return null;
 };
@@ -100,12 +102,14 @@ export const issuedAtTime = function(token) {
  */
 export const isValidFormat = function(token) {
   var decoded = decode(token),
-      claims = decoded.claims;
+    claims = decoded.claims;
 
-  return !!decoded.signature &&
+  return (
+    !!decoded.signature &&
     !!claims &&
-    (typeof claims === 'object') &&
-    claims.hasOwnProperty('iat');
+    typeof claims === "object" &&
+    claims.hasOwnProperty("iat")
+  );
 };
 
 /**
@@ -120,5 +124,5 @@ export const isValidFormat = function(token) {
  */
 export const isAdmin = function(token) {
   var claims = decode(token).claims;
-  return (typeof claims === 'object' && claims['admin'] === true);
+  return typeof claims === "object" && claims["admin"] === true;
 };

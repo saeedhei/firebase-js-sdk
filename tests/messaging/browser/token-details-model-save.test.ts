@@ -14,21 +14,21 @@
 * limitations under the License.
 */
 import { assert } from "chai";
-import makeFakeSubscription from './make-fake-subscription';
-import dbHelpers from './db-helper';
-import Errors from '../../../src/messaging/models/errors';
-import TokenDetailsModel from '../../../src/messaging/models/token-details-model';
+import makeFakeSubscription from "./make-fake-subscription";
+import dbHelpers from "./db-helper";
+import Errors from "../../../src/messaging/models/errors";
+import TokenDetailsModel from "../../../src/messaging/models/token-details-model";
 
-describe('Firebase Messaging > TokenDetailsModel.saveToken()', function() {
-
+describe("Firebase Messaging > TokenDetailsModel.saveToken()", function() {
   const EXAMPLE_INPUT = {
-    swScope: '/example-scope',
-    vapidKey: 'BNJxw7sCGkGLOUP2cawBaBXRuWZ3lw_PmQMgreLVVvX_b' +
-        '4emEWVURkCF8fUTHEFe2xrEgTt5ilh5xD94v0pFe_I',
+    swScope: "/example-scope",
+    vapidKey:
+      "BNJxw7sCGkGLOUP2cawBaBXRuWZ3lw_PmQMgreLVVvX_b" +
+      "4emEWVURkCF8fUTHEFe2xrEgTt5ilh5xD94v0pFe_I",
     subscription: makeFakeSubscription(),
-    fcmSenderId: '1234567',
-    fcmToken: 'qwerty',
-    fcmPushSet: '7654321',
+    fcmSenderId: "1234567",
+    fcmToken: "qwerty",
+    fcmPushSet: "7654321"
   };
 
   let tokenModel;
@@ -49,165 +49,128 @@ describe('Firebase Messaging > TokenDetailsModel.saveToken()', function() {
     });
   });
 
-  it('should throw on bad input', function() {
-      const badInputs = [
-      '',
-      [],
-      {},
-      true,
-      null,
-      123
-    ];
+  it("should throw on bad input", function() {
+    const badInputs = ["", [], {}, true, null, 123];
 
     const promises = badInputs.map((badInput: any) => {
       tokenModel = new TokenDetailsModel();
       const validInput = Object.assign({}, EXAMPLE_INPUT);
       validInput.swScope = badInput;
-      return tokenModel.saveTokenDetails(validInput)
-      .then(() => {
-        throw new Error('Expected promise to reject');
-      }, (err) => {
-        assert.equal('messaging/' + Errors.codes.BAD_SCOPE,
-          err.code);
-      });
+      return tokenModel.saveTokenDetails(validInput).then(
+        () => {
+          throw new Error("Expected promise to reject");
+        },
+        err => {
+          assert.equal("messaging/" + Errors.codes.BAD_SCOPE, err.code);
+        }
+      );
     });
 
     return Promise.all(promises);
   });
 
-  it('should throw on bad vapid key input', function() {
-    const badInputs = [
-      '',
-      [],
-      {},
-      true,
-      null,
-      123
-    ];
+  it("should throw on bad vapid key input", function() {
+    const badInputs = ["", [], {}, true, null, 123];
 
     const promises = badInputs.map((badInput: any) => {
       tokenModel = new TokenDetailsModel();
       const validInput = Object.assign({}, EXAMPLE_INPUT);
       validInput.vapidKey = badInput;
-      return tokenModel.saveTokenDetails(validInput)
-      .then(() => {
-        throw new Error('Expected promise to reject');
-      }, (err) => {
-        assert.equal('messaging/' + Errors.codes.BAD_VAPID_KEY,
-          err.code);
-      });
+      return tokenModel.saveTokenDetails(validInput).then(
+        () => {
+          throw new Error("Expected promise to reject");
+        },
+        err => {
+          assert.equal("messaging/" + Errors.codes.BAD_VAPID_KEY, err.code);
+        }
+      );
     });
 
     return Promise.all(promises);
   });
 
-  it('should throw on bad subscription input', function() {
-    const badInputs = [
-      '',
-      [],
-      {},
-      true,
-      null,
-      123
-    ];
+  it("should throw on bad subscription input", function() {
+    const badInputs = ["", [], {}, true, null, 123];
 
     const promises = badInputs.map((badInput: any) => {
       tokenModel = new TokenDetailsModel();
       const validInput = Object.assign({}, EXAMPLE_INPUT);
       validInput.subscription = badInput;
-      return tokenModel.saveTokenDetails(validInput)
-      .then(() => {
-        throw new Error('Expected promise to reject');
-      }, (err) => {
-        assert.equal('messaging/' + Errors.codes.BAD_SUBSCRIPTION,
-          err.code);
-      });
+      return tokenModel.saveTokenDetails(validInput).then(
+        () => {
+          throw new Error("Expected promise to reject");
+        },
+        err => {
+          assert.equal("messaging/" + Errors.codes.BAD_SUBSCRIPTION, err.code);
+        }
+      );
     });
 
     return Promise.all(promises);
   });
 
-  it('should throw on bad send id input', function() {
-    const badInputs = [
-      '',
-      [],
-      {},
-      true,
-      null,
-      123
-    ];
+  it("should throw on bad send id input", function() {
+    const badInputs = ["", [], {}, true, null, 123];
 
     const promises = badInputs.map((badInput: any) => {
       tokenModel = new TokenDetailsModel();
       const validInput = Object.assign({}, EXAMPLE_INPUT);
       validInput.fcmSenderId = badInput;
-      return tokenModel.saveTokenDetails(validInput)
-      .then(() => {
-        throw new Error('Expected promise to reject');
-      }, (err) => {
-        assert.equal('messaging/' + Errors.codes.BAD_SENDER_ID,
-          err.code);
-      });
+      return tokenModel.saveTokenDetails(validInput).then(
+        () => {
+          throw new Error("Expected promise to reject");
+        },
+        err => {
+          assert.equal("messaging/" + Errors.codes.BAD_SENDER_ID, err.code);
+        }
+      );
     });
 
     return Promise.all(promises);
   });
 
-  it('should throw on bad token input', function() {
-    const badInputs = [
-      '',
-      [],
-      {},
-      true,
-      null,
-      123
-    ];
+  it("should throw on bad token input", function() {
+    const badInputs = ["", [], {}, true, null, 123];
 
     const promises = badInputs.map((badInput: any) => {
       tokenModel = new TokenDetailsModel();
       const validInput = Object.assign({}, EXAMPLE_INPUT);
       validInput.fcmToken = badInput;
-      return tokenModel.saveTokenDetails(validInput)
-      .then(() => {
-        throw new Error('Expected promise to reject');
-      }, (err) => {
-        assert.equal('messaging/' + Errors.codes.BAD_TOKEN,
-          err.code);
-      });
+      return tokenModel.saveTokenDetails(validInput).then(
+        () => {
+          throw new Error("Expected promise to reject");
+        },
+        err => {
+          assert.equal("messaging/" + Errors.codes.BAD_TOKEN, err.code);
+        }
+      );
     });
 
     return Promise.all(promises);
   });
 
-  it('should throw on bad pushset input', function() {
-    const badInputs = [
-      '',
-      [],
-      {},
-      true,
-      null,
-      123
-    ];
+  it("should throw on bad pushset input", function() {
+    const badInputs = ["", [], {}, true, null, 123];
 
     const promises = badInputs.map((badInput: any) => {
       tokenModel = new TokenDetailsModel();
       const validInput = Object.assign({}, EXAMPLE_INPUT);
       validInput.fcmPushSet = badInput;
-      return tokenModel.saveTokenDetails(validInput)
-      .then(() => {
-        throw new Error('Expected promise to reject');
-      }, (err) => {
-        assert.equal('messaging/' + Errors.codes.BAD_PUSH_SET,
-          err.code);
-      });
+      return tokenModel.saveTokenDetails(validInput).then(
+        () => {
+          throw new Error("Expected promise to reject");
+        },
+        err => {
+          assert.equal("messaging/" + Errors.codes.BAD_PUSH_SET, err.code);
+        }
+      );
     });
 
     return Promise.all(promises);
   });
 
-  it('should save valid details', function() {
+  it("should save valid details", function() {
     tokenModel = new TokenDetailsModel();
     return tokenModel.saveTokenDetails(EXAMPLE_INPUT);
   });
-
 });

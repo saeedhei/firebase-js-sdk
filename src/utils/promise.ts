@@ -1,6 +1,6 @@
-import { globalScope } from '../utils/globalScope';
+import { globalScope } from "../utils/globalScope";
 
-export const PromiseImpl = globalScope.Promise || require('promise-polyfill');
+export const PromiseImpl = globalScope.Promise || require("promise-polyfill");
 
 /**
  * A deferred promise implementation.
@@ -9,7 +9,7 @@ export class Deferred {
   resolve;
   reject;
   promise;
-  
+
   /** @constructor */
   constructor() {
     var self = this;
@@ -40,7 +40,7 @@ export class Deferred {
       } else {
         self.resolve(opt_value);
       }
-      if (typeof opt_nodeCallback === 'function') {
+      if (typeof opt_nodeCallback === "function") {
         attachDummyErrorHandler(self.promise);
 
         // Some of our callbacks don't expect a value and our own tests
@@ -54,8 +54,7 @@ export class Deferred {
     }
     return meta;
   }
-};
-
+}
 
 /**
  * Chrome (and maybe other browsers) report an Error in the console if you reject a promise

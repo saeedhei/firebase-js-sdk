@@ -13,14 +13,13 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-'use strict';
+"use strict";
 
-import {ErrorFactory} from '../../app/errors';
+import { ErrorFactory } from "../../app/errors";
 
-import Errors from './errors';
+import Errors from "./errors";
 
 export default class DBInterface {
-
   private dbName_: string;
   private dbVersion_: number;
   private openDbPromise_: Promise<IDBDatabase>;
@@ -32,11 +31,11 @@ export default class DBInterface {
    * @param {number} dbVersion
    */
   constructor(dbName, dbVersion) {
-    this.errorFactory_ = new ErrorFactory('messaging', 'Messaging', Errors.map);
+    this.errorFactory_ = new ErrorFactory("messaging", "Messaging", Errors.map);
     this.dbName_ = dbName;
     this.dbVersion_ = dbVersion;
     this.openDbPromise_ = null;
-    this.TRANSACTION_READ_WRITE = 'readwrite';
+    this.TRANSACTION_READ_WRITE = "readwrite";
   }
 
   /**
@@ -51,14 +50,14 @@ export default class DBInterface {
 
     this.openDbPromise_ = new Promise((resolve, reject) => {
       const request = indexedDB.open(this.dbName_, this.dbVersion_);
-      request.onerror = (event) => {
-        reject((<IDBRequest> event.target).error);
+      request.onerror = event => {
+        reject((<IDBRequest>event.target).error);
       };
       request.onsuccess = event => {
-        resolve((<IDBRequest> event.target).result);
+        resolve((<IDBRequest>event.target).result);
       };
       request.onupgradeneeded = event => {
-        var db = (<IDBRequest> event.target).result;
+        var db = (<IDBRequest>event.target).result;
         this.onDBUpgrade(db);
       };
     });
@@ -71,15 +70,14 @@ export default class DBInterface {
    * @return {!Promise} Returns the result of the promise chain.
    */
   closeDatabase() {
-    return Promise.resolve()
-      .then(() => {
-        if (this.openDbPromise_) {
-          return this.openDbPromise_.then(db => {
-            db.close();
-            this.openDbPromise_ = null;
-          });
-        }
-      });
+    return Promise.resolve().then(() => {
+      if (this.openDbPromise_) {
+        return this.openDbPromise_.then(db => {
+          db.close();
+          this.openDbPromise_ = null;
+        });
+      }
+    });
   }
 
   /**

@@ -1,5 +1,5 @@
 import { assert } from "../../../utils/assert";
-import { Path } from '../util/Path';
+import { Path } from "../util/Path";
 
 /**
  *
@@ -46,29 +46,46 @@ export interface Operation {
  * @constructor
  */
 export class OperationSource {
-  constructor(public fromUser: boolean,
-              public fromServer: boolean,
-              public queryId: string | null,
-              public tagged: boolean) {
-    assert(!tagged || fromServer, 'Tagged queries must be from server.');
+  constructor(
+    public fromUser: boolean,
+    public fromServer: boolean,
+    public queryId: string | null,
+    public tagged: boolean
+  ) {
+    assert(!tagged || fromServer, "Tagged queries must be from server.");
   }
   /**
    * @const
    * @type {!OperationSource}
    */
-  static User = new OperationSource(/*fromUser=*/true, false, null, /*tagged=*/false);
+  static User = new OperationSource(
+    /*fromUser=*/ true,
+    false,
+    null,
+    /*tagged=*/ false
+  );
 
   /**
    * @const
    * @type {!OperationSource}
    */
-  static Server = new OperationSource(false, /*fromServer=*/true, null, /*tagged=*/false);
+  static Server = new OperationSource(
+    false,
+    /*fromServer=*/ true,
+    null,
+    /*tagged=*/ false
+  );
 
   /**
    * @param {string} queryId
    * @return {!OperationSource}
    */
   static forServerTaggedQuery = function(queryId) {
-    return new OperationSource(false, /*fromServer=*/true, queryId, /*tagged=*/true);
+    return new OperationSource(
+      false,
+      /*fromServer=*/ true,
+      queryId,
+      /*tagged=*/ true
+    );
   };
 }

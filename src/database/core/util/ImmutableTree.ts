@@ -11,7 +11,7 @@ let emptyChildrenSingleton;
 export class ImmutableTree {
   value;
   children;
-  
+
   static Empty = new ImmutableTree(null);
 
   /**
@@ -82,7 +82,7 @@ export class ImmutableTree {
    */
   findRootMostMatchingPathAndValue(relativePath: Path, predicate) {
     if (this.value != null && predicate(this.value)) {
-      return {path: Path.Empty, value: this.value};
+      return { path: Path.Empty, value: this.value };
     } else {
       if (relativePath.isEmpty()) {
         return null;
@@ -90,12 +90,15 @@ export class ImmutableTree {
         var front = relativePath.getFront();
         var child = this.children.get(front);
         if (child !== null) {
-          var childExistingPathAndValue =
-              child.findRootMostMatchingPathAndValue(relativePath.popFront(),
-                                                     predicate);
+          var childExistingPathAndValue = child.findRootMostMatchingPathAndValue(
+            relativePath.popFront(),
+            predicate
+          );
           if (childExistingPathAndValue != null) {
-            var fullPath = new Path(front).child(childExistingPathAndValue.path);
-            return {path: fullPath, value: childExistingPathAndValue.value};
+            var fullPath = new Path(front).child(
+              childExistingPathAndValue.path
+            );
+            return { path: fullPath, value: childExistingPathAndValue.value };
           } else {
             return null;
           }
@@ -113,7 +116,9 @@ export class ImmutableTree {
    * @return {?{path: !Path, value: !T}}
    */
   findRootMostValueAndPath(relativePath) {
-    return this.findRootMostMatchingPathAndValue(relativePath, function() { return true; });
+    return this.findRootMostMatchingPathAndValue(relativePath, function() {
+      return true;
+    });
   }
 
   /**
@@ -282,7 +287,11 @@ export class ImmutableTree {
         var front = pathToFollow.getFront();
         var nextChild = this.children.get(front);
         if (nextChild) {
-          return nextChild.findOnPath_(pathToFollow.popFront(), pathSoFar.child(front), f);
+          return nextChild.findOnPath_(
+            pathToFollow.popFront(),
+            pathSoFar.child(front),
+            f
+          );
         } else {
           return null;
         }
@@ -304,8 +313,11 @@ export class ImmutableTree {
       var front = pathToFollow.getFront();
       var nextChild = this.children.get(front);
       if (nextChild) {
-        return nextChild.foreachOnPath_(pathToFollow.popFront(),
-                                        currentRelativePath.child(front), f);
+        return nextChild.foreachOnPath_(
+          pathToFollow.popFront(),
+          currentRelativePath.child(front),
+          f
+        );
       } else {
         return ImmutableTree.Empty;
       }
@@ -339,4 +351,4 @@ export class ImmutableTree {
       }
     });
   }
-}; // end ImmutableTree
+} // end ImmutableTree

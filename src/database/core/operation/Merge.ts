@@ -1,8 +1,8 @@
-import { Operation, OperationSource, OperationType } from './Operation';
+import { Operation, OperationSource, OperationType } from "./Operation";
 import { Overwrite } from "./Overwrite";
 import { Path } from "../util/Path";
 import { assert } from "../../../utils/assert";
-import { ImmutableTree } from '../util/ImmutableTree';
+import { ImmutableTree } from "../util/ImmutableTree";
 
 /**
  * @param {!OperationSource} source
@@ -15,10 +15,11 @@ export class Merge implements Operation {
   /** @inheritDoc */
   type = OperationType.MERGE;
 
-  constructor(/**@inheritDoc */ public source: OperationSource,
-              /**@inheritDoc */ public path: Path,
-              /**@inheritDoc */ public children: ImmutableTree) {
-  }
+  constructor(
+    /**@inheritDoc */ public source: OperationSource,
+    /**@inheritDoc */ public path: Path,
+    /**@inheritDoc */ public children: ImmutableTree
+  ) {}
 
   /**
    * @inheritDoc
@@ -37,8 +38,10 @@ export class Merge implements Operation {
         return new Merge(this.source, Path.Empty, childTree);
       }
     } else {
-      assert(this.path.getFront() === childName,
-        'Can\'t get a merge for a child not on the path of the operation');
+      assert(
+        this.path.getFront() === childName,
+        "Can't get a merge for a child not on the path of the operation"
+      );
       return new Merge(this.source, this.path.popFront(), this.children);
     }
   }
@@ -47,6 +50,14 @@ export class Merge implements Operation {
    * @inheritDoc
    */
   toString(): string {
-    return 'Operation(' + this.path + ': ' + this.source.toString() + ' merge: ' + this.children.toString() + ')';
+    return (
+      "Operation(" +
+      this.path +
+      ": " +
+      this.source.toString() +
+      " merge: " +
+      this.children.toString() +
+      ")"
+    );
   }
 }

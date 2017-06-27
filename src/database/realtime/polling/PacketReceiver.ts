@@ -1,4 +1,4 @@
-import { exceptionGuard } from '../../core/util/util';
+import { exceptionGuard } from "../../core/util/util";
 
 /**
  * This class ensures the packets from the server arrive in order
@@ -12,8 +12,7 @@ export class PacketReceiver {
   closeAfterResponse = -1;
   onClose = null;
 
-  constructor(private onMessage_: any) {
-  }
+  constructor(private onMessage_: any) {}
 
   closeAfter(responseNum, callback) {
     this.closeAfterResponse = responseNum;
@@ -22,7 +21,7 @@ export class PacketReceiver {
       this.onClose();
       this.onClose = null;
     }
-  };
+  }
 
   /**
    * Each message from the server comes with a response number, and an array of data. The responseNumber
@@ -55,4 +54,3 @@ export class PacketReceiver {
     }
   }
 }
-

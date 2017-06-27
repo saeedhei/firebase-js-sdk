@@ -38,14 +38,22 @@ export class ViewCache {
      * @private
      */
     this.serverCache_ = serverCache;
-  };
+  }
   /**
    * @const
    * @type {ViewCache}
    */
   static Empty = new ViewCache(
-      new CacheNode(ChildrenNode.EMPTY_NODE, /*fullyInitialized=*/false, /*filtered=*/false),
-      new CacheNode(ChildrenNode.EMPTY_NODE, /*fullyInitialized=*/false, /*filtered=*/false)
+    new CacheNode(
+      ChildrenNode.EMPTY_NODE,
+      /*fullyInitialized=*/ false,
+      /*filtered=*/ false
+    ),
+    new CacheNode(
+      ChildrenNode.EMPTY_NODE,
+      /*fullyInitialized=*/ false,
+      /*filtered=*/ false
+    )
   );
 
   /**
@@ -55,8 +63,11 @@ export class ViewCache {
    * @return {!ViewCache}
    */
   updateEventSnap(eventSnap, complete, filtered) {
-    return new ViewCache(new CacheNode(eventSnap, complete, filtered), this.serverCache_);
-  };
+    return new ViewCache(
+      new CacheNode(eventSnap, complete, filtered),
+      this.serverCache_
+    );
+  }
 
   /**
    * @param {!fb.core.snap.Node} serverSnap
@@ -65,35 +76,41 @@ export class ViewCache {
    * @return {!ViewCache}
    */
   updateServerSnap(serverSnap, complete, filtered) {
-    return new ViewCache(this.eventCache_, new CacheNode(serverSnap, complete, filtered));
-  };
+    return new ViewCache(
+      this.eventCache_,
+      new CacheNode(serverSnap, complete, filtered)
+    );
+  }
 
   /**
    * @return {!CacheNode}
    */
   getEventCache() {
     return this.eventCache_;
-  };
+  }
 
   /**
    * @return {?fb.core.snap.Node}
    */
   getCompleteEventSnap() {
-    return (this.eventCache_.isFullyInitialized()) ? this.eventCache_.getNode() : null;
-  };
+    return this.eventCache_.isFullyInitialized()
+      ? this.eventCache_.getNode()
+      : null;
+  }
 
   /**
    * @return {!CacheNode}
    */
   getServerCache() {
     return this.serverCache_;
-  };
+  }
 
   /**
    * @return {?fb.core.snap.Node}
    */
   getCompleteServerSnap() {
-    return this.serverCache_.isFullyInitialized() ? this.serverCache_.getNode() : null;
-  };
+    return this.serverCache_.isFullyInitialized()
+      ? this.serverCache_.getNode()
+      : null;
+  }
 }
-

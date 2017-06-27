@@ -17,22 +17,22 @@
 /**
  * @fileoverview Defines the Firebase Storage Reference class.
  */
-import * as args from './implementation/args';
-import {AuthWrapper} from './implementation/authwrapper';
-import {FbsBlob} from './implementation/blob';
-import * as errorsExports from './implementation/error';
-import {errors} from './implementation/error';
-import {Location} from './implementation/location';
-import * as metadata from './implementation/metadata';
-import * as object from './implementation/object';
-import * as path from './implementation/path';
-import * as requests from './implementation/requests';
-import * as fbsString from './implementation/string';
-import {StringFormat} from './implementation/string';
-import * as type from './implementation/type';
-import {Metadata} from './metadata';
-import {Service} from './service';
-import {UploadTask} from './task';
+import * as args from "./implementation/args";
+import { AuthWrapper } from "./implementation/authwrapper";
+import { FbsBlob } from "./implementation/blob";
+import * as errorsExports from "./implementation/error";
+import { errors } from "./implementation/error";
+import { Location } from "./implementation/location";
+import * as metadata from "./implementation/metadata";
+import * as object from "./implementation/object";
+import * as path from "./implementation/path";
+import * as requests from "./implementation/requests";
+import * as fbsString from "./implementation/string";
+import { StringFormat } from "./implementation/string";
+import * as type from "./implementation/type";
+import { Metadata } from "./metadata";
+import { Service } from "./service";
+import { UploadTask } from "./task";
 
 /**
  * Provides methods to interact with a bucket in the Firebase Storage service.
@@ -48,7 +48,7 @@ import {UploadTask} from './task';
 export class Reference {
   protected location: Location;
 
-  constructor(protected authWrapper: AuthWrapper, location: string|Location) {
+  constructor(protected authWrapper: AuthWrapper, location: string | Location) {
     if (location instanceof Location) {
       this.location = location;
     } else {
@@ -62,8 +62,8 @@ export class Reference {
    * @override
    */
   toString(): string {
-    args.validate('toString', [], arguments);
-    return 'gs://' + this.location.bucket + '/' + this.location.path;
+    args.validate("toString", [], arguments);
+    return "gs://" + this.location.bucket + "/" + this.location.path;
   }
 
   protected newRef(authWrapper: AuthWrapper, location: Location): Reference {
@@ -80,7 +80,7 @@ export class Reference {
    *     slashes.
    */
   child(childPath: string): Reference {
-    args.validate('child', [args.stringSpec()], arguments);
+    args.validate("child", [args.stringSpec()], arguments);
     let newPath = path.child(this.location.path, childPath);
     let location = new Location(this.location.bucket, newPath);
     return this.newRef(this.authWrapper, location);
@@ -90,7 +90,7 @@ export class Reference {
    * @return A reference to the parent of the
    *     current object, or null if the current object is the root.
    */
-  get parent(): Reference|null {
+  get parent(): Reference | null {
     let newPath = path.parent(this.location.path);
     if (newPath === null) {
       return null;
@@ -104,7 +104,7 @@ export class Reference {
    *     object's bucket.
    */
   get root(): Reference {
-    let location = new Location(this.location.bucket, '');
+    let location = new Location(this.location.bucket, "");
     return this.newRef(this.authWrapper, location);
   }
 
@@ -130,13 +130,24 @@ export class Reference {
    * @return An UploadTask that lets you control and
    *     observe the upload.
    */
-  put(data: Blob|Uint8Array|ArrayBuffer, metadata: Metadata|null = null): UploadTask {
+  put(
+    data: Blob | Uint8Array | ArrayBuffer,
+    metadata: Metadata | null = null
+  ): UploadTask {
     args.validate(
-        'put', [args.uploadDataSpec(), args.metadataSpec(true)], arguments);
-    this.throwIfRoot_('put');
+      "put",
+      [args.uploadDataSpec(), args.metadataSpec(true)],
+      arguments
+    );
+    this.throwIfRoot_("put");
     return new UploadTask(
-        this, this.authWrapper, this.location, this.mappings(), new FbsBlob(data),
-        metadata);
+      this,
+      this.authWrapper,
+      this.location,
+      this.mappings(),
+      new FbsBlob(data),
+      metadata
+    );
   }
 
   /**
@@ -146,24 +157,34 @@ export class Reference {
    * @return An UploadTask that lets you control and
    *     observe the upload.
    */
-  putString(string: string, format: StringFormat = StringFormat.RAW, opt_metadata?: Metadata):
-      UploadTask {
+  putString(
+    string: string,
+    format: StringFormat = StringFormat.RAW,
+    opt_metadata?: Metadata
+  ): UploadTask {
     args.validate(
-        'putString',
-        [
-          args.stringSpec(), args.stringSpec(fbsString.formatValidator, true),
-          args.metadataSpec(true)
-        ],
-        arguments);
-    this.throwIfRoot_('putString');
+      "putString",
+      [
+        args.stringSpec(),
+        args.stringSpec(fbsString.formatValidator, true),
+        args.metadataSpec(true)
+      ],
+      arguments
+    );
+    this.throwIfRoot_("putString");
     let data = fbsString.dataFromString(format, string);
     let metadata = object.clone<Metadata>(opt_metadata);
-    if (!type.isDef(metadata['contentType']) && type.isDef(data.contentType)) {
-      metadata['contentType'] = data.contentType;
+    if (!type.isDef(metadata["contentType"]) && type.isDef(data.contentType)) {
+      metadata["contentType"] = data.contentType;
     }
     return new UploadTask(
-        this, this.authWrapper, this.location, this.mappings(),
-        new FbsBlob(data.data, true), metadata);
+      this,
+      this.authWrapper,
+      this.location,
+      this.mappings(),
+      new FbsBlob(data.data, true),
+      metadata
+    );
   }
 
   /**
@@ -171,8 +192,8 @@ export class Reference {
    * @return A promise that resolves if the deletion succeeds.
    */
   delete(): Promise<void> {
-    args.validate('delete', [], arguments);
-    this.throwIfRoot_('delete');
+    args.validate("delete", [], arguments);
+    this.throwIfRoot_("delete");
     let self = this;
     return this.authWrapper.getAuthToken().then(function(authToken) {
       let requestInfo = requests.deleteObject(self.authWrapper, self.location);
@@ -186,12 +207,15 @@ export class Reference {
    *     rejected.
    */
   getMetadata(): Promise<Metadata> {
-    args.validate('getMetadata', [], arguments);
-    this.throwIfRoot_('getMetadata');
+    args.validate("getMetadata", [], arguments);
+    this.throwIfRoot_("getMetadata");
     let self = this;
     return this.authWrapper.getAuthToken().then(function(authToken) {
       let requestInfo = requests.getMetadata(
-          self.authWrapper, self.location, self.mappings());
+        self.authWrapper,
+        self.location,
+        self.mappings()
+      );
       return self.authWrapper.makeRequest(requestInfo, authToken).getPromise();
     });
   }
@@ -206,12 +230,16 @@ export class Reference {
    *     @see firebaseStorage.Reference.prototype.getMetadata
    */
   updateMetadata(metadata: Metadata): Promise<Metadata> {
-    args.validate('updateMetadata', [args.metadataSpec()], arguments);
-    this.throwIfRoot_('updateMetadata');
+    args.validate("updateMetadata", [args.metadataSpec()], arguments);
+    this.throwIfRoot_("updateMetadata");
     let self = this;
     return this.authWrapper.getAuthToken().then(function(authToken) {
       let requestInfo = requests.updateMetadata(
-          self.authWrapper, self.location, metadata, self.mappings());
+        self.authWrapper,
+        self.location,
+        metadata,
+        self.mappings()
+      );
       return self.authWrapper.makeRequest(requestInfo, authToken).getPromise();
     });
   }
@@ -221,10 +249,10 @@ export class Reference {
    *     URL for this object.
    */
   getDownloadURL(): Promise<string> {
-    args.validate('getDownloadURL', [], arguments);
-    this.throwIfRoot_('getDownloadURL');
+    args.validate("getDownloadURL", [], arguments);
+    this.throwIfRoot_("getDownloadURL");
     return this.getMetadata().then(function(metadata) {
-      let url = (metadata['downloadURLs'] as string[])[0];
+      let url = (metadata["downloadURLs"] as string[])[0];
       if (type.isDef(url)) {
         return url;
       } else {
@@ -234,7 +262,7 @@ export class Reference {
   }
 
   private throwIfRoot_(name: string) {
-    if (this.location.path === '') {
+    if (this.location.path === "") {
       throw errorsExports.invalidRootOperation(name);
     }
   }

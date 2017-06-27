@@ -19,11 +19,14 @@ let __referenceConstructor;
  */
 export class SyncPoint {
   static set __referenceConstructor(val) {
-    assert(!__referenceConstructor, '__referenceConstructor has already been defined');    
+    assert(
+      !__referenceConstructor,
+      "__referenceConstructor has already been defined"
+    );
     __referenceConstructor = val;
   }
   static get __referenceConstructor() {
-    assert(__referenceConstructor, 'Reference.ts has not been loaded');
+    assert(__referenceConstructor, "Reference.ts has not been loaded");
     return __referenceConstructor;
   }
 
@@ -38,14 +41,14 @@ export class SyncPoint {
      * @type {!Object.<!string, !View>}
      * @private
      */
-    this.views_ = { };
-  };
+    this.views_ = {};
+  }
   /**
    * @return {boolean}
    */
   isEmpty() {
     return isEmpty(this.views_);
-  };
+  }
 
   /**
    *
@@ -58,18 +61,24 @@ export class SyncPoint {
     var queryId = operation.source.queryId;
     if (queryId !== null) {
       var view = safeGet(this.views_, queryId);
-      assert(view != null, 'SyncTree gave us an op for an invalid query.');
-      return view.applyOperation(operation, writesCache, optCompleteServerCache);
+      assert(view != null, "SyncTree gave us an op for an invalid query.");
+      return view.applyOperation(
+        operation,
+        writesCache,
+        optCompleteServerCache
+      );
     } else {
       var events = [];
 
       forEach(this.views_, function(key, view) {
-        events = events.concat(view.applyOperation(operation, writesCache, optCompleteServerCache));
+        events = events.concat(
+          view.applyOperation(operation, writesCache, optCompleteServerCache)
+        );
       });
 
       return events;
     }
-  };
+  }
 
   /**
    * Add an event callback for the specified query.
@@ -81,12 +90,20 @@ export class SyncPoint {
    * @param {boolean} serverCacheComplete
    * @return {!Array.<!Event>} Events to raise.
    */
-  addEventRegistration(query, eventRegistration, writesCache, serverCache, serverCacheComplete) {
+  addEventRegistration(
+    query,
+    eventRegistration,
+    writesCache,
+    serverCache,
+    serverCacheComplete
+  ) {
     var queryId = query.queryIdentifier();
     var view = safeGet(this.views_, queryId);
     if (!view) {
       // TODO: make writesCache take flag for complete server node
-      var eventCache = writesCache.calcCompleteEventCache(serverCacheComplete ? serverCache : null);
+      var eventCache = writesCache.calcCompleteEventCache(
+        serverCacheComplete ? serverCache : null
+      );
       var eventCacheComplete = false;
       if (eventCache) {
         eventCacheComplete = true;
@@ -98,8 +115,16 @@ export class SyncPoint {
         eventCacheComplete = false;
       }
       var viewCache = new ViewCache(
-          new CacheNode(/** @type {!Node} */ (eventCache), eventCacheComplete, false),
-          new CacheNode(/** @type {!Node} */ (serverCache), serverCacheComplete, false)
+        new CacheNode /** @type {!Node} */(
+          eventCache,
+          eventCacheComplete,
+          false
+        ),
+        new CacheNode /** @type {!Node} */(
+          serverCache,
+          serverCacheComplete,
+          false
+        )
       );
       view = new View(query, viewCache);
       this.views_[queryId] = view;
@@ -108,7 +133,7 @@ export class SyncPoint {
     // This is guaranteed to exist now, we just created anything that was missing
     view.addEventRegistration(eventRegistration);
     return view.getInitialEvents(eventRegistration);
-  };
+  }
 
   /**
    * Remove event callback(s).  Return cancelEvents if a cancelError is specified.
@@ -126,11 +151,13 @@ export class SyncPoint {
     var removed = [];
     var cancelEvents = [];
     var hadCompleteView = this.hasCompleteView();
-    if (queryId === 'default') {
+    if (queryId === "default") {
       // When you do ref.off(...), we search all views for the registration to remove.
       var self = this;
       forEach(this.views_, function(viewQueryId, view) {
-        cancelEvents = cancelEvents.concat(view.removeEventRegistration(eventRegistration, cancelError));
+        cancelEvents = cancelEvents.concat(
+          view.removeEventRegistration(eventRegistration, cancelError)
+        );
         if (view.isEmpty()) {
           delete self.views_[viewQueryId];
 
@@ -144,7 +171,9 @@ export class SyncPoint {
       // remove the callback from the specific view.
       var view = safeGet(this.views_, queryId);
       if (view) {
-        cancelEvents = cancelEvents.concat(view.removeEventRegistration(eventRegistration, cancelError));
+        cancelEvents = cancelEvents.concat(
+          view.removeEventRegistration(eventRegistration, cancelError)
+        );
         if (view.isEmpty()) {
           delete this.views_[queryId];
 
@@ -158,22 +187,23 @@ export class SyncPoint {
 
     if (hadCompleteView && !this.hasCompleteView()) {
       // We removed our last complete view.
-      removed.push(new SyncPoint.__referenceConstructor(query.repo, query.path));
+      removed.push(
+        new SyncPoint.__referenceConstructor(query.repo, query.path)
+      );
     }
 
-    return {removed: removed, events: cancelEvents};
-  };
+    return { removed: removed, events: cancelEvents };
+  }
 
   /**
    * @return {!Array.<!View>}
    */
   getQueryViews() {
-    const values = Object.keys(this.views_)
-      .map(key => this.views_[key]);
+    const values = Object.keys(this.views_).map(key => this.views_[key]);
     return values.filter(function(view) {
       return !view.getQuery().getQueryParams().loadsAllData();
     });
-  };
+  }
 
   /**
    *
@@ -186,7 +216,7 @@ export class SyncPoint {
       serverCache = serverCache || view.getCompleteServerCache(path);
     });
     return serverCache;
-  };
+  }
 
   /**
    * @param {!Query} query
@@ -200,7 +230,7 @@ export class SyncPoint {
       var queryId = query.queryIdentifier();
       return safeGet(this.views_, queryId);
     }
-  };
+  }
 
   /**
    * @param {!Query} query
@@ -208,14 +238,14 @@ export class SyncPoint {
    */
   viewExistsForQuery(query) {
     return this.viewForQuery(query) != null;
-  };
+  }
 
   /**
    * @return {boolean}
    */
   hasCompleteView() {
     return this.getCompleteView() != null;
-  };
+  }
 
   /**
    * @return {?View}
@@ -225,5 +255,5 @@ export class SyncPoint {
       return view.getQuery().getQueryParams().loadsAllData();
     });
     return completeView || null;
-  };
+  }
 }

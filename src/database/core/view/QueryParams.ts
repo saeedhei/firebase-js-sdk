@@ -1,8 +1,5 @@
 import { assert } from "../../../utils/assert";
-import { 
-  MIN_NAME,
-  MAX_NAME
-} from "../util/util";
+import { MIN_NAME, MAX_NAME } from "../util/util";
 import { KEY_INDEX } from "../snap/indexes/KeyIndex";
 import { PRIORITY_INDEX } from "../snap/indexes/PriorityIndex";
 import { VALUE_INDEX } from "../snap/indexes/ValueIndex";
@@ -19,19 +16,19 @@ import { stringify } from "../../../utils/json";
  * @constructor
  */
 export class QueryParams {
-  endNameSet_
-  endSet_
-  index_
-  indexEndName_
-  indexEndValue_
-  indexStartName_
-  indexStartValue_
-  limit_
-  limitSet_
-  startEndSet_
-  startNameSet_
-  startSet_
-  viewFrom_
+  endNameSet_;
+  endSet_;
+  index_;
+  indexEndName_;
+  indexEndValue_;
+  indexStartName_;
+  indexStartValue_;
+  limit_;
+  limitSet_;
+  startEndSet_;
+  startNameSet_;
+  startSet_;
+  viewFrom_;
 
   constructor() {
     this.limitSet_ = false;
@@ -41,14 +38,14 @@ export class QueryParams {
     this.endNameSet_ = false;
 
     this.limit_ = 0;
-    this.viewFrom_ = '';
+    this.viewFrom_ = "";
     this.indexStartValue_ = null;
-    this.indexStartName_ = '';
+    this.indexStartName_ = "";
     this.indexEndValue_ = null;
-    this.indexEndName_ = '';
+    this.indexEndName_ = "";
 
     this.index_ = PRIORITY_INDEX;
-  };
+  }
   /**
    * Wire Protocol Constants
    * @const
@@ -56,15 +53,15 @@ export class QueryParams {
    * @private
    */
   private static WIRE_PROTOCOL_CONSTANTS_ = {
-    INDEX_START_VALUE: 'sp',
-    INDEX_START_NAME: 'sn',
-    INDEX_END_VALUE: 'ep',
-    INDEX_END_NAME: 'en',
-    LIMIT: 'l',
-    VIEW_FROM: 'vf',
-    VIEW_FROM_LEFT: 'l',
-    VIEW_FROM_RIGHT: 'r',
-    INDEX: 'i'
+    INDEX_START_VALUE: "sp",
+    INDEX_START_NAME: "sn",
+    INDEX_END_VALUE: "ep",
+    INDEX_END_NAME: "en",
+    LIMIT: "l",
+    VIEW_FROM: "vf",
+    VIEW_FROM_LEFT: "l",
+    VIEW_FROM_RIGHT: "r",
+    INDEX: "i"
   };
 
   /**
@@ -74,14 +71,14 @@ export class QueryParams {
    * @private
    */
   private static REST_QUERY_CONSTANTS_ = {
-    ORDER_BY: 'orderBy',
-    PRIORITY_INDEX: '$priority',
-    VALUE_INDEX: '$value',
-    KEY_INDEX: '$key',
-    START_AT: 'startAt',
-    END_AT: 'endAt',
-    LIMIT_TO_FIRST: 'limitToFirst',
-    LIMIT_TO_LAST: 'limitToLast'
+    ORDER_BY: "orderBy",
+    PRIORITY_INDEX: "$priority",
+    VALUE_INDEX: "$value",
+    KEY_INDEX: "$key",
+    START_AT: "startAt",
+    END_AT: "endAt",
+    LIMIT_TO_FIRST: "limitToFirst",
+    LIMIT_TO_LAST: "limitToLast"
   };
 
   /**
@@ -96,31 +93,33 @@ export class QueryParams {
    */
   hasStart() {
     return this.startSet_;
-  };
+  }
 
   /**
    * @return {boolean} True if it would return from left.
    */
   isViewFromLeft() {
-    if (this.viewFrom_ === '') {
+    if (this.viewFrom_ === "") {
       // limit(), rather than limitToFirst or limitToLast was called.
       // This means that only one of startSet_ and endSet_ is true. Use them
       // to calculate which side of the view to anchor to. If neither is set,
       // anchor to the end.
       return this.startSet_;
     } else {
-      return this.viewFrom_ === QueryParams.WIRE_PROTOCOL_CONSTANTS_.VIEW_FROM_LEFT;
+      return (
+        this.viewFrom_ === QueryParams.WIRE_PROTOCOL_CONSTANTS_.VIEW_FROM_LEFT
+      );
     }
-  };
+  }
 
   /**
    * Only valid to call if hasStart() returns true
    * @return {*}
    */
   getIndexStartValue() {
-    assert(this.startSet_, 'Only valid if start has been set');
+    assert(this.startSet_, "Only valid if start has been set");
     return this.indexStartValue_;
-  };
+  }
 
   /**
    * Only valid to call if hasStart() returns true.
@@ -128,29 +127,29 @@ export class QueryParams {
    * @return {!string}
    */
   getIndexStartName() {
-    assert(this.startSet_, 'Only valid if start has been set');
+    assert(this.startSet_, "Only valid if start has been set");
     if (this.startNameSet_) {
       return this.indexStartName_;
     } else {
       return MIN_NAME;
     }
-  };
+  }
 
   /**
    * @return {boolean}
    */
   hasEnd() {
     return this.endSet_;
-  };
+  }
 
   /**
    * Only valid to call if hasEnd() returns true.
    * @return {*}
    */
   getIndexEndValue() {
-    assert(this.endSet_, 'Only valid if end has been set');
+    assert(this.endSet_, "Only valid if end has been set");
     return this.indexEndValue_;
-  };
+  }
 
   /**
    * Only valid to call if hasEnd() returns true.
@@ -158,43 +157,43 @@ export class QueryParams {
    * @return {!string}
    */
   getIndexEndName() {
-    assert(this.endSet_, 'Only valid if end has been set');
+    assert(this.endSet_, "Only valid if end has been set");
     if (this.endNameSet_) {
       return this.indexEndName_;
     } else {
       return MAX_NAME;
     }
-  };
+  }
 
   /**
    * @return {boolean}
    */
   hasLimit() {
     return this.limitSet_;
-  };
+  }
 
   /**
    * @return {boolean} True if a limit has been set and it has been explicitly anchored
    */
   hasAnchoredLimit() {
-    return this.limitSet_ && this.viewFrom_ !== '';
-  };
+    return this.limitSet_ && this.viewFrom_ !== "";
+  }
 
   /**
    * Only valid to call if hasLimit() returns true
    * @return {!number}
    */
   getLimit() {
-    assert(this.limitSet_, 'Only valid if limit has been set');
+    assert(this.limitSet_, "Only valid if limit has been set");
     return this.limit_;
-  };
+  }
 
   /**
    * @return {!Index}
    */
   getIndex() {
     return this.index_;
-  };
+  }
 
   /**
    * @return {!QueryParams}
@@ -215,7 +214,7 @@ export class QueryParams {
     copy.index_ = this.index_;
     copy.viewFrom_ = this.viewFrom_;
     return copy;
-  };
+  }
 
   /**
    * @param {!number} newLimit
@@ -225,9 +224,9 @@ export class QueryParams {
     var newParams = this.copy_();
     newParams.limitSet_ = true;
     newParams.limit_ = newLimit;
-    newParams.viewFrom_ = '';
+    newParams.viewFrom_ = "";
     return newParams;
-  };
+  }
 
   /**
    * @param {!number} newLimit
@@ -239,7 +238,7 @@ export class QueryParams {
     newParams.limit_ = newLimit;
     newParams.viewFrom_ = QueryParams.WIRE_PROTOCOL_CONSTANTS_.VIEW_FROM_LEFT;
     return newParams;
-  };
+  }
 
   /**
    * @param {!number} newLimit
@@ -251,7 +250,7 @@ export class QueryParams {
     newParams.limit_ = newLimit;
     newParams.viewFrom_ = QueryParams.WIRE_PROTOCOL_CONSTANTS_.VIEW_FROM_RIGHT;
     return newParams;
-  };
+  }
 
   /**
    * @param {*} indexValue
@@ -270,10 +269,10 @@ export class QueryParams {
       newParams.indexStartName_ = key;
     } else {
       newParams.startNameSet_ = false;
-      newParams.indexStartName_ = '';
+      newParams.indexStartName_ = "";
     }
     return newParams;
-  };
+  }
 
   /**
    * @param {*} indexValue
@@ -287,15 +286,15 @@ export class QueryParams {
       indexValue = null;
     }
     newParams.indexEndValue_ = indexValue;
-    if ((key !== undefined)) {
+    if (key !== undefined) {
       newParams.endNameSet_ = true;
       newParams.indexEndName_ = key;
     } else {
       newParams.startEndSet_ = false;
-      newParams.indexEndName_ = '';
+      newParams.indexEndName_ = "";
     }
     return newParams;
-  };
+  }
 
   /**
    * @param {!Index} index
@@ -305,7 +304,7 @@ export class QueryParams {
     var newParams = this.copy_();
     newParams.index_ = index;
     return newParams;
-  };
+  }
 
   /**
    * @return {!Object}
@@ -328,7 +327,7 @@ export class QueryParams {
     if (this.limitSet_) {
       obj[WIRE_PROTOCOL_CONSTANTS.LIMIT] = this.limit_;
       var viewFrom = this.viewFrom_;
-      if (viewFrom === '') {
+      if (viewFrom === "") {
         if (this.isViewFromLeft()) {
           viewFrom = WIRE_PROTOCOL_CONSTANTS.VIEW_FROM_LEFT;
         } else {
@@ -342,21 +341,21 @@ export class QueryParams {
       obj[WIRE_PROTOCOL_CONSTANTS.INDEX] = this.index_.toString();
     }
     return obj;
-  };
+  }
 
   /**
    * @return {boolean}
    */
   loadsAllData() {
     return !(this.startSet_ || this.endSet_ || this.limitSet_);
-  };
+  }
 
   /**
    * @return {boolean}
    */
   isDefault() {
     return this.loadsAllData() && this.index_ == PRIORITY_INDEX;
-  };
+  }
 
   /**
    * @return {!NodeFilter}
@@ -369,8 +368,7 @@ export class QueryParams {
     } else {
       return new RangedFilter(this);
     }
-  };
-
+  }
 
   /**
    * Returns a set of REST query string parameters representing this query.
@@ -379,7 +377,7 @@ export class QueryParams {
    */
   toRestQueryStringParameters() {
     var REST_CONSTANTS = QueryParams.REST_QUERY_CONSTANTS_;
-    var qs = { };
+    var qs = {};
 
     if (this.isDefault()) {
       return qs;
@@ -393,7 +391,7 @@ export class QueryParams {
     } else if (this.index_ === KEY_INDEX) {
       orderBy = REST_CONSTANTS.KEY_INDEX;
     } else {
-      assert(this.index_ instanceof PathIndex, 'Unrecognized index type!');
+      assert(this.index_ instanceof PathIndex, "Unrecognized index type!");
       orderBy = this.index_.toString();
     }
     qs[REST_CONSTANTS.ORDER_BY] = stringify(orderBy);
@@ -401,14 +399,14 @@ export class QueryParams {
     if (this.startSet_) {
       qs[REST_CONSTANTS.START_AT] = stringify(this.indexStartValue_);
       if (this.startNameSet_) {
-        qs[REST_CONSTANTS.START_AT] += ',' + stringify(this.indexStartName_);
+        qs[REST_CONSTANTS.START_AT] += "," + stringify(this.indexStartName_);
       }
     }
 
     if (this.endSet_) {
       qs[REST_CONSTANTS.END_AT] = stringify(this.indexEndValue_);
       if (this.endNameSet_) {
-        qs[REST_CONSTANTS.END_AT] += ',' + stringify(this.indexEndName_);
+        qs[REST_CONSTANTS.END_AT] += "," + stringify(this.indexEndName_);
       }
     }
 
@@ -421,5 +419,5 @@ export class QueryParams {
     }
 
     return qs;
-  };
+  }
 }

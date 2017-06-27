@@ -53,16 +53,16 @@
  *     }
  *   }
  */
-export type ErrorList<T> = {[code: string]: string};
+export type ErrorList<T> = { [code: string]: string };
 
-const ERROR_NAME = 'FirebaseError';
+const ERROR_NAME = "FirebaseError";
 
 export interface StringLike {
   toString: () => string;
 }
 
-let captureStackTrace: (obj: Object, fn?: Function) => void =
-  (Error as any).captureStackTrace;
+let captureStackTrace: (obj: Object, fn?: Function) => void = (Error as any)
+  .captureStackTrace;
 
 // Export for faking in tests
 export function patchCapture(captureFake?: any): any {
@@ -73,24 +73,23 @@ export function patchCapture(captureFake?: any): any {
 
 export interface FirebaseError {
   // Unique code for error - format is service/error-code-string
-  code: string,
+  code: string;
 
   // Developer-friendly error message.
-  message: string,
+  message: string;
 
   // Always 'FirebaseError'
-  name: string,
+  name: string;
 
   // Where available - stack backtrace in a string
-  stack: string,
+  stack: string;
 }
 
 export class FirebaseError implements FirebaseError {
   public stack: string;
   public name: string;
 
-  constructor(public code: string,
-              public message: string) {
+  constructor(public code: string, public message: string) {
     let stack: string;
     // We want the stack value, if implemented by Error
     if (captureStackTrace) {
@@ -100,7 +99,7 @@ export class FirebaseError implements FirebaseError {
       let err = Error.apply(this, arguments);
       this.name = ERROR_NAME;
       // Make non-enumerable getter for the property.
-      Object.defineProperty(this, 'stack', {
+      Object.defineProperty(this, "stack", {
         get: function() {
           return err.stack;
         }
@@ -116,22 +115,24 @@ FirebaseError.prototype.constructor = FirebaseError;
 
 export class ErrorFactory<T extends string> {
   // Matches {$name}, by default.
-  public pattern = /\{\$([^}]+)}/g
+  public pattern = /\{\$([^}]+)}/g;
 
-  constructor(private service: string,
-              private serviceName: string,
-              private errors: ErrorList<T>) {
+  constructor(
+    private service: string,
+    private serviceName: string,
+    private errors: ErrorList<T>
+  ) {
     // empty
   }
 
-  create(code: T, data?: {[prop: string]: StringLike}): FirebaseError {
+  create(code: T, data?: { [prop: string]: StringLike }): FirebaseError {
     if (data === undefined) {
       data = {};
     }
 
-    let template = this.errors[(code as string)];
+    let template = this.errors[code as string];
 
-    let fullCode = this.service + '/' + code;
+    let fullCode = this.service + "/" + code;
     let message: string;
 
     if (template === undefined) {
@@ -139,19 +140,18 @@ export class ErrorFactory<T extends string> {
     } else {
       message = template.replace(this.pattern, (match, key) => {
         let value = data![key];
-        return value !== undefined ? value.toString()
-          : '<' + key + '?>';
+        return value !== undefined ? value.toString() : "<" + key + "?>";
       });
     }
 
     // Service: Error message (service/code).
-    message = this.serviceName + ': ' + message + ' (' + fullCode + ').';
+    message = this.serviceName + ": " + message + " (" + fullCode + ").";
     let err = new FirebaseError(fullCode, message);
 
     // Populate the Error object with message parts for programmatic
     // accesses (e.g., e.file).
     for (let prop in data) {
-      if (!data.hasOwnProperty(prop) || prop.slice(-1) === '_') {
+      if (!data.hasOwnProperty(prop) || prop.slice(-1) === "_") {
         continue;
       }
       (err as any)[prop] = data[prop];

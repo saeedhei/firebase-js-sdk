@@ -13,14 +13,14 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-import * as args from './implementation/args';
-import {AuthWrapper} from './implementation/authwrapper';
-import {Location} from './implementation/location';
-import * as fbsPromiseImpl from './implementation/promise_external';
-import * as RequestExports from './implementation/request';
-import {Request} from './implementation/request';
-import {XhrIoPool} from './implementation/xhriopool';
-import {Reference} from './reference';
+import * as args from "./implementation/args";
+import { AuthWrapper } from "./implementation/authwrapper";
+import { Location } from "./implementation/location";
+import * as fbsPromiseImpl from "./implementation/promise_external";
+import * as RequestExports from "./implementation/request";
+import { Request } from "./implementation/request";
+import { XhrIoPool } from "./implementation/xhriopool";
+import { Reference } from "./reference";
 import { FirebaseApp } from "../app/firebase_app";
 
 /**
@@ -32,22 +32,27 @@ import { FirebaseApp } from "../app/firebase_app";
 export class Service {
   authWrapper_: AuthWrapper;
   private app_: FirebaseApp;
-  private bucket_: Location|null = null;
+  private bucket_: Location | null = null;
   private internals_: ServiceInternals;
 
   constructor(app: FirebaseApp, pool: XhrIoPool, url?: string) {
     function maker(authWrapper: AuthWrapper, loc: Location) {
       return new Reference(authWrapper, loc);
     }
-    this.authWrapper_ =
-        new AuthWrapper(app, maker, RequestExports.makeRequest, this, pool);
+    this.authWrapper_ = new AuthWrapper(
+      app,
+      maker,
+      RequestExports.makeRequest,
+      this,
+      pool
+    );
     this.app_ = app;
     if (url != null) {
       this.bucket_ = Location.makeFromBucketSpec(url);
     } else {
       const authWrapperBucket = this.authWrapper_.bucket();
       if (authWrapperBucket != null) {
-        this.bucket_ = new Location(authWrapperBucket, '');
+        this.bucket_ = new Location(authWrapperBucket, "");
       }
     }
     this.internals_ = new ServiceInternals(this);
@@ -60,12 +65,12 @@ export class Service {
   ref(path?: string): Reference {
     function validator(path: string) {
       if (/^[A-Za-z]+:\/\//.test(path)) {
-        throw 'Expected child path but got a URL, use refFromURL instead.';
+        throw "Expected child path but got a URL, use refFromURL instead.";
       }
     }
-    args.validate('ref', [args.stringSpec(validator, true)], arguments);
+    args.validate("ref", [args.stringSpec(validator, true)], arguments);
     if (this.bucket_ == null) {
-      throw new Error('No Storage Bucket defined in Firebase Options.');
+      throw new Error("No Storage Bucket defined in Firebase Options.");
     }
 
     let ref = new Reference(this.authWrapper_, this.bucket_);
@@ -83,15 +88,15 @@ export class Service {
   refFromURL(url: string): Reference {
     function validator(p: string) {
       if (!/^[A-Za-z]+:\/\//.test(p)) {
-        throw 'Expected full URL but got a child path, use ref instead.';
+        throw "Expected full URL but got a child path, use ref instead.";
       }
       try {
         Location.makeFromUrl(p);
       } catch (e) {
-        throw 'Expected valid full URL but got an invalid one.';
+        throw "Expected valid full URL but got an invalid one.";
       }
     }
-    args.validate('refFromURL', [args.stringSpec(validator, false)], arguments);
+    args.validate("refFromURL", [args.stringSpec(validator, false)], arguments);
     return new Reference(this.authWrapper_, url);
   }
 
@@ -101,7 +106,10 @@ export class Service {
 
   setMaxUploadRetryTime(time: number) {
     args.validate(
-        'setMaxUploadRetryTime', [args.nonNegativeNumberSpec()], arguments);
+      "setMaxUploadRetryTime",
+      [args.nonNegativeNumberSpec()],
+      arguments
+    );
     this.authWrapper_.setMaxUploadRetryTime(time);
   }
 
@@ -111,7 +119,10 @@ export class Service {
 
   setMaxOperationRetryTime(time: number) {
     args.validate(
-        'setMaxOperationRetryTime', [args.nonNegativeNumberSpec()], arguments);
+      "setMaxOperationRetryTime",
+      [args.nonNegativeNumberSpec()],
+      arguments
+    );
     this.authWrapper_.setMaxOperationRetryTime(time);
   }
 

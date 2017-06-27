@@ -18,8 +18,8 @@ import {
   FirebaseNamespace,
   FirebaseApp,
   FirebaseService
-} from '../../../src/app/firebase_app';
-import {assert} from 'chai';
+} from "../../../src/app/firebase_app";
+import { assert } from "chai";
 
 describe("Firebase App Class", () => {
   let firebase: FirebaseNamespace;
@@ -36,32 +36,31 @@ describe("Firebase App Class", () => {
     let app = firebase.initializeApp({});
     assert.equal(firebase.apps.length, 1);
     assert.strictEqual(app, firebase.apps[0]);
-    assert.equal(app.name, '[DEFAULT]');
+    assert.equal(app.name, "[DEFAULT]");
     assert.strictEqual(firebase.app(), app);
-    assert.strictEqual(firebase.app('[DEFAULT]'), app);
+    assert.strictEqual(firebase.app("[DEFAULT]"), app);
   });
 
   it("Can get options of App.", () => {
-    const options = {'test': 'option'};
+    const options = { test: "option" };
     let app = firebase.initializeApp(options);
-    assert.deepEqual((app.options as any), (options as any));
+    assert.deepEqual(app.options as any, options as any);
   });
 
   it("Can delete App.", () => {
     let app = firebase.initializeApp({});
     assert.equal(firebase.apps.length, 1);
-    return app.delete()
-      .then(() => {
-        assert.equal(firebase.apps.length, 0);
-      });
+    return app.delete().then(() => {
+      assert.equal(firebase.apps.length, 0);
+    });
   });
 
-  it("Register App Hook", (done) => {
-    let events = ['create', 'delete'];
+  it("Register App Hook", done => {
+    let events = ["create", "delete"];
     let hookEvents = 0;
-    let app: FirebaseApp;;
+    let app: FirebaseApp;
     firebase.INTERNAL.registerService(
-      'test',
+      "test",
       (app: FirebaseApp) => {
         return new TestService(app);
       },
@@ -72,7 +71,8 @@ describe("Firebase App Class", () => {
         if (hookEvents === events.length) {
           done();
         }
-      });
+      }
+    );
     app = firebase.initializeApp({});
     // Ensure the hook is called synchronously
     assert.equal(hookEvents, 1);
@@ -80,14 +80,14 @@ describe("Firebase App Class", () => {
   });
 
   it("Can create named App.", () => {
-    let app = firebase.initializeApp({}, 'my-app');
+    let app = firebase.initializeApp({}, "my-app");
     assert.equal(firebase.apps.length, 1);
-    assert.equal(app.name, 'my-app');
-    assert.strictEqual(firebase.app('my-app'), app);
+    assert.equal(app.name, "my-app");
+    assert.strictEqual(firebase.app("my-app"), app);
   });
 
   it("Can create named App and DEFAULT app.", () => {
-    firebase.initializeApp({}, 'my-app');
+    firebase.initializeApp({}, "my-app");
     assert.equal(firebase.apps.length, 1);
     firebase.initializeApp({});
     assert.equal(firebase.apps.length, 2);
@@ -105,47 +105,47 @@ describe("Firebase App Class", () => {
   });
 
   it("Duplicate named App initialize is an error.", () => {
-    firebase.initializeApp({}, 'abc');
+    firebase.initializeApp({}, "abc");
     assert.throws(() => {
-      firebase.initializeApp({}, 'abc');
+      firebase.initializeApp({}, "abc");
     }, /'abc'.*exists/i);
   });
 
   it("Modifying options object does not change options.", () => {
-    let options = {opt: 'original', nested: {opt: 123}};
+    let options = { opt: "original", nested: { opt: 123 } };
     firebase.initializeApp(options);
-    options.opt = 'changed';
+    options.opt = "changed";
     options.nested.opt = 456;
-    assert.deepEqual(firebase.app().options,
-                     {opt: 'original', nested: {opt: 123}});
+    assert.deepEqual(firebase.app().options, {
+      opt: "original",
+      nested: { opt: 123 }
+    });
   });
 
   it("Error to use app after it is deleted.", () => {
     let app = firebase.initializeApp({});
-    return app.delete()
-      .then(() => {
-        assert.throws(() => {
-          console.log(app.name);
-        }, /already.*deleted/);
-      });
+    return app.delete().then(() => {
+      assert.throws(() => {
+        console.log(app.name);
+      }, /already.*deleted/);
+    });
   });
 
   it("OK to create same-name app after it is deleted.", () => {
-    let app = firebase.initializeApp({}, 'app-name');
-    return app.delete()
-      .then(() => {
-        let app2 = firebase.initializeApp({}, 'app-name');
-        assert.ok(app !== app2, "Expect new instance.");
-        // But original app id still orphaned.
-        assert.throws(() => {
-          console.log(app.name);
-        }, /already.*deleted/);
-      });
+    let app = firebase.initializeApp({}, "app-name");
+    return app.delete().then(() => {
+      let app2 = firebase.initializeApp({}, "app-name");
+      assert.ok(app !== app2, "Expect new instance.");
+      // But original app id still orphaned.
+      assert.throws(() => {
+        console.log(app.name);
+      }, /already.*deleted/);
+    });
   });
 
   it("Only calls createService on first use (per app).", () => {
     let registrations = 0;
-    firebase.INTERNAL.registerService('test', (app: FirebaseApp) => {
+    firebase.INTERNAL.registerService("test", (app: FirebaseApp) => {
       registrations += 1;
       return new TestService(app);
     });
@@ -160,7 +160,7 @@ describe("Firebase App Class", () => {
     (app as any).test();
     assert.equal(registrations, 1);
 
-    app = firebase.initializeApp({}, 'second');
+    app = firebase.initializeApp({}, "second");
     assert.equal(registrations, 1);
     (app as any).test();
     assert.equal(registrations, 2);
@@ -172,12 +172,12 @@ describe("Firebase App Class", () => {
     const app1 = firebase.initializeApp({});
     assert.isUndefined((app1 as any).lazyService);
 
-    firebase.INTERNAL.registerService('lazyService', (app: FirebaseApp) => {
+    firebase.INTERNAL.registerService("lazyService", (app: FirebaseApp) => {
       registrations += 1;
       return new TestService(app);
     });
 
-    assert.isDefined((app1 as any).lazyService);    
+    assert.isDefined((app1 as any).lazyService);
 
     // Initial service registration happens on first invocation
     assert.equal(registrations, 0);
@@ -195,9 +195,9 @@ describe("Firebase App Class", () => {
     assert.equal(registrations, 1);
 
     // Service should already be defined for the second app
-    const app2 = firebase.initializeApp({}, 'second');
+    const app2 = firebase.initializeApp({}, "second");
     assert.isDefined((app1 as any).lazyService);
-    
+
     // Service still should not have registered for the second app
     assert.equal(registrations, 1);
 
@@ -206,12 +206,12 @@ describe("Firebase App Class", () => {
     assert.equal(registrations, 2);
   });
 
-  it("Can lazy register App Hook", (done) => {
-    let events = ['create', 'delete'];
+  it("Can lazy register App Hook", done => {
+    let events = ["create", "delete"];
     let hookEvents = 0;
     const app = firebase.initializeApp({});
     firebase.INTERNAL.registerService(
-      'lazyServiceWithHook',
+      "lazyServiceWithHook",
       (app: FirebaseApp) => {
         return new TestService(app);
       },
@@ -222,18 +222,19 @@ describe("Firebase App Class", () => {
         if (hookEvents === events.length) {
           done();
         }
-      });
+      }
+    );
     // Ensure the hook is called synchronously
     assert.equal(hookEvents, 1);
     app.delete();
   });
 
-  it('Can register multiple instances of some services', () => {
+  it("Can register multiple instances of some services", () => {
     // Register Multi Instance Service
     firebase.INTERNAL.registerService(
-      'multiInstance',
+      "multiInstance",
       (...args) => {
-        const [app,,instanceIdentifier] = args;
+        const [app, , instanceIdentifier] = args;
         return new TestService(app, instanceIdentifier);
       },
       null,
@@ -247,23 +248,33 @@ describe("Firebase App Class", () => {
     assert.strictEqual(service, (firebase.app() as any).multiInstance());
 
     // Capture a custom instance service ref
-    const serviceIdentifier = 'custom instance identifier';
+    const serviceIdentifier = "custom instance identifier";
     const service2 = (firebase.app() as any).multiInstance(serviceIdentifier);
-    assert.strictEqual(service2, (firebase.app() as any).multiInstance(serviceIdentifier));
+    assert.strictEqual(
+      service2,
+      (firebase.app() as any).multiInstance(serviceIdentifier)
+    );
 
     // Ensure that the two services **are not equal**
-    assert.notStrictEqual(service.instanceIdentifier, service2.instanceIdentifier, '`instanceIdentifier` is not being set correctly');
+    assert.notStrictEqual(
+      service.instanceIdentifier,
+      service2.instanceIdentifier,
+      "`instanceIdentifier` is not being set correctly"
+    );
     assert.notStrictEqual(service, service2);
-    assert.notStrictEqual((firebase.app() as any).multiInstance(), (firebase.app() as any).multiInstance(serviceIdentifier));
+    assert.notStrictEqual(
+      (firebase.app() as any).multiInstance(),
+      (firebase.app() as any).multiInstance(serviceIdentifier)
+    );
   });
 
   it(`Should return the same instance of a service if a service doesn't support multi instance`, () => {
     // Register Multi Instance Service
     firebase.INTERNAL.registerService(
-      'singleInstance',
+      "singleInstance",
       (...args) => {
-        const [app,,instanceIdentifier] = args;
-        return new TestService(app, instanceIdentifier)
+        const [app, , instanceIdentifier] = args;
+        return new TestService(app, instanceIdentifier);
       },
       null,
       null,
@@ -272,60 +283,69 @@ describe("Firebase App Class", () => {
     firebase.initializeApp({});
 
     // Capture a given service ref
-    const serviceIdentifier = 'custom instance identifier';
+    const serviceIdentifier = "custom instance identifier";
     const service = (firebase.app() as any).singleInstance();
     const service2 = (firebase.app() as any).singleInstance(serviceIdentifier);
 
     // Ensure that the two services **are equal**
-    assert.strictEqual(service.instanceIdentifier, service2.instanceIdentifier, '`instanceIdentifier` is not being set correctly');
+    assert.strictEqual(
+      service.instanceIdentifier,
+      service2.instanceIdentifier,
+      "`instanceIdentifier` is not being set correctly"
+    );
     assert.strictEqual(service, service2);
   });
   it(`Should pass null to the factory method if using default instance`, () => {
     // Register Multi Instance Service
-    firebase.INTERNAL.registerService('testService', (...args) => {
-      const [app,,instanceIdentifier] = args;
-      assert.isUndefined(instanceIdentifier, '`instanceIdentifier` is not `undefined`');
+    firebase.INTERNAL.registerService("testService", (...args) => {
+      const [app, , instanceIdentifier] = args;
+      assert.isUndefined(
+        instanceIdentifier,
+        "`instanceIdentifier` is not `undefined`"
+      );
       return new TestService(app, instanceIdentifier);
     });
     firebase.initializeApp({});
 
     // Capture a given service ref
-    const serviceIdentifier = 'custom instance identifier';
+    const serviceIdentifier = "custom instance identifier";
     const service = (firebase.app() as any).testService();
   });
 
   it(`Should extend INTERNAL per app instance`, () => {
     let counter: number = 0;
     firebase.INTERNAL.registerService(
-      'test',
+      "test",
       (app: FirebaseApp, extendApp: any) => {
         const service = new TestService(app);
-        (service as any).token = 'tokenFor' + counter++;
+        (service as any).token = "tokenFor" + counter++;
         extendApp({
-          'INTERNAL': {
+          INTERNAL: {
             getToken: () => {
               return Promise.resolve({
-                accessToken: (service as any).token,
+                accessToken: (service as any).token
               });
-            },
-          },
-        }); 
+            }
+          }
+        });
         return service;
-      });
+      }
+    );
     // Initialize 2 apps and their corresponding services.
     const app = firebase.initializeApp({});
     (app as any).test();
-    const app2 = firebase.initializeApp({}, 'app2');
+    const app2 = firebase.initializeApp({}, "app2");
     (app2 as any).test();
     // Confirm extended INTERNAL getToken resolve with the corresponding
     // service's value.
-    return app.INTERNAL.getToken()
+    return app.INTERNAL
+      .getToken()
       .then(token => {
-        assert.equal('tokenFor0', token.accessToken);
+        assert.equal("tokenFor0", token.accessToken);
         return app2.INTERNAL.getToken();
       })
       .then(token => {
-        assert.equal('tokenFor1', token.accessToken);
+        assert.equal("tokenFor1", token.accessToken);
       });
   });
 
@@ -335,7 +355,7 @@ describe("Firebase App Class", () => {
       it("where name == '" + data + "'", () => {
         assert.throws(() => {
           firebase.initializeApp({}, data as string);
-        }, /Illegal app name/i);;
+        }, /Illegal app name/i);
       });
     }
   });

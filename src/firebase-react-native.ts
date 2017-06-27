@@ -15,15 +15,15 @@
 */
 
 import firebase from "./app";
-import './auth';
-import './database';
-import './storage';
+import "./auth";
+import "./database";
+import "./storage";
 
-var AsyncStorage = require('react-native').AsyncStorage;
+var AsyncStorage = require("react-native").AsyncStorage;
 firebase.INTERNAL.extendNamespace({
-  'INTERNAL': {
-    'reactNative': {
-      'AsyncStorage': AsyncStorage
+  INTERNAL: {
+    reactNative: {
+      AsyncStorage: AsyncStorage
     }
   }
 });

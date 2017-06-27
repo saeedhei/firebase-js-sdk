@@ -13,10 +13,10 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-import * as errorsExports from './error';
-import {errors} from './error';
-import * as MetadataUtils from './metadata';
-import * as type from './type';
+import * as errorsExports from "./error";
+import { errors } from "./error";
+import * as MetadataUtils from "./metadata";
+import * as type from "./type";
 
 /**
  * @param name Name of the function.
@@ -36,7 +36,11 @@ export function validate(name: string, specs: ArgSpec[], passed: IArguments) {
   let validLength = minArgs <= passed.length && passed.length <= maxArgs;
   if (!validLength) {
     throw errorsExports.invalidArgumentCount(
-        minArgs, maxArgs, name, passed.length);
+      minArgs,
+      maxArgs,
+      name,
+      passed.length
+    );
   }
   for (let i = 0; i < passed.length; i++) {
     try {
@@ -58,9 +62,7 @@ export class ArgSpec {
   validator: (p1: any) => void;
   optional: boolean;
 
-  constructor(
-      validator: (p1: any) => void,
-      opt_optional?: boolean) {
+  constructor(validator: (p1: any) => void, opt_optional?: boolean) {
     let self = this;
     this.validator = function(p: any) {
       if (self.optional && !type.isJustDef(p)) {
@@ -72,9 +74,7 @@ export class ArgSpec {
   }
 }
 
-export function and_(
-    v1: (p1: any) => void,
-    v2: Function): (p1: any) => void {
+export function and_(v1: (p1: any) => void, v2: Function): (p1: any) => void {
   return function(p) {
     v1(p);
     v2(p);
@@ -82,11 +82,12 @@ export function and_(
 }
 
 export function stringSpec(
-    opt_validator?: (p1: any) => void | null,
-    opt_optional?: boolean): ArgSpec {
+  opt_validator?: (p1: any) => void | null,
+  opt_optional?: boolean
+): ArgSpec {
   function stringValidator(p: any) {
     if (!type.isString(p)) {
-      throw 'Expected string.';
+      throw "Expected string.";
     }
   }
   let validator;
@@ -100,10 +101,12 @@ export function stringSpec(
 
 export function uploadDataSpec(): ArgSpec {
   function validator(p: any) {
-    let valid = p instanceof Uint8Array || p instanceof ArrayBuffer ||
-        type.isNativeBlobDefined() && p instanceof Blob;
+    let valid =
+      p instanceof Uint8Array ||
+      p instanceof ArrayBuffer ||
+      (type.isNativeBlobDefined() && p instanceof Blob);
     if (!valid) {
-      throw 'Expected Blob or File.';
+      throw "Expected Blob or File.";
     }
   }
   return new ArgSpec(validator);
@@ -117,19 +120,20 @@ export function nonNegativeNumberSpec(): ArgSpec {
   function validator(p: any) {
     let valid = type.isNumber(p) && p >= 0;
     if (!valid) {
-      throw 'Expected a number 0 or greater.';
+      throw "Expected a number 0 or greater.";
     }
   }
   return new ArgSpec(validator);
 }
 
 export function looseObjectSpec(
-    opt_validator?: ((p1: any) => void) | null,
-    opt_optional?: boolean): ArgSpec {
+  opt_validator?: ((p1: any) => void) | null,
+  opt_optional?: boolean
+): ArgSpec {
   function validator(p: any) {
-    let isLooseObject = (p === null) || (type.isDef(p) && p instanceof Object);
+    let isLooseObject = p === null || (type.isDef(p) && p instanceof Object);
     if (!isLooseObject) {
-      throw 'Expected an Object.';
+      throw "Expected an Object.";
     }
     if (opt_validator !== undefined && opt_validator !== null) {
       opt_validator(p);
@@ -142,7 +146,7 @@ export function nullFunctionSpec(opt_optional?: boolean): ArgSpec {
   function validator(p: any) {
     let valid = p === null || type.isFunction(p);
     if (!valid) {
-      throw 'Expected a Function.';
+      throw "Expected a Function.";
     }
   }
   return new ArgSpec(validator, opt_optional);

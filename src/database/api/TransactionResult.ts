@@ -10,10 +10,10 @@ export class TransactionResult {
     /**
     * @type {boolean}
     */
-    this['committed'] = committed;
+    this["committed"] = committed;
     /**
     * @type {fb.api.DataSnapshot}
     */
-    this['snapshot'] = snapshot;
+    this["snapshot"] = snapshot;
   }
 }

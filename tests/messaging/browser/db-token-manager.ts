@@ -13,10 +13,10 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-import TokenManager from '../../../src/messaging/models/token-manager';
+import TokenManager from "../../../src/messaging/models/token-manager";
 
-const FCM_TOKEN_DETAILS_DB = 'fcm_token_details_db';
-const FCM_TOKEN_OBJ_STORE = 'fcm_token_object_Store';
+const FCM_TOKEN_DETAILS_DB = "fcm_token_details_db";
+const FCM_TOKEN_OBJ_STORE = "fcm_token_object_Store";
 const FCM_TOKEN_DETAILS_DB_VERSION = 1;
 
 const tokenManager = new TokenManager();
@@ -26,10 +26,10 @@ export default {
     return tokenManager.closeDatabase();
   },
   getTokenDetailsFromDB: () => {
-    return tokenManager.openDatabase_()
-    .then(db => {
+    return tokenManager.openDatabase_().then(db => {
       return new Promise((resolve, reject) => {
-        const objectStore = db.transaction([FCM_TOKEN_OBJ_STORE])
+        const objectStore = db
+          .transaction([FCM_TOKEN_OBJ_STORE])
           .objectStore(FCM_TOKEN_OBJ_STORE);
 
         const allDetails = [];
@@ -51,10 +51,9 @@ export default {
   },
 
   addObjectToIndexDB: object => {
-    return tokenManager.openDatabase_()
-    .then(db => {
+    return tokenManager.openDatabase_().then(db => {
       return new Promise((resolve, reject) => {
-        const transaction = db.transaction([FCM_TOKEN_OBJ_STORE], 'readwrite');
+        const transaction = db.transaction([FCM_TOKEN_OBJ_STORE], "readwrite");
         const objectStore = transaction.objectStore(FCM_TOKEN_OBJ_STORE);
         const request = objectStore.put(object);
         request.onerror = event => {
@@ -68,10 +67,9 @@ export default {
   },
 
   updateObjectInIndexDb: object => {
-    return tokenManager.openDatabase_()
-    .then(db => {
+    return tokenManager.openDatabase_().then(db => {
       return new Promise((resolve, reject) => {
-        const transaction = db.transaction([FCM_TOKEN_OBJ_STORE], 'readwrite');
+        const transaction = db.transaction([FCM_TOKEN_OBJ_STORE], "readwrite");
         const objectStore = transaction.objectStore(FCM_TOKEN_OBJ_STORE);
         const request = objectStore.put(object);
         request.onerror = event => {
@@ -94,7 +92,7 @@ export default {
         resolve();
       };
       request.onblocked = event => {
-        console.warn('deleteDatabase onblocked.');
+        console.warn("deleteDatabase onblocked.");
       };
     });
   }

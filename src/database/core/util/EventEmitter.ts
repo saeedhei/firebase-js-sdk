@@ -11,8 +11,10 @@ export abstract class EventEmitter {
    * @param {!Array.<string>} allowedEvents
    */
   constructor(allowedEvents: Array<string>) {
-    assert(Array.isArray(allowedEvents) && allowedEvents.length > 0,
-                        'Requires a non-empty array');
+    assert(
+      Array.isArray(allowedEvents) && allowedEvents.length > 0,
+      "Requires a non-empty array"
+    );
     this.allowedEvents_ = allowedEvents;
     this.listeners_ = {};
   }
@@ -33,19 +35,20 @@ export abstract class EventEmitter {
    */
   trigger(eventType, var_args) {
     // Clone the list, since callbacks could add/remove listeners.
-    var listeners = [
-      ...this.listeners_[eventType]
-    ];
+    var listeners = [...this.listeners_[eventType]];
 
     for (var i = 0; i < listeners.length; i++) {
-      listeners[i].callback.apply(listeners[i].context, Array.prototype.slice.call(arguments, 1));
+      listeners[i].callback.apply(
+        listeners[i].context,
+        Array.prototype.slice.call(arguments, 1)
+      );
     }
   }
 
   on(eventType, callback, context) {
     this.validateEventType_(eventType);
     this.listeners_[eventType] = this.listeners_[eventType] || [];
-    this.listeners_[eventType].push({callback: callback, context: context });
+    this.listeners_[eventType].push({ callback: callback, context: context });
 
     var eventData = this.getInitialEvent(eventType);
     if (eventData) {
@@ -57,7 +60,10 @@ export abstract class EventEmitter {
     this.validateEventType_(eventType);
     var listeners = this.listeners_[eventType] || [];
     for (var i = 0; i < listeners.length; i++) {
-      if (listeners[i].callback === callback && (!context || context === listeners[i].context)) {
+      if (
+        listeners[i].callback === callback &&
+        (!context || context === listeners[i].context)
+      ) {
         listeners.splice(i, 1);
         return;
       }
@@ -65,10 +71,11 @@ export abstract class EventEmitter {
   }
 
   validateEventType_(eventType) {
-    assert(this.allowedEvents_.find(function(et) {
+    assert(
+      this.allowedEvents_.find(function(et) {
         return et === eventType;
       }),
-      'Unknown event: ' + eventType
+      "Unknown event: " + eventType
     );
   }
-}; // end fb.core.util.EventEmitter
+} // end fb.core.util.EventEmitter

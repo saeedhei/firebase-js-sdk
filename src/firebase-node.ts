@@ -15,20 +15,19 @@
 */
 
 import firebase from "./app";
-import './auth';
-import './database';
-import './utils/nodePatches';
+import "./auth";
+import "./database";
+import "./utils/nodePatches";
 
-
-var Storage = require('dom-storage');
+var Storage = require("dom-storage");
 var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
 
 firebase.INTERNAL.extendNamespace({
-  'INTERNAL': {
-    'node': {
-      'localStorage': new Storage(null, { strict: true }),
-      'sessionStorage': new Storage(null, { strict: true }),
-      'XMLHttpRequest': XMLHttpRequest
+  INTERNAL: {
+    node: {
+      localStorage: new Storage(null, { strict: true }),
+      sessionStorage: new Storage(null, { strict: true }),
+      XMLHttpRequest: XMLHttpRequest
     }
   }
 });

@@ -1,6 +1,6 @@
 import { assert } from "../../../utils/assert";
 import { Path } from "./Path";
-import { forEach, contains, safeGet } from '../../../utils/obj'
+import { forEach, contains, safeGet } from "../../../utils/obj";
 
 /**
  * Node in a Tree.
@@ -13,12 +13,11 @@ export class TreeNode {
   constructor() {
     // TODO: Consider making accessors that create children and value lazily or
     // separate Internal / Leaf 'types'.
-    this.children = { };
+    this.children = {};
     this.childCount = 0;
     this.value = null;
   }
-}; // end TreeNode
-
+} // end TreeNode
 
 /**
  * A light-weight tree, traversable by path.  Nodes can have both values and children.
@@ -37,7 +36,7 @@ export class Tree {
    * @param {TreeNode=} opt_node Optional node to wrap.
    */
   constructor(opt_name?, opt_parent?, opt_node?) {
-    this.name_ = opt_name ? opt_name : '';
+    this.name_ = opt_name ? opt_name : "";
     this.parent_ = opt_parent ? opt_parent : null;
     this.node_ = opt_node ? opt_node : new TreeNode();
   }
@@ -50,9 +49,9 @@ export class Tree {
    */
   subTree(pathObj) {
     // TODO: Require pathObj to be Path?
-    var path = (pathObj instanceof Path) ?
-        pathObj : new Path(pathObj);
-    var child = <any>this, next;
+    var path = pathObj instanceof Path ? pathObj : new Path(pathObj);
+    var child = <any>this,
+      next;
     while ((next = path.getFront()) !== null) {
       var childNode = safeGet(child.node_.children, next) || new TreeNode();
       child = new Tree(next, child, childNode);
@@ -77,7 +76,7 @@ export class Tree {
    * @param {!T} value Value to set.
    */
   setValue(value) {
-    assert(typeof value !== 'undefined', 'Cannot set value to undefined');
+    assert(typeof value !== "undefined", "Cannot set value to undefined");
     this.node_.value = value;
     this.updateParents_();
   }
@@ -87,7 +86,7 @@ export class Tree {
    */
   clear() {
     this.node_.value = null;
-    this.node_.children = { };
+    this.node_.children = {};
     this.node_.childCount = 0;
     this.updateParents_();
   }
@@ -128,15 +127,17 @@ export class Tree {
    *   parent.
    */
   forEachDescendant(action, opt_includeSelf, opt_childrenFirst) {
-    if (opt_includeSelf && !opt_childrenFirst)
-      action(this);
+    if (opt_includeSelf && !opt_childrenFirst) action(this);
 
     this.forEachChild(function(child) {
-      child.forEachDescendant(action, /*opt_includeSelf=*/true, opt_childrenFirst);
+      child.forEachDescendant(
+        action,
+        /*opt_includeSelf=*/ true,
+        opt_childrenFirst
+      );
     });
 
-    if (opt_includeSelf && opt_childrenFirst)
-      action(this);
+    if (opt_includeSelf && opt_childrenFirst) action(this);
   }
 
   /**
@@ -167,10 +168,8 @@ export class Tree {
    */
   forEachImmediateDescendantWithValue(action) {
     this.forEachChild(function(child) {
-      if (child.getValue() !== null)
-        action(child);
-      else
-        child.forEachImmediateDescendantWithValue(action);
+      if (child.getValue() !== null) action(child);
+      else child.forEachImmediateDescendantWithValue(action);
     });
   }
 
@@ -178,8 +177,11 @@ export class Tree {
    * @return {!Path} The path of this tree node, as a Path.
    */
   path() {
-    return new Path(this.parent_ === null ?
-        this.name_ : this.parent_.path() + '/' + this.name_);
+    return new Path(
+      this.parent_ === null
+        ? this.name_
+        : this.parent_.path() + "/" + this.name_
+    );
   }
 
   /**
@@ -202,8 +204,7 @@ export class Tree {
    * @private
    */
   updateParents_() {
-    if (this.parent_ !== null)
-      this.parent_.updateChild_(this.name_, this);
+    if (this.parent_ !== null) this.parent_.updateChild_(this.name_, this);
   }
 
   /**
@@ -217,14 +218,13 @@ export class Tree {
     var childEmpty = child.isEmpty();
     var childExists = contains(this.node_.children, childName);
     if (childEmpty && childExists) {
-      delete (this.node_.children[childName]);
+      delete this.node_.children[childName];
       this.node_.childCount--;
       this.updateParents_();
-    }
-    else if (!childEmpty && !childExists) {
+    } else if (!childEmpty && !childExists) {
       this.node_.children[childName] = child.node_;
       this.node_.childCount++;
       this.updateParents_();
     }
   }
-}; // end Tree
+} // end Tree

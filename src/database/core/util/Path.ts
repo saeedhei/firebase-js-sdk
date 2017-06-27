@@ -16,16 +16,16 @@ export class Path {
    * @const
    */
   static get Empty() {
-    return new Path('');
+    return new Path("");
   }
   /**
    * @param {string|Array.<string>} pathOrString Path string to parse,
    *      or another path, or the raw tokens array
    * @param {number=} opt_pieceNum
    */
-  constructor(pathOrString: string|string[], opt_pieceNum?) {
+  constructor(pathOrString: string | string[], opt_pieceNum?) {
     if (arguments.length == 1) {
-      this.pieces_ = (<string>pathOrString).split('/');
+      this.pieces_ = (<string>pathOrString).split("/");
 
       // Remove empty pieces.
       var copyTo = 0;
@@ -45,8 +45,7 @@ export class Path {
   }
 
   getFront() {
-    if (this.pieceNum_ >= this.pieces_.length)
-      return null;
+    if (this.pieceNum_ >= this.pieces_.length) return null;
 
     return this.pieces_[this.pieceNum_];
   }
@@ -80,23 +79,22 @@ export class Path {
   }
 
   toString() {
-    var pathString = '';
+    var pathString = "";
     for (var i = this.pieceNum_; i < this.pieces_.length; i++) {
-      if (this.pieces_[i] !== '')
-        pathString += '/' + this.pieces_[i];
+      if (this.pieces_[i] !== "") pathString += "/" + this.pieces_[i];
     }
 
-    return pathString || '/';
+    return pathString || "/";
   }
 
   toUrlEncodedString() {
-    var pathString = '';
+    var pathString = "";
     for (var i = this.pieceNum_; i < this.pieces_.length; i++) {
-      if (this.pieces_[i] !== '') 
-        pathString += '/' + encodeURIComponent(String(this.pieces_[i]));
+      if (this.pieces_[i] !== "")
+        pathString += "/" + encodeURIComponent(String(this.pieces_[i]));
     }
 
-    return pathString || '/';
+    return pathString || "/";
   }
 
   /**
@@ -114,8 +112,7 @@ export class Path {
    * @return {?Path}
    */
   parent() {
-    if (this.pieceNum_ >= this.pieces_.length)
-      return null;
+    if (this.pieceNum_ >= this.pieces_.length) return null;
 
     var pieces = [];
     for (var i = this.pieceNum_; i < this.pieces_.length - 1; i++)
@@ -138,10 +135,9 @@ export class Path {
         pieces.push(childPathObj.pieces_[i]);
       }
     } else {
-      var childPieces = childPathObj.split('/');
+      var childPieces = childPathObj.split("/");
       for (i = 0; i < childPieces.length; i++) {
-        if (childPieces[i].length > 0)
-          pieces.push(childPieces[i]);
+        if (childPieces[i].length > 0) pieces.push(childPieces[i]);
       }
     }
 
@@ -161,15 +157,21 @@ export class Path {
    * @return {!Path} The path from outerPath to innerPath
    */
   static relativePath(outerPath, innerPath) {
-    var outer = outerPath.getFront(), inner = innerPath.getFront();
+    var outer = outerPath.getFront(),
+      inner = innerPath.getFront();
     if (outer === null) {
       return innerPath;
     } else if (outer === inner) {
-      return Path.relativePath(outerPath.popFront(),
-                                            innerPath.popFront());
+      return Path.relativePath(outerPath.popFront(), innerPath.popFront());
     } else {
-      throw new Error('INTERNAL ERROR: innerPath (' + innerPath + ') is not within ' +
-                      'outerPath (' + outerPath + ')');
+      throw new Error(
+        "INTERNAL ERROR: innerPath (" +
+          innerPath +
+          ") is not within " +
+          "outerPath (" +
+          outerPath +
+          ")"
+      );
     }
   }
   /**
@@ -185,7 +187,7 @@ export class Path {
       if (cmp !== 0) return cmp;
     }
     if (leftKeys.length === rightKeys.length) return 0;
-    return (leftKeys.length < rightKeys.length) ? -1 : 1;
+    return leftKeys.length < rightKeys.length ? -1 : 1;
   }
 
   /**
@@ -198,7 +200,11 @@ export class Path {
       return false;
     }
 
-    for (var i = this.pieceNum_, j = other.pieceNum_; i <= this.pieces_.length; i++, j++) {
+    for (
+      var i = this.pieceNum_, j = other.pieceNum_;
+      i <= this.pieces_.length;
+      i++, j++
+    ) {
       if (this.pieces_[i] !== other.pieces_[j]) {
         return false;
       }
@@ -271,7 +277,7 @@ export class ValidationPath {
 
   /** @const {number} Maximum number of (UTF8) bytes in a Firebase path. */
   static get MAX_PATH_LENGTH_BYTES() {
-    return 768
+    return 768;
   }
 
   /** @param {string} child */
@@ -296,14 +302,23 @@ export class ValidationPath {
 
   checkValid_() {
     if (this.byteLength_ > ValidationPath.MAX_PATH_LENGTH_BYTES) {
-      throw new Error(this.errorPrefix_ + 'has a key path longer than ' +
-                      ValidationPath.MAX_PATH_LENGTH_BYTES + ' bytes (' +
-                      this.byteLength_ + ').');
+      throw new Error(
+        this.errorPrefix_ +
+          "has a key path longer than " +
+          ValidationPath.MAX_PATH_LENGTH_BYTES +
+          " bytes (" +
+          this.byteLength_ +
+          ")."
+      );
     }
     if (this.parts_.length > ValidationPath.MAX_PATH_DEPTH) {
-      throw new Error(this.errorPrefix_ + 'path specified exceeds the maximum depth that can be written (' +
-                      ValidationPath.MAX_PATH_DEPTH +
-                      ') or object contains a cycle ' + this.toErrorString());
+      throw new Error(
+        this.errorPrefix_ +
+          "path specified exceeds the maximum depth that can be written (" +
+          ValidationPath.MAX_PATH_DEPTH +
+          ") or object contains a cycle " +
+          this.toErrorString()
+      );
     }
   }
 
@@ -314,9 +329,8 @@ export class ValidationPath {
    */
   toErrorString() {
     if (this.parts_.length == 0) {
-      return '';
+      return "";
     }
-    return 'in property \'' + this.parts_.join('.') + '\'';
+    return "in property '" + this.parts_.join(".") + "'";
   }
-
-}; // end fb.core.util.validation.ValidationPath
+} // end fb.core.util.validation.ValidationPath

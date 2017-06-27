@@ -15,14 +15,14 @@
 */
 
 import { assert } from "chai";
-import makeFakeApp from './make-fake-app';
+import makeFakeApp from "./make-fake-app";
 
-import Errors from '../../../src/messaging/models/errors'
-import WindowController from '../../../src/messaging/controllers/window-controller'
-import SWController from '../../../src/messaging/controllers/sw-controller'
+import Errors from "../../../src/messaging/models/errors";
+import WindowController from "../../../src/messaging/controllers/window-controller";
+import SWController from "../../../src/messaging/controllers/sw-controller";
 
-describe('Firebase Messaging > new *Controller()', function() {
-  it('should handle bad input', function() {
+describe("Firebase Messaging > new *Controller()", function() {
+  it("should handle bad input", function() {
     const badInputs = [
       makeFakeApp(),
       makeFakeApp({
@@ -44,20 +44,22 @@ describe('Firebase Messaging > new *Controller()', function() {
         new WindowController(badInput);
         new SWController(badInput);
 
-        console.warn('Bad Input should have thrown: ',
-          JSON.stringify(badInput));
+        console.warn(
+          "Bad Input should have thrown: ",
+          JSON.stringify(badInput)
+        );
       } catch (err) {
         caughtError = err;
       }
-      assert.equal('messaging/' + Errors.codes.BAD_SENDER_ID, caughtError.code);
+      assert.equal("messaging/" + Errors.codes.BAD_SENDER_ID, caughtError.code);
     });
   });
 
-  it('should be able to handle good input', function() {
+  it("should be able to handle good input", function() {
     const app = makeFakeApp({
-      messagingSenderId: '1234567890'
+      messagingSenderId: "1234567890"
     });
     new WindowController(app);
     new SWController(app);
-  })
+  });
 });

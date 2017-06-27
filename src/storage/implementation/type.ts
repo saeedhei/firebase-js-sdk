@@ -26,11 +26,11 @@ export function isJustDef(p: any): boolean {
 }
 
 export function isFunction(p: any): boolean {
-  return typeof p === 'function';
+  return typeof p === "function";
 }
 
 export function isObject(p: any): boolean {
-  return typeof p === 'object';
+  return typeof p === "object";
 }
 
 export function isNonNullObject(p: any): boolean {
@@ -42,11 +42,11 @@ export function isNonArrayObject(p: any): boolean {
 }
 
 export function isString(p: any): boolean {
-  return typeof p === 'string' || p instanceof String;
+  return typeof p === "string" || p instanceof String;
 }
 
 export function isNumber(p: any): boolean {
-  return typeof p === 'number' || p instanceof Number;
+  return typeof p === "number" || p instanceof Number;
 }
 
 export function isNativeBlob(p: any): boolean {
@@ -54,6 +54,5 @@ export function isNativeBlob(p: any): boolean {
 }
 
 export function isNativeBlobDefined(): boolean {
-  return typeof Blob !== 'undefined';
+  return typeof Blob !== "undefined";
 }
-
