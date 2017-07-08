@@ -24,7 +24,5 @@ export class TransactionResult {
    * @param {boolean} committed
    * @param {DataSnapshot} snapshot
    */
-  constructor(public committed: boolean, public snapshot: DataSnapshot) {
-
-  }
+  constructor(public committed: boolean, public snapshot: DataSnapshot) {}
 }

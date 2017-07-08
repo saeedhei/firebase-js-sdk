@@ -36,7 +36,9 @@ export class ImmutableTree<T> {
    */
   private static get EmptyChildren_(): SortedMap<string, ImmutableTree<null>> {
     if (!emptyChildrenSingleton) {
-      emptyChildrenSingleton = new SortedMap<string, ImmutableTree<null>>(stringCompare);
+      emptyChildrenSingleton = new SortedMap<string, ImmutableTree<null>>(
+        stringCompare
+      );
     }
     return emptyChildrenSingleton;
   }
@@ -59,9 +61,13 @@ export class ImmutableTree<T> {
    * @param {?T} value
    * @param {SortedMap.<string, !ImmutableTree.<T>>=} children
    */
-  constructor(public readonly value: T | null,
-              public readonly children: SortedMap<string, ImmutableTree<T>> = ImmutableTree.EmptyChildren_) {
-  }
+  constructor(
+    public readonly value: T | null,
+    public readonly children: SortedMap<
+      string,
+      ImmutableTree<T>
+    > = ImmutableTree.EmptyChildren_
+  ) {}
 
   /**
    * True if the value is empty and there are no children
@@ -83,10 +89,12 @@ export class ImmutableTree<T> {
    *   node
    * @return {?{path:!Path, value:!T}}
    */
-  findRootMostMatchingPathAndValue(relativePath: Path,
-                                   predicate: (a: T) => boolean): { path: Path, value: T } | null {
+  findRootMostMatchingPathAndValue(
+    relativePath: Path,
+    predicate: (a: T) => boolean
+  ): { path: Path; value: T } | null {
     if (this.value != null && predicate(this.value)) {
-      return {path: Path.Empty, value: this.value};
+      return { path: Path.Empty, value: this.value };
     } else {
       if (relativePath.isEmpty()) {
         return null;
@@ -94,12 +102,15 @@ export class ImmutableTree<T> {
         const front = relativePath.getFront();
         const child = this.children.get(front);
         if (child !== null) {
-          const childExistingPathAndValue =
-            child.findRootMostMatchingPathAndValue(relativePath.popFront(),
-              predicate);
+          const childExistingPathAndValue = child.findRootMostMatchingPathAndValue(
+            relativePath.popFront(),
+            predicate
+          );
           if (childExistingPathAndValue != null) {
-            const fullPath = new Path(front).child(childExistingPathAndValue.path);
-            return {path: fullPath, value: childExistingPathAndValue.value};
+            const fullPath = new Path(front).child(
+              childExistingPathAndValue.path
+            );
+            return { path: fullPath, value: childExistingPathAndValue.value };
           } else {
             return null;
           }
@@ -116,7 +127,9 @@ export class ImmutableTree<T> {
    * @param {!Path} relativePath
    * @return {?{path: !Path, value: !T}}
    */
-  findRootMostValueAndPath(relativePath: Path): { path: Path, value: T } | null {
+  findRootMostValueAndPath(
+    relativePath: Path
+  ): { path: Path; value: T } | null {
     return this.findRootMostMatchingPathAndValue(relativePath, () => true);
   }
 
@@ -256,9 +269,15 @@ export class ImmutableTree<T> {
    * @return {V}
    * @private
    */
-  private fold_<V>(pathSoFar: Path, fn: (path: Path, value: T | null, children: { [k: string]: V }) => V): V {
-    const accum: {[k: string]: V} = {};
-    this.children.inorderTraversal(function (childKey: string, childTree: ImmutableTree<T>) {
+  private fold_<V>(
+    pathSoFar: Path,
+    fn: (path: Path, value: T | null, children: { [k: string]: V }) => V
+  ): V {
+    const accum: { [k: string]: V } = {};
+    this.children.inorderTraversal(function(
+      childKey: string,
+      childTree: ImmutableTree<T>
+    ) {
       accum[childKey] = childTree.fold_(pathSoFar.child(childKey), fn);
     });
     return fn(pathSoFar, this.value, accum);
@@ -271,11 +290,15 @@ export class ImmutableTree<T> {
    * @param {!function(!Path, !T):?V} f
    * @return {?V}
    */
-  findOnPath<V>(path: Path, f: (path: Path, value: T) => (V | null)): V | null {
+  findOnPath<V>(path: Path, f: (path: Path, value: T) => V | null): V | null {
     return this.findOnPath_(path, Path.Empty, f);
   }
 
-  private findOnPath_<V>(pathToFollow: Path, pathSoFar: Path, f: (path: Path, value: T) => (V | null)): V | null {
+  private findOnPath_<V>(
+    pathToFollow: Path,
+    pathSoFar: Path,
+    f: (path: Path, value: T) => V | null
+  ): V | null {
     const result = this.value ? f(pathSoFar, this.value) : false;
     if (result) {
       return result;
@@ -286,7 +309,11 @@ export class ImmutableTree<T> {
         const front = pathToFollow.getFront()!;
         const nextChild = this.children.get(front);
         if (nextChild) {
-          return nextChild.findOnPath_(pathToFollow.popFront(), pathSoFar.child(front), f);
+          return nextChild.findOnPath_(
+            pathToFollow.popFront(),
+            pathSoFar.child(front),
+            f
+          );
         } else {
           return null;
         }
@@ -300,12 +327,18 @@ export class ImmutableTree<T> {
    * @param {!function(!Path, !T)} f
    * @returns {!ImmutableTree.<T>}
    */
-  foreachOnPath(path: Path, f: (path: Path, value: T) => void): ImmutableTree<T> {
+  foreachOnPath(
+    path: Path,
+    f: (path: Path, value: T) => void
+  ): ImmutableTree<T> {
     return this.foreachOnPath_(path, Path.Empty, f);
   }
 
-  private foreachOnPath_(pathToFollow: Path, currentRelativePath: Path,
-                         f: (path: Path, value: T) => void): ImmutableTree<T> {
+  private foreachOnPath_(
+    pathToFollow: Path,
+    currentRelativePath: Path,
+    f: (path: Path, value: T) => void
+  ): ImmutableTree<T> {
     if (pathToFollow.isEmpty()) {
       return this;
     } else {
@@ -315,8 +348,11 @@ export class ImmutableTree<T> {
       const front = pathToFollow.getFront();
       const nextChild = this.children.get(front);
       if (nextChild) {
-        return nextChild.foreachOnPath_(pathToFollow.popFront(),
-          currentRelativePath.child(front), f);
+        return nextChild.foreachOnPath_(
+          pathToFollow.popFront(),
+          currentRelativePath.child(front),
+          f
+        );
       } else {
         return ImmutableTree.Empty;
       }
@@ -334,8 +370,11 @@ export class ImmutableTree<T> {
     this.foreach_(Path.Empty, f);
   }
 
-  private foreach_(currentRelativePath: Path, f: (path: Path, value: T) => void) {
-    this.children.inorderTraversal(function (childName, childTree) {
+  private foreach_(
+    currentRelativePath: Path,
+    f: (path: Path, value: T) => void
+  ) {
+    this.children.inorderTraversal(function(childName, childTree) {
       childTree.foreach_(currentRelativePath.child(childName), f);
     });
     if (this.value) {
@@ -348,10 +387,12 @@ export class ImmutableTree<T> {
    * @param {function(string, !T)} f
    */
   foreachChild(f: (name: string, value: T) => void) {
-    this.children.inorderTraversal((childName: string, childTree: ImmutableTree<T>) => {
-      if (childTree.value) {
-        f(childName, childTree.value);
+    this.children.inorderTraversal(
+      (childName: string, childTree: ImmutableTree<T>) => {
+        if (childTree.value) {
+          f(childName, childTree.value);
+        }
       }
-    });
+    );
   }
 }
