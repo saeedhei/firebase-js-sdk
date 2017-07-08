@@ -1,39 +1,38 @@
 /**
-* Copyright 2017 Google Inc.
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-*   http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Copyright 2017 Google Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
-import { assert } from '../../../utils/assert';
-import {
-  MIN_NAME,
-  MAX_NAME
-} from '../util/util';
-import { KEY_INDEX } from '../snap/indexes/KeyIndex';
-import { PRIORITY_INDEX } from '../snap/indexes/PriorityIndex';
-import { VALUE_INDEX } from '../snap/indexes/ValueIndex';
-import { PathIndex } from '../snap/indexes/PathIndex';
-import { IndexedFilter } from './filter/IndexedFilter';
-import { LimitedFilter } from './filter/LimitedFilter';
-import { RangedFilter } from './filter/RangedFilter';
-import { stringify } from '../../../utils/json';
-import { NodeFilter } from './filter/NodeFilter';
-import { Index } from '../snap/indexes/Index';
+import {assert} from '../../../utils/assert';
+import {stringify} from '../../../utils/json';
+import {Index} from '../snap/indexes/Index';
+import {KEY_INDEX} from '../snap/indexes/KeyIndex';
+import {PathIndex} from '../snap/indexes/PathIndex';
+import {PRIORITY_INDEX} from '../snap/indexes/PriorityIndex';
+import {VALUE_INDEX} from '../snap/indexes/ValueIndex';
+import {MAX_NAME, MIN_NAME} from '../util/util';
+
+import {IndexedFilter} from './filter/IndexedFilter';
+import {LimitedFilter} from './filter/LimitedFilter';
+import {NodeFilter} from './filter/NodeFilter';
+import {RangedFilter} from './filter/RangedFilter';
 
 /**
- * This class is an immutable-from-the-public-api struct containing a set of query parameters defining a
- * range to be returned for a particular location. It is assumed that validation of parameters is done at the
- * user-facing API level, so it is not done here.
+ * This class is an immutable-from-the-public-api struct containing a set of
+ * query parameters defining a range to be returned for a particular location.
+ * It is assumed that validation of parameters is done at the user-facing API
+ * level, so it is not done here.
  * @constructor
  */
 export class QueryParams {
@@ -45,9 +44,9 @@ export class QueryParams {
 
   private limit_ = 0;
   private viewFrom_ = '';
-  private indexStartValue_: any | null = null;
+  private indexStartValue_: any|null = null;
   private indexStartName_ = '';
-  private indexEndValue_: any | null = null;
+  private indexEndValue_: any|null = null;
   private indexEndName_ = '';
 
   private index_ = PRIORITY_INDEX;
@@ -59,15 +58,15 @@ export class QueryParams {
    * @private
    */
   private static readonly WIRE_PROTOCOL_CONSTANTS_ = {
-    INDEX_START_VALUE: 'sp',
-    INDEX_START_NAME: 'sn',
-    INDEX_END_VALUE: 'ep',
-    INDEX_END_NAME: 'en',
-    LIMIT: 'l',
-    VIEW_FROM: 'vf',
-    VIEW_FROM_LEFT: 'l',
-    VIEW_FROM_RIGHT: 'r',
-    INDEX: 'i'
+    INDEX_START_VALUE : 'sp',
+    INDEX_START_NAME : 'sn',
+    INDEX_END_VALUE : 'ep',
+    INDEX_END_NAME : 'en',
+    LIMIT : 'l',
+    VIEW_FROM : 'vf',
+    VIEW_FROM_LEFT : 'l',
+    VIEW_FROM_RIGHT : 'r',
+    INDEX : 'i'
   };
 
   /**
@@ -77,14 +76,14 @@ export class QueryParams {
    * @private
    */
   private static readonly REST_QUERY_CONSTANTS_ = {
-    ORDER_BY: 'orderBy',
-    PRIORITY_INDEX: '$priority',
-    VALUE_INDEX: '$value',
-    KEY_INDEX: '$key',
-    START_AT: 'startAt',
-    END_AT: 'endAt',
-    LIMIT_TO_FIRST: 'limitToFirst',
-    LIMIT_TO_LAST: 'limitToLast'
+    ORDER_BY : 'orderBy',
+    PRIORITY_INDEX : '$priority',
+    VALUE_INDEX : '$value',
+    KEY_INDEX : '$key',
+    START_AT : 'startAt',
+    END_AT : 'endAt',
+    LIMIT_TO_FIRST : 'limitToFirst',
+    LIMIT_TO_LAST : 'limitToLast'
   };
 
   /**
@@ -97,9 +96,7 @@ export class QueryParams {
   /**
    * @return {boolean}
    */
-  hasStart(): boolean {
-    return this.startSet_;
-  }
+  hasStart(): boolean { return this.startSet_; }
 
   /**
    * @return {boolean} True if it would return from left.
@@ -112,7 +109,8 @@ export class QueryParams {
       // anchor to the end.
       return this.startSet_;
     } else {
-      return this.viewFrom_ === QueryParams.WIRE_PROTOCOL_CONSTANTS_.VIEW_FROM_LEFT;
+      return this.viewFrom_ ===
+             QueryParams.WIRE_PROTOCOL_CONSTANTS_.VIEW_FROM_LEFT;
     }
   }
 
@@ -127,7 +125,8 @@ export class QueryParams {
 
   /**
    * Only valid to call if hasStart() returns true.
-   * Returns the starting key name for the range defined by these query parameters
+   * Returns the starting key name for the range defined by these query
+   * parameters
    * @return {!string}
    */
   getIndexStartName(): string {
@@ -142,9 +141,7 @@ export class QueryParams {
   /**
    * @return {boolean}
    */
-  hasEnd(): boolean {
-    return this.endSet_;
-  }
+  hasEnd(): boolean { return this.endSet_; }
 
   /**
    * Only valid to call if hasEnd() returns true.
@@ -172,12 +169,11 @@ export class QueryParams {
   /**
    * @return {boolean}
    */
-  hasLimit(): boolean {
-    return this.limitSet_;
-  }
+  hasLimit(): boolean { return this.limitSet_; }
 
   /**
-   * @return {boolean} True if a limit has been set and it has been explicitly anchored
+   * @return {boolean} True if a limit has been set and it has been explicitly
+   * anchored
    */
   hasAnchoredLimit(): boolean {
     return this.limitSet_ && this.viewFrom_ !== '';
@@ -195,9 +191,7 @@ export class QueryParams {
   /**
    * @return {!Index}
    */
-  getIndex(): Index {
-    return this.index_;
-  }
+  getIndex(): Index { return this.index_; }
 
   /**
    * @return {!QueryParams}
@@ -261,7 +255,7 @@ export class QueryParams {
    * @param {?string=} key
    * @return {!QueryParams}
    */
-  startAt(indexValue: any, key?: string | null): QueryParams {
+  startAt(indexValue: any, key?: string|null): QueryParams {
     const newParams = this.copy_();
     newParams.startSet_ = true;
     if (!(indexValue !== undefined)) {
@@ -283,7 +277,7 @@ export class QueryParams {
    * @param {?string=} key
    * @return {!QueryParams}
    */
-  endAt(indexValue: any, key?: string | null): QueryParams {
+  endAt(indexValue: any, key?: string|null): QueryParams {
     const newParams = this.copy_();
     newParams.endSet_ = true;
     if (!(indexValue !== undefined)) {
@@ -315,7 +309,7 @@ export class QueryParams {
    */
   getQueryObject(): Object {
     const WIRE_PROTOCOL_CONSTANTS = QueryParams.WIRE_PROTOCOL_CONSTANTS_;
-    const obj: { [k: string]: any } = {};
+    const obj: {[k: string] : any} = {};
     if (this.startSet_) {
       obj[WIRE_PROTOCOL_CONSTANTS.INDEX_START_VALUE] = this.indexStartValue_;
       if (this.startNameSet_) {
@@ -340,7 +334,8 @@ export class QueryParams {
       }
       obj[WIRE_PROTOCOL_CONSTANTS.VIEW_FROM] = viewFrom;
     }
-    // For now, priority index is the default, so we only specify if it's some other index
+    // For now, priority index is the default, so we only specify if it's some
+    // other index
     if (this.index_ !== PRIORITY_INDEX) {
       obj[WIRE_PROTOCOL_CONSTANTS.INDEX] = this.index_.toString();
     }
@@ -374,15 +369,14 @@ export class QueryParams {
     }
   }
 
-
   /**
    * Returns a set of REST query string parameters representing this query.
    *
    * @return {!Object.<string,*>} query string parameters
    */
-  toRestQueryStringParameters(): { [k: string]: any } {
+  toRestQueryStringParameters(): {[k: string] : any} {
     const REST_CONSTANTS = QueryParams.REST_QUERY_CONSTANTS_;
-    const qs: { [k: string]: string | number } = {};
+    const qs: {[k: string] : string | number} = {};
 
     if (this.isDefault()) {
       return qs;

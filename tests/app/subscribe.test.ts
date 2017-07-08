@@ -1,31 +1,32 @@
 /**
-* Copyright 2017 Google Inc.
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-*   http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Copyright 2017 Google Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import {assert} from 'chai';
+import * as sinon from 'sinon';
 
 import {
   async,
   CompleteFn,
-  createSubscribe, 
+  createSubscribe,
   ErrorFn,
   NextFn,
   Observer,
   Subscribe,
   Unsubscribe,
 } from '../../src/app/subscribe';
-import {assert} from 'chai';
-import * as sinon from 'sinon';
 
 describe("createSubscribe", function() {
   let spy: any;
@@ -34,14 +35,11 @@ describe("createSubscribe", function() {
     spy = sinon.spy(console, 'error');
   });
 
-  afterEach(() => {
-    spy.restore();
-  });
+  afterEach(() => { spy.restore(); });
 
   it("Creation", (done) => {
-    let subscribe = createSubscribe<number>((observer: Observer<number>) => {
-      observer.next(123);
-    });
+    let subscribe = createSubscribe<number>(
+        (observer: Observer<number>) => { observer.next(123); });
 
     let unsub = subscribe((value: number) => {
       unsub();
@@ -76,18 +74,10 @@ describe("createSubscribe", function() {
     let subscribe = createSubscribe<number>((observer) => {
       observer.next(123);
       // Subscription after value emitted should NOT be received.
-      subscribe({
-        next(value) {
-          assert.ok(false);
-        }
-      });
+      subscribe({next(value) { assert.ok(false); }});
     });
     // Subscription before value emitted should be recieved.
-    subscribe({
-      next(value) {
-        done();
-      }
-    });
+    subscribe({next(value) { done(); }});
   });
 
   it("Subscribing to already complete Subscribe", (done) => {
@@ -133,9 +123,7 @@ describe("createSubscribe", function() {
           }
         });
       },
-      complete() {
-        assert.ok(false);
-      }
+      complete() { assert.ok(false); }
     });
   });
 
@@ -157,11 +145,7 @@ describe("createSubscribe", function() {
     let subscribe = createSubscribe<number>((observer: Observer<number>) => {
       throw new Error("Executor throws");
     });
-    subscribe({
-      error(e) {
-        assert.equal(e.message, "Executor throws");
-      }
-    });
+    subscribe({error(e) { assert.equal(e.message, "Executor throws"); }});
   });
 
   it("Sequence", (done) => {
@@ -169,9 +153,7 @@ describe("createSubscribe", function() {
 
     let j = 1;
     subscribe({
-      next(value: number) {
-        assert.equal(value, j++);
-      },
+      next(value: number) { assert.equal(value, j++); },
       complete() {
         assert.equal(j, 11);
         done();
@@ -182,22 +164,19 @@ describe("createSubscribe", function() {
   it("unlisten", (done) => {
     let subscribe = makeCounter(10);
 
-    subscribe({complete: () => {
-      async(done)();
-    }});
+    subscribe({complete : () => { async(done)(); }});
 
     let j = 1;
     let unsub = subscribe({
-      next: (value: number) => {
+      next : (value: number) => {
         assert.ok(value <= 5);
         assert.equal(value, j++);
         if (value === 5) {
           unsub();
         }
       },
-      complete: () => {
-        assert.ok(false, "Does not call completed if unsubscribed");
-      }
+      complete :
+          () => { assert.ok(false, "Does not call completed if unsubscribed"); }
     });
   });
 
@@ -206,7 +185,7 @@ describe("createSubscribe", function() {
 
     let j = 1;
     let unsub = subscribe({
-      next: (value: number) => {
+      next : (value: number) => {
         assert.ok(value <= 5);
         assert.equal(value, j++);
         if (value === 5) {
@@ -214,9 +193,8 @@ describe("createSubscribe", function() {
           async(done)();
         }
       },
-      complete: () => {
-        assert.ok(false, "Does not call completed if unsubscribed");
-      }
+      complete :
+          () => { assert.ok(false, "Does not call completed if unsubscribed"); }
     });
   });
 
@@ -224,11 +202,7 @@ describe("createSubscribe", function() {
   it("Partial Observer", (done) => {
     let subscribe = makeCounter(10);
 
-    let unsub = subscribe({
-      complete: () => {
-        done();
-      }
-    });
+    let unsub = subscribe({complete : () => { done(); }});
   });
 
 });
@@ -237,21 +211,21 @@ function makeCounter(maxCount: number, ms = 10): Subscribe<number> {
   let id: any;
 
   return createSubscribe<number>(
-    (observer: Observer<number>) => {
-      let i = 1;
-      id = setInterval(() => {
-        observer.next(i++);
-        if (i > maxCount) {
-          if (id) {
-            clearInterval(id);
-            id = undefined;
+      (observer: Observer<number>) => {
+        let i = 1;
+        id = setInterval(() => {
+          observer.next(i++);
+          if (i > maxCount) {
+            if (id) {
+              clearInterval(id);
+              id = undefined;
+            }
+            observer.complete();
           }
-          observer.complete();
-        }
-      }, ms);
-    },
-    (observer: Observer<number>) => {
-      clearInterval(id);
-      id = undefined;
-    });
+        }, ms);
+      },
+      (observer: Observer<number>) => {
+        clearInterval(id);
+        id = undefined;
+      });
 }

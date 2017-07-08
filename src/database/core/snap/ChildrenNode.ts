@@ -1,42 +1,39 @@
 /**
-* Copyright 2017 Google Inc.
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-*   http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Copyright 2017 Google Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
-import { assert } from "../../../utils/assert";
+import {assert} from "../../../utils/assert";
+import {Path} from '../util/Path';
+import {SortedMap, SortedMapIterator} from '../util/SortedMap';
+import {MAX_NAME, MIN_NAME, sha1} from '../util/util';
+
+import {NAME_COMPARATOR} from './comparators';
+import {Index} from './indexes/Index';
+import {KEY_INDEX, KeyIndex} from './indexes/KeyIndex';
 import {
-  sha1,
-  MAX_NAME,
-  MIN_NAME
-} from '../util/util';
-import { SortedMap, SortedMapIterator } from '../util/SortedMap';
-import { Node, NamedNode } from './Node';
-import {
-  validatePriorityNode,
-  priorityHashText,
-  setMaxNode
-} from './snap';
-import { PRIORITY_INDEX, setMaxNode as setPriorityMaxNode } from './indexes/PriorityIndex';
-import { KEY_INDEX, KeyIndex } from './indexes/KeyIndex';
-import { IndexMap } from './IndexMap';
-import { LeafNode } from './LeafNode';
-import { NAME_COMPARATOR } from './comparators';
-import { Index } from './indexes/Index';
-import { Path } from '../util/Path';
+  PRIORITY_INDEX,
+  setMaxNode as setPriorityMaxNode
+} from './indexes/PriorityIndex';
+import {IndexMap} from './IndexMap';
+import {LeafNode} from './LeafNode';
+import {NamedNode, Node} from './Node';
+import {priorityHashText, setMaxNode, validatePriorityNode} from './snap';
 
 export interface ChildrenNodeConstructor {
-  new(children_: SortedMap<string, Node>, priorityNode_: Node | null, indexMap_: IndexMap): ChildrenNode;
+  new(children_: SortedMap<string, Node>, priorityNode_: Node|null,
+      indexMap_: IndexMap): ChildrenNode;
   EMPTY_NODE: ChildrenNode;
 }
 
@@ -53,46 +50,47 @@ let EMPTY_NODE: ChildrenNode;
  * @implements {Node}
  */
 export class ChildrenNode implements Node {
-  private lazyHash_: string | null = null;
+  private lazyHash_: string|null = null;
 
   static get EMPTY_NODE(): ChildrenNode {
-    return EMPTY_NODE || (EMPTY_NODE = new ChildrenNode(new SortedMap<string, Node>(NAME_COMPARATOR), null, IndexMap.Default));
+    return EMPTY_NODE || (EMPTY_NODE = new ChildrenNode(
+                              new SortedMap<string, Node>(NAME_COMPARATOR),
+                              null, IndexMap.Default));
   }
 
   /**
    *
    * @param {!SortedMap.<string, !Node>} children_ List of children
    * of this node..
-   * @param {?Node} priorityNode_ The priority of this node (as a snapshot node).
+   * @param {?Node} priorityNode_ The priority of this node (as a snapshot
+   * node).
    * @param {!IndexMap} indexMap_
    */
   constructor(private readonly children_: SortedMap<string, Node>,
-              private readonly priorityNode_: Node | null,
+              private readonly priorityNode_: Node|null,
               private indexMap_: IndexMap) {
 
     /**
-     * Note: The only reason we allow null priority is for EMPTY_NODE, since we can't use
-     * EMPTY_NODE as the priority of EMPTY_NODE.  We might want to consider making EMPTY_NODE its own
-     * class instead of an empty ChildrenNode.
+     * Note: The only reason we allow null priority is for EMPTY_NODE, since we
+     * can't use EMPTY_NODE as the priority of EMPTY_NODE.  We might want to
+     * consider making EMPTY_NODE its own class instead of an empty
+     * ChildrenNode.
      */
     if (this.priorityNode_) {
       validatePriorityNode(this.priorityNode_);
     }
 
     if (this.children_.isEmpty()) {
-      assert(!this.priorityNode_ || this.priorityNode_.isEmpty(), 'An empty node cannot have a priority');
+      assert(!this.priorityNode_ || this.priorityNode_.isEmpty(),
+             'An empty node cannot have a priority');
     }
   }
 
   /** @inheritDoc */
-  isLeafNode(): boolean {
-    return false;
-  }
+  isLeafNode(): boolean { return false; }
 
   /** @inheritDoc */
-  getPriority(): Node {
-    return this.priorityNode_ || EMPTY_NODE;
-  }
+  getPriority(): Node { return this.priorityNode_ || EMPTY_NODE; }
 
   /** @inheritDoc */
   updatePriority(newPriorityNode: Node): Node {
@@ -139,8 +137,8 @@ export class ChildrenNode implements Node {
       let newChildren, newIndexMap, newPriority;
       if (newChildNode.isEmpty()) {
         newChildren = this.children_.remove(childName);
-        newIndexMap = this.indexMap_.removeFromIndexes(namedNode, this.children_
-        );
+        newIndexMap =
+            this.indexMap_.removeFromIndexes(namedNode, this.children_);
       } else {
         newChildren = this.children_.insert(childName, newChildNode);
         newIndexMap = this.indexMap_.addToIndexes(namedNode, this.children_);
@@ -158,21 +156,18 @@ export class ChildrenNode implements Node {
       return newChildNode;
     } else {
       assert(path.getFront() !== '.priority' || path.getLength() === 1,
-        '.priority must be the last token in a path');
-      const newImmediateChild = this.getImmediateChild(front).updateChild(path.popFront(), newChildNode);
+             '.priority must be the last token in a path');
+      const newImmediateChild = this.getImmediateChild(front).updateChild(
+          path.popFront(), newChildNode);
       return this.updateImmediateChild(front, newImmediateChild);
     }
   }
 
   /** @inheritDoc */
-  isEmpty(): boolean {
-    return this.children_.isEmpty();
-  }
+  isEmpty(): boolean { return this.children_.isEmpty(); }
 
   /** @inheritDoc */
-  numChildren(): number {
-    return this.children_.count();
-  }
+  numChildren(): number { return this.children_.count(); }
 
   /**
    * @private
@@ -185,9 +180,9 @@ export class ChildrenNode implements Node {
     if (this.isEmpty())
       return null;
 
-    const obj: { [k: string]: Object } = {};
+    const obj: {[k: string] : Object} = {};
     let numKeys = 0, maxKey = 0, allIntegerKeys = true;
-    this.forEachChild(PRIORITY_INDEX, function (key: string, childNode: Node) {
+    this.forEachChild(PRIORITY_INDEX, function(key: string, childNode: Node) {
       obj[key] = childNode.val(exportFormat);
 
       numKeys++;
@@ -213,16 +208,17 @@ export class ChildrenNode implements Node {
     }
   }
 
-
   /** @inheritDoc */
   hash(): string {
     if (this.lazyHash_ === null) {
       let toHash = '';
       if (!this.getPriority().isEmpty())
-        toHash += 'priority:' + priorityHashText(
-          (this.getPriority().val() as string | number)) + ':';
+        toHash +=
+            'priority:' +
+            priorityHashText((this.getPriority().val() as string | number)) +
+            ':';
 
-      this.forEachChild(PRIORITY_INDEX, function (key, childNode) {
+      this.forEachChild(PRIORITY_INDEX, function(key, childNode) {
         const childHash = childNode.hash();
         if (childHash !== '')
           toHash += ':' + key + ':' + childHash;
@@ -233,12 +229,13 @@ export class ChildrenNode implements Node {
     return this.lazyHash_;
   }
 
-
   /** @inheritDoc */
-  getPredecessorChildName(childName: string, childNode: Node, index: Index): string {
+  getPredecessorChildName(childName: string, childNode: Node,
+                          index: Index): string {
     const idx = this.resolveIndex_(index);
     if (idx) {
-      const predecessor = idx.getPredecessorKey(new NamedNode(childName, childNode));
+      const predecessor =
+          idx.getPredecessorKey(new NamedNode(childName, childNode));
       return predecessor ? predecessor.name : null;
     } else {
       return this.children_.getPredecessorKey(childName);
@@ -249,7 +246,7 @@ export class ChildrenNode implements Node {
    * @param {!Index} indexDefinition
    * @return {?string}
    */
-  getFirstChildName(indexDefinition: Index): string | null {
+  getFirstChildName(indexDefinition: Index): string|null {
     const idx = this.resolveIndex_(indexDefinition);
     if (idx) {
       const minKey = idx.minKey();
@@ -263,7 +260,7 @@ export class ChildrenNode implements Node {
    * @param {!Index} indexDefinition
    * @return {?NamedNode}
    */
-  getFirstChild(indexDefinition: Index): NamedNode | null {
+  getFirstChild(indexDefinition: Index): NamedNode|null {
     const minKey = this.getFirstChildName(indexDefinition);
     if (minKey) {
       return new NamedNode(minKey, this.children_.get(minKey));
@@ -273,11 +270,12 @@ export class ChildrenNode implements Node {
   }
 
   /**
-   * Given an index, return the key name of the largest value we have, according to that index
+   * Given an index, return the key name of the largest value we have, according
+   * to that index
    * @param {!Index} indexDefinition
    * @return {?string}
    */
-  getLastChildName(indexDefinition: Index): string | null {
+  getLastChildName(indexDefinition: Index): string|null {
     const idx = this.resolveIndex_(indexDefinition);
     if (idx) {
       const maxKey = idx.maxKey();
@@ -291,7 +289,7 @@ export class ChildrenNode implements Node {
    * @param {!Index} indexDefinition
    * @return {?NamedNode}
    */
-  getLastChild(indexDefinition: Index): NamedNode | null {
+  getLastChild(indexDefinition: Index): NamedNode|null {
     const maxKey = this.getLastChildName(indexDefinition);
     if (maxKey) {
       return new NamedNode(maxKey, this.children_.get(maxKey));
@@ -300,14 +298,13 @@ export class ChildrenNode implements Node {
     }
   }
 
-
   /**
    * @inheritDoc
    */
   forEachChild(index: Index, action: (key: string, node: Node) => void): any {
     const idx = this.resolveIndex_(index);
     if (idx) {
-      return idx.inorderTraversal(function (wrappedNode) {
+      return idx.inorderTraversal(function(wrappedNode) {
         return action(wrappedNode.name, wrappedNode.node);
       });
     } else {
@@ -319,7 +316,8 @@ export class ChildrenNode implements Node {
    * @param {!Index} indexDefinition
    * @return {SortedMapIterator}
    */
-  getIterator(indexDefinition: Index): SortedMapIterator<string | NamedNode, Node, NamedNode> {
+  getIterator(indexDefinition: Index):
+      SortedMapIterator<string|NamedNode, Node, NamedNode> {
     return this.getIteratorFrom(indexDefinition.minPost(), indexDefinition);
   }
 
@@ -329,12 +327,14 @@ export class ChildrenNode implements Node {
    * @param {!Index} indexDefinition
    * @return {!SortedMapIterator}
    */
-  getIteratorFrom(startPost: NamedNode, indexDefinition: Index): SortedMapIterator<string | NamedNode, Node, NamedNode> {
+  getIteratorFrom(startPost: NamedNode, indexDefinition: Index):
+      SortedMapIterator<string|NamedNode, Node, NamedNode> {
     const idx = this.resolveIndex_(indexDefinition);
     if (idx) {
       return idx.getIteratorFrom(startPost, (key) => key);
     } else {
-      const iterator = this.children_.getIteratorFrom(startPost.name, NamedNode.Wrap);
+      const iterator =
+          this.children_.getIteratorFrom(startPost.name, NamedNode.Wrap);
       let next = iterator.peek();
       while (next != null && indexDefinition.compare(next, startPost) < 0) {
         iterator.getNext();
@@ -348,8 +348,10 @@ export class ChildrenNode implements Node {
    * @param {!Index} indexDefinition
    * @return {!SortedMapIterator}
    */
-  getReverseIterator(indexDefinition: Index): SortedMapIterator<string | NamedNode, Node, NamedNode> {
-    return this.getReverseIteratorFrom(indexDefinition.maxPost(), indexDefinition);
+  getReverseIterator(indexDefinition: Index):
+      SortedMapIterator<string|NamedNode, Node, NamedNode> {
+    return this.getReverseIteratorFrom(indexDefinition.maxPost(),
+                                       indexDefinition);
   }
 
   /**
@@ -357,13 +359,14 @@ export class ChildrenNode implements Node {
    * @param {!Index} indexDefinition
    * @return {!SortedMapIterator}
    */
-  getReverseIteratorFrom(endPost: NamedNode,
-                         indexDefinition: Index): SortedMapIterator<string | NamedNode, Node, NamedNode> {
+  getReverseIteratorFrom(endPost: NamedNode, indexDefinition: Index):
+      SortedMapIterator<string|NamedNode, Node, NamedNode> {
     const idx = this.resolveIndex_(indexDefinition);
     if (idx) {
-      return idx.getReverseIteratorFrom(endPost, function (key) { return key; });
+      return idx.getReverseIteratorFrom(endPost, function(key) { return key; });
     } else {
-      const iterator = this.children_.getReverseIteratorFrom(endPost.name, NamedNode.Wrap);
+      const iterator =
+          this.children_.getReverseIteratorFrom(endPost.name, NamedNode.Wrap);
       let next = iterator.peek();
       while (next != null && indexDefinition.compare(next, endPost) > 0) {
         iterator.getNext();
@@ -397,10 +400,12 @@ export class ChildrenNode implements Node {
    * @inheritDoc
    */
   withIndex(indexDefinition: Index): Node {
-    if (indexDefinition === KEY_INDEX || this.indexMap_.hasIndex(indexDefinition)) {
+    if (indexDefinition === KEY_INDEX ||
+        this.indexMap_.hasIndex(indexDefinition)) {
       return this;
     } else {
-      const newIndexMap = this.indexMap_.addIndex(indexDefinition, this.children_);
+      const newIndexMap =
+          this.indexMap_.addIndex(indexDefinition, this.children_);
       return new ChildrenNode(this.children_, this.priorityNode_, newIndexMap);
     }
   }
@@ -418,20 +423,21 @@ export class ChildrenNode implements Node {
   equals(other: Node): boolean {
     if (other === this) {
       return true;
-    }
-    else if (other.isLeafNode()) {
+    } else if (other.isLeafNode()) {
       return false;
     } else {
       const otherChildrenNode = other as ChildrenNode;
       if (!this.getPriority().equals(otherChildrenNode.getPriority())) {
         return false;
-      } else if (this.children_.count() === otherChildrenNode.children_.count()) {
+      } else if (this.children_.count() ===
+                 otherChildrenNode.children_.count()) {
         const thisIter = this.getIterator(PRIORITY_INDEX);
         const otherIter = otherChildrenNode.getIterator(PRIORITY_INDEX);
         let thisCurrent = thisIter.getNext();
         let otherCurrent = otherIter.getNext();
         while (thisCurrent && otherCurrent) {
-          if (thisCurrent.name !== otherCurrent.name || !thisCurrent.node.equals(otherCurrent.node)) {
+          if (thisCurrent.name !== otherCurrent.name ||
+              !thisCurrent.node.equals(otherCurrent.node)) {
             return false;
           }
           thisCurrent = thisIter.getNext();
@@ -444,23 +450,22 @@ export class ChildrenNode implements Node {
     }
   }
 
-
   /**
-   * Returns a SortedMap ordered by index, or null if the default (by-key) ordering can be used
-   * instead.
+   * Returns a SortedMap ordered by index, or null if the default (by-key)
+   * ordering can be used instead.
    *
    * @private
    * @param {!Index} indexDefinition
    * @return {?SortedMap.<NamedNode, Node>}
    */
-  private resolveIndex_(indexDefinition: Index): SortedMap<NamedNode, Node> | null {
+  private resolveIndex_(indexDefinition: Index):
+      SortedMap<NamedNode, Node>|null {
     if (indexDefinition === KEY_INDEX) {
       return null;
     } else {
       return this.indexMap_.get(indexDefinition.toString());
     }
   }
-
 }
 
 /**
@@ -470,7 +475,8 @@ export class ChildrenNode implements Node {
  */
 export class MaxNode extends ChildrenNode {
   constructor() {
-    super(new SortedMap<string, Node>(NAME_COMPARATOR), ChildrenNode.EMPTY_NODE, IndexMap.Default);
+    super(new SortedMap<string, Node>(NAME_COMPARATOR), ChildrenNode.EMPTY_NODE,
+          IndexMap.Default);
   }
 
   compareTo(other: Node): number {
@@ -481,26 +487,18 @@ export class MaxNode extends ChildrenNode {
     }
   }
 
-
   equals(other: Node): boolean {
     // Not that we every compare it, but MAX_NODE is only ever equal to itself
     return other === this;
   }
 
-
-  getPriority(): MaxNode {
-    return this;
-  }
-
+  getPriority(): MaxNode { return this; }
 
   getImmediateChild(childName: string): ChildrenNode {
     return ChildrenNode.EMPTY_NODE;
   }
 
-
-  isEmpty(): boolean {
-    return false;
-  }
+  isEmpty(): boolean { return false; }
 }
 
 /**
@@ -515,18 +513,13 @@ export const MAX_NODE = new MaxNode();
  */
 declare module './Node' {
   interface NamedNode {
-    MIN: NamedNode,
-    MAX: NamedNode
+    MIN: NamedNode, MAX: NamedNode
   }
 }
 
 Object.defineProperties(NamedNode, {
-  MIN: {
-    value: new NamedNode(MIN_NAME, ChildrenNode.EMPTY_NODE)
-  },
-  MAX: {
-    value: new NamedNode(MAX_NAME, MAX_NODE)
-  }
+  MIN : {value : new NamedNode(MIN_NAME, ChildrenNode.EMPTY_NODE)},
+  MAX : {value : new NamedNode(MAX_NAME, MAX_NODE)}
 });
 
 /**

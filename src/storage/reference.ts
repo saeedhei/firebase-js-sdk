@@ -1,18 +1,18 @@
 /**
-* Copyright 2017 Google Inc.
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-*   http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Copyright 2017 Google Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 /**
  * @fileoverview Defines the Firebase Storage Reference class.
@@ -70,9 +70,7 @@ export class Reference {
     return new Reference(authWrapper, location);
   }
 
-  protected mappings(): metadata.Mappings {
-    return metadata.getMappings();
-  }
+  protected mappings(): metadata.Mappings { return metadata.getMappings(); }
 
   /**
    * @return A reference to the object obtained by
@@ -80,7 +78,7 @@ export class Reference {
    *     slashes.
    */
   child(childPath: string): Reference {
-    args.validate('child', [args.stringSpec()], arguments);
+    args.validate('child', [ args.stringSpec() ], arguments);
     let newPath = path.child(this.location.path, childPath);
     let location = new Location(this.location.bucket, newPath);
     return this.newRef(this.authWrapper, location);
@@ -108,21 +106,13 @@ export class Reference {
     return this.newRef(this.authWrapper, location);
   }
 
-  get bucket(): string {
-    return this.location.bucket;
-  }
+  get bucket(): string { return this.location.bucket; }
 
-  get fullPath(): string {
-    return this.location.path;
-  }
+  get fullPath(): string { return this.location.path; }
 
-  get name(): string {
-    return path.lastComponent(this.location.path);
-  }
+  get name(): string { return path.lastComponent(this.location.path); }
 
-  get storage(): Service {
-    return this.authWrapper.service();
-  }
+  get storage(): Service { return this.authWrapper.service(); }
 
   /**
    * Uploads a blob to this object's location.
@@ -130,13 +120,13 @@ export class Reference {
    * @return An UploadTask that lets you control and
    *     observe the upload.
    */
-  put(data: Blob|Uint8Array|ArrayBuffer, metadata: Metadata|null = null): UploadTask {
-    args.validate(
-        'put', [args.uploadDataSpec(), args.metadataSpec(true)], arguments);
+  put(data: Blob|Uint8Array|ArrayBuffer,
+      metadata: Metadata|null = null): UploadTask {
+    args.validate('put', [ args.uploadDataSpec(), args.metadataSpec(true) ],
+                  arguments);
     this.throwIfRoot_('put');
-    return new UploadTask(
-        this, this.authWrapper, this.location, this.mappings(), new FbsBlob(data),
-        metadata);
+    return new UploadTask(this, this.authWrapper, this.location,
+                          this.mappings(), new FbsBlob(data), metadata);
   }
 
   /**
@@ -146,24 +136,24 @@ export class Reference {
    * @return An UploadTask that lets you control and
    *     observe the upload.
    */
-  putString(string: string, format: StringFormat = StringFormat.RAW, opt_metadata?: Metadata):
-      UploadTask {
-    args.validate(
-        'putString',
-        [
-          args.stringSpec(), args.stringSpec(fbsString.formatValidator, true),
-          args.metadataSpec(true)
-        ],
-        arguments);
+  putString(string: string, format: StringFormat = StringFormat.RAW,
+            opt_metadata?: Metadata): UploadTask {
+    args.validate('putString',
+                  [
+                    args.stringSpec(),
+                    args.stringSpec(fbsString.formatValidator, true),
+                    args.metadataSpec(true)
+                  ],
+                  arguments);
     this.throwIfRoot_('putString');
     let data = fbsString.dataFromString(format, string);
     let metadata = object.clone<Metadata>(opt_metadata);
     if (!type.isDef(metadata['contentType']) && type.isDef(data.contentType)) {
       metadata['contentType'] = data.contentType;
     }
-    return new UploadTask(
-        this, this.authWrapper, this.location, this.mappings(),
-        new FbsBlob(data.data, true), metadata);
+    return new UploadTask(this, this.authWrapper, this.location,
+                          this.mappings(), new FbsBlob(data.data, true),
+                          metadata);
   }
 
   /**
@@ -190,8 +180,8 @@ export class Reference {
     this.throwIfRoot_('getMetadata');
     let self = this;
     return this.authWrapper.getAuthToken().then(function(authToken) {
-      let requestInfo = requests.getMetadata(
-          self.authWrapper, self.location, self.mappings());
+      let requestInfo = requests.getMetadata(self.authWrapper, self.location,
+                                             self.mappings());
       return self.authWrapper.makeRequest(requestInfo, authToken).getPromise();
     });
   }
@@ -206,12 +196,12 @@ export class Reference {
    *     @see firebaseStorage.Reference.prototype.getMetadata
    */
   updateMetadata(metadata: Metadata): Promise<Metadata> {
-    args.validate('updateMetadata', [args.metadataSpec()], arguments);
+    args.validate('updateMetadata', [ args.metadataSpec() ], arguments);
     this.throwIfRoot_('updateMetadata');
     let self = this;
     return this.authWrapper.getAuthToken().then(function(authToken) {
-      let requestInfo = requests.updateMetadata(
-          self.authWrapper, self.location, metadata, self.mappings());
+      let requestInfo = requests.updateMetadata(self.authWrapper, self.location,
+                                                metadata, self.mappings());
       return self.authWrapper.makeRequest(requestInfo, authToken).getPromise();
     });
   }

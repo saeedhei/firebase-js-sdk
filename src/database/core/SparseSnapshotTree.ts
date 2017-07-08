@@ -1,23 +1,23 @@
 /**
-* Copyright 2017 Google Inc.
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-*   http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Copyright 2017 Google Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
-import { Path } from "./util/Path";
-import { PRIORITY_INDEX } from "./snap/indexes/PriorityIndex";
-import { CountedSet } from "./util/CountedSet";
-import { Node } from './snap/Node';
+import {PRIORITY_INDEX} from "./snap/indexes/PriorityIndex";
+import {Node} from './snap/Node';
+import {CountedSet} from "./util/CountedSet";
+import {Path} from "./util/Path";
 
 /**
  * Helper class to store a sparse set of snapshots.
@@ -29,13 +29,13 @@ export class SparseSnapshotTree {
    * @private
    * @type {Node}
    */
-  private value_: Node | null = null;
+  private value_: Node|null = null;
 
   /**
    * @private
    * @type {CountedSet}
    */
-  private children_: CountedSet<string, SparseSnapshotTree> | null = null;
+  private children_: CountedSet<string, SparseSnapshotTree>|null = null;
 
   /**
    * Gets the node stored at the given path if one exists.
@@ -43,7 +43,7 @@ export class SparseSnapshotTree {
    * @param {!Path} path Path to look up snapshot for.
    * @return {?Node} The retrieved node, or null.
    */
-  find(path: Path): Node | null {
+  find(path: Path): Node|null {
     if (this.value_ != null) {
       return this.value_.getChild(path);
     } else if (!path.isEmpty() && this.children_ != null) {
@@ -120,7 +120,8 @@ export class SparseSnapshotTree {
         const childKey = path.getFront();
         path = path.popFront();
         if (this.children_.contains(childKey)) {
-          const safeToRemove = (this.children_.get(childKey) as SparseSnapshotTree).forget(path);
+          const safeToRemove =
+              (this.children_.get(childKey) as SparseSnapshotTree).forget(path);
           if (safeToRemove) {
             this.children_.remove(childKey);
           }
@@ -146,7 +147,7 @@ export class SparseSnapshotTree {
    * @param {!Path} prefixPath Path to look up node for.
    * @param {!Function} func The function to invoke for each tree.
    */
-  forEachTree(prefixPath: Path, func: (a: Path, b: Node) =>  any) {
+  forEachTree(prefixPath: Path, func: (a: Path, b: Node) => any) {
     if (this.value_ !== null) {
       func(prefixPath, this.value_);
     } else {
@@ -164,9 +165,7 @@ export class SparseSnapshotTree {
    */
   forEachChild(func: (a: string, b: SparseSnapshotTree) => void) {
     if (this.children_ !== null) {
-      this.children_.each((key, tree) => {
-        func(key, tree);
-      });
+      this.children_.each((key, tree) => { func(key, tree); });
     }
   }
 }

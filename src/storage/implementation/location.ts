@@ -1,18 +1,18 @@
 /**
-* Copyright 2017 Google Inc.
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-*   http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Copyright 2017 Google Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 /**
  * @fileoverview Functionality related to the parsing/composition of bucket/
@@ -31,9 +31,7 @@ export class Location {
     this.path_ = path;
   }
 
-  get path(): string {
-    return this.path_;
-  }
+  get path(): string { return this.path_; }
 
   fullServerUrl(): string {
     let encode = encodeURIComponent;
@@ -73,20 +71,19 @@ export class Location {
     let gsPath = '(/(.*))?$';
     let path = '(/([^?#]*).*)?$';
     let gsRegex = new RegExp('^gs://' + bucketDomain + gsPath, 'i');
-    let gsIndices = {bucket: 1, path: 3};
+    let gsIndices = {bucket : 1, path : 3};
 
     function httpModify(loc: Location) {
       loc.path_ = decodeURIComponent(loc.path);
     }
     let version = 'v[A-Za-z0-9_]+';
-    let httpRegex = new RegExp(
-        '^https?://firebasestorage\\.googleapis\\.com/' + version + '/b/' +
-            bucketDomain + '/o' + path,
-        'i');
-    let httpIndices = {bucket: 1, path: 3};
+    let httpRegex = new RegExp('^https?://firebasestorage\\.googleapis\\.com/' +
+                                   version + '/b/' + bucketDomain + '/o' + path,
+                               'i');
+    let httpIndices = {bucket : 1, path : 3};
     let groups = [
-      {regex: gsRegex, indices: gsIndices, postModify: gsModify},
-      {regex: httpRegex, indices: httpIndices, postModify: httpModify}
+      {regex : gsRegex, indices : gsIndices, postModify : gsModify},
+      {regex : httpRegex, indices : httpIndices, postModify : httpModify}
     ];
     for (let i = 0; i < groups.length; i++) {
       let group = groups[i];

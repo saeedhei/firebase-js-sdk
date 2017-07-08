@@ -1,18 +1,18 @@
 /**
-* Copyright 2017 Google Inc.
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-*   http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Copyright 2017 Google Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 'use strict';
 
 import ControllerInterface from './controller-interface';
@@ -61,18 +61,16 @@ export default class WindowController extends ControllerInterface {
      * @private {!firebase.Subscribe} The subscribe function to the onMessage
      * observer.
      */
-    this.onMessage_ = createSubscribe(observer => {
-      this.messageObserver_ = observer;
-    });
+    this.onMessage_ =
+        createSubscribe(observer => { this.messageObserver_ = observer; });
 
     /**
      * @private
      * @type {firebase.Observer}
      */
     this.tokenRefreshObserver_ = null;
-    this.onTokenRefresh_ = createSubscribe(observer => {
-      this.tokenRefreshObserver_ = observer;
-    });
+    this.onTokenRefresh_ =
+        createSubscribe(observer => { this.tokenRefreshObserver_ = observer; });
 
     this.setupSWMessageListener_();
   }
@@ -90,14 +88,10 @@ export default class WindowController extends ControllerInterface {
     // Check that the required API's are available
     if (!this.isSupported_()) {
       return Promise.reject(
-        this.errorFactory_.create(Errors.codes.UNSUPPORTED_BROWSER)
-      );
+          this.errorFactory_.create(Errors.codes.UNSUPPORTED_BROWSER));
     }
 
-    return this.manifestCheck_()
-    .then(() => {
-      return super.getToken();
-    });
+    return this.manifestCheck_().then(() => { return super.getToken(); });
   }
 
   /**
@@ -112,33 +106,34 @@ export default class WindowController extends ControllerInterface {
       return this.manifestCheckPromise_;
     }
 
-    const manifestTag = (<HTMLAnchorElement> document.querySelector('link[rel="manifest"]'));
+    const manifestTag =
+        (<HTMLAnchorElement>document.querySelector('link[rel="manifest"]'));
     if (!manifestTag) {
       this.manifestCheckPromise_ = Promise.resolve();
     } else {
-      this.manifestCheckPromise_ = fetch(manifestTag.href)
-      .then(response => {
-        return response.json();
-      })
-      .catch(() => {
-        // If the download or parsing fails allow check.
-        // We only want to error if we KNOW that the gcm_sender_id is incorrect.
-        return Promise.resolve();
-      })
-      .then(manifestContent => {
-        if (!manifestContent) {
-          return;
-        }
+      this.manifestCheckPromise_ =
+          fetch(manifestTag.href)
+              .then(response => { return response.json(); })
+              .catch(() => {
+                // If the download or parsing fails allow check.
+                // We only want to error if we KNOW that the gcm_sender_id is
+                // incorrect.
+                return Promise.resolve();
+              })
+              .then(manifestContent => {
+                if (!manifestContent) {
+                  return;
+                }
 
-        if (!manifestContent['gcm_sender_id']) {
-          return;
-        }
+                if (!manifestContent['gcm_sender_id']) {
+                  return;
+                }
 
-        if (manifestContent['gcm_sender_id'] !== '103953800507') {
-          throw this.errorFactory_.create(
-            Errors.codes.INCORRECT_GCM_SENDER_ID);
-        }
-      });
+                if (manifestContent['gcm_sender_id'] !== '103953800507') {
+                  throw this.errorFactory_.create(
+                      Errors.codes.INCORRECT_GCM_SENDER_ID);
+                }
+              });
     }
 
     return this.manifestCheckPromise_;
@@ -160,11 +155,11 @@ export default class WindowController extends ControllerInterface {
         if (result === NOTIFICATION_PERMISSION.granted) {
           return resolve();
         } else if (result === NOTIFICATION_PERMISSION.denied) {
-          return reject(this.errorFactory_.create(
-            Errors.codes.PERMISSION_BLOCKED));
+          return reject(
+              this.errorFactory_.create(Errors.codes.PERMISSION_BLOCKED));
         } else {
-          return reject(this.errorFactory_.create(
-            Errors.codes.PERMISSION_DEFAULT));
+          return reject(
+              this.errorFactory_.create(Errors.codes.PERMISSION_DEFAULT));
         }
       };
 
@@ -244,8 +239,8 @@ export default class WindowController extends ControllerInterface {
    * registration to become active
    */
   waitForRegistrationToActivate_(registration) {
-    const serviceWorker = registration.installing || registration.waiting ||
-      registration.active;
+    const serviceWorker =
+        registration.installing || registration.waiting || registration.active;
 
     return new Promise((resolve, reject) => {
       if (!serviceWorker) {
@@ -295,29 +290,25 @@ export default class WindowController extends ControllerInterface {
     // use a new service worker as registrationToUse_ is no longer undefined
     this.registrationToUse_ = null;
 
-    return navigator.serviceWorker.register(DefaultSW.path, {
-      scope: DefaultSW.scope
-    })
-    .catch(err => {
-      throw this.errorFactory_.create(
-        Errors.codes.FAILED_DEFAULT_REGISTRATION, {
-          'browserErrorMessage': err.message
-        }
-      );
-    })
-    .then(registration => {
-      return this.waitForRegistrationToActivate_(registration)
-      .then(() => {
-        this.registrationToUse_ = registration;
+    return navigator.serviceWorker
+        .register(DefaultSW.path, {scope : DefaultSW.scope})
+        .catch(err => {
+          throw this.errorFactory_.create(
+              Errors.codes.FAILED_DEFAULT_REGISTRATION,
+              {'browserErrorMessage' : err.message});
+        })
+        .then(registration => {
+          return this.waitForRegistrationToActivate_(registration).then(() => {
+            this.registrationToUse_ = registration;
 
-        // We update after activation due to an issue with Firefox v49 where
-        // a race condition occassionally causes the service work to not
-        // install
-        registration.update();
+            // We update after activation due to an issue with Firefox v49 where
+            // a race condition occassionally causes the service work to not
+            // install
+            registration.update();
 
-        return registration;
-      });
-    });
+            return registration;
+          });
+        });
   }
 
   /**
@@ -340,14 +331,14 @@ export default class WindowController extends ControllerInterface {
 
       const workerPageMessage = event.data;
       switch (workerPageMessage[WorkerPageMessage.PARAMS.TYPE_OF_MSG]) {
-        case WorkerPageMessage.TYPES_OF_MSG.PUSH_MSG_RECEIVED:
-        case WorkerPageMessage.TYPES_OF_MSG.NOTIFICATION_CLICKED:
-          const pushMessage = workerPageMessage[WorkerPageMessage.PARAMS.DATA];
-          this.messageObserver_.next(pushMessage);
-          break;
-        default:
-          // Noop.
-          break;
+      case WorkerPageMessage.TYPES_OF_MSG.PUSH_MSG_RECEIVED:
+      case WorkerPageMessage.TYPES_OF_MSG.NOTIFICATION_CLICKED:
+        const pushMessage = workerPageMessage[WorkerPageMessage.PARAMS.DATA];
+        this.messageObserver_.next(pushMessage);
+        break;
+      default:
+        // Noop.
+        break;
       }
     }, false);
   }
@@ -358,12 +349,10 @@ export default class WindowController extends ControllerInterface {
    * @return {boolean} Returns true if the desired APIs are available.
    */
   isSupported_() {
-    return 'serviceWorker' in navigator &&
-        'PushManager' in window &&
-        'Notification' in window &&
-        'fetch' in window &&
-        ServiceWorkerRegistration.prototype
-            .hasOwnProperty('showNotification') &&
-        PushSubscription.prototype.hasOwnProperty('getKey');
+    return 'serviceWorker' in navigator && 'PushManager' in window &&
+           'Notification' in window && 'fetch' in window &&
+           ServiceWorkerRegistration.prototype.hasOwnProperty(
+               'showNotification') &&
+           PushSubscription.prototype.hasOwnProperty('getKey');
   }
 }

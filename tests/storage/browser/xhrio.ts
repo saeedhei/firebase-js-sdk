@@ -1,24 +1,31 @@
 /**
-* Copyright 2017 Google Inc.
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-*   http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Copyright 2017 Google Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 import {forEach} from '../../../src/storage/implementation/object';
-import * as promiseimpl from '../../../src/storage/implementation/promise_external';
+import * as promiseimpl from
+    '../../../src/storage/implementation/promise_external';
 import * as type from '../../../src/storage/implementation/type';
-import {ErrorCode, Headers, XhrIo} from '../../../src/storage/implementation/xhrio';
+import {
+  ErrorCode,
+  Headers,
+  XhrIo
+} from '../../../src/storage/implementation/xhrio';
 
-export type SendHook = (xhrio: TestingXhrIo, url: string, method: string, body?: ArrayBufferView|Blob|string|null, headers?: Headers) => void;
+export type SendHook =
+    (xhrio: TestingXhrIo, url: string, method: string,
+     body?: ArrayBufferView | Blob | string | null, headers?: Headers) => void;
 
 export enum State {
   START = 0,
@@ -26,7 +33,9 @@ export enum State {
   DONE = 2
 }
 
-export type StringHeaders = {[name: string]: string};
+export type StringHeaders = {
+  [name: string] : string
+};
 
 export class TestingXhrIo implements XhrIo {
 
@@ -41,10 +50,8 @@ export class TestingXhrIo implements XhrIo {
 
   constructor(sendHook: SendHook) {
     this.state = State.START;
-    this.sendPromise = 
-    this.sendPromise = promiseimpl.make<XhrIo>((resolve, reject) => {
-      this.resolve = resolve;
-    });
+    this.sendPromise = this.sendPromise = promiseimpl.make<XhrIo>(
+        (resolve, reject) => { this.resolve = resolve; });
     this.sendHook = sendHook;
     this.status = -1;
     this.responseText = '';
@@ -52,7 +59,8 @@ export class TestingXhrIo implements XhrIo {
     this.errorCode = ErrorCode.NO_ERROR;
   }
 
-  send(url: string, method: string, body?: ArrayBufferView|Blob|string|null, headers?: Headers): Promise<XhrIo> {
+  send(url: string, method: string, body?: ArrayBufferView|Blob|string|null,
+       headers?: Headers): Promise<XhrIo> {
     if (this.state !== State.START) {
       throw new Error('Can\'t send again');
     }
@@ -73,7 +81,7 @@ export class TestingXhrIo implements XhrIo {
     this.status = status;
     this.responseText = body;
     this.headers = {};
-    forEach(headers, (key: string, val: string|number) => {
+    forEach(headers, (key: string, val: string | number) => {
       this.headers[key.toLowerCase()] = val.toString();
     });
     this.errorCode = ErrorCode.NO_ERROR;
@@ -82,17 +90,11 @@ export class TestingXhrIo implements XhrIo {
     this.resolve(this);
   }
 
-  getErrorCode(): ErrorCode {
-    return this.errorCode;
-  }
+  getErrorCode(): ErrorCode { return this.errorCode; }
 
-  getStatus(): number {
-    return this.status;
-  }
+  getStatus(): number { return this.status; }
 
-  getResponseText(): string {
-    return this.responseText;
-  }
+  getResponseText(): string { return this.responseText; }
 
   abort(): void {
     this.state = State.START;

@@ -1,27 +1,27 @@
 /**
-* Copyright 2017 Google Inc.
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-*   http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Copyright 2017 Google Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
-import { RepoInfo } from '../core/RepoInfo';
+import {RepoInfo} from '../core/RepoInfo';
 
 declare const MozWebSocket: any;
 
 import firebase from '../../app';
-import { assert } from '../../utils/assert';
-import { logWrapper, splitStringBySize } from '../core/util/util';
-import { StatsManager } from '../core/stats/StatsManager';
+import {assert} from '../../utils/assert';
+import {logWrapper, splitStringBySize} from '../core/util/util';
+import {StatsManager} from '../core/stats/StatsManager';
 import {
   FORGE_DOMAIN,
   FORGE_REF,
@@ -32,12 +32,12 @@ import {
   VERSION_PARAM,
   WEBSOCKET
 } from './Constants';
-import { CONSTANTS as ENV_CONSTANTS } from '../../utils/constants';
-import { PersistentStorage } from '../core/storage/storage';
-import { jsonEval, stringify } from '../../utils/json';
-import { isNodeSdk } from '../../utils/environment';
-import { Transport } from './Transport';
-import { StatsCollection } from '../core/stats/StatsCollection';
+import {CONSTANTS as ENV_CONSTANTS} from '../../utils/constants';
+import {PersistentStorage} from '../core/storage/storage';
+import {jsonEval, stringify} from '../../utils/json';
+import {isNodeSdk} from '../../utils/environment';
+import {Transport} from './Transport';
+import {StatsCollection} from '../core/stats/StatsCollection';
 
 const WEBSOCKET_MAX_FRAME_SIZE = 16384;
 const WEBSOCKET_KEEPALIVE_INTERVAL = 45000;
@@ -49,9 +49,7 @@ if (typeof MozWebSocket !== 'undefined') {
   WebSocketImpl = WebSocket;
 }
 
-export function setWebSocketImpl(impl) {
-  WebSocketImpl = impl;
-}
+export function setWebSocketImpl(impl) { WebSocketImpl = impl; }
 
 /**
  * Create a new websocket connection with the given callbacks.
@@ -59,15 +57,15 @@ export function setWebSocketImpl(impl) {
  * @implements {Transport}
  */
 export class WebSocketConnection implements Transport {
-  keepaliveTimer: number | null = null;
-  frames: string[] | null = null;
+  keepaliveTimer: number|null = null;
+  frames: string[]|null = null;
   totalFrames = 0;
   bytesSent = 0;
   bytesReceived = 0;
   connURL: string;
   onDisconnect: (a?: boolean) => void;
   onMessage: (msg: Object) => void;
-  mySock: any | null;
+  mySock: any|null;
   private log_: (...a: any[]) => void;
   private stats_: StatsCollection;
   private everConnected_: boolean;
@@ -76,33 +74,35 @@ export class WebSocketConnection implements Transport {
   /**
    * @param {string} connId identifier for this transport
    * @param {RepoInfo} repoInfo The info for the websocket endpoint.
-   * @param {string=} transportSessionId Optional transportSessionId if this is connecting to an existing transport
-   *                                         session
-   * @param {string=} lastSessionId Optional lastSessionId if there was a previous connection
+   * @param {string=} transportSessionId Optional transportSessionId if this is
+   * connecting to an existing transport session
+   * @param {string=} lastSessionId Optional lastSessionId if there was a
+   * previous connection
    */
   constructor(public connId: string, repoInfo: RepoInfo,
               transportSessionId?: string, lastSessionId?: string) {
     this.log_ = logWrapper(this.connId);
     this.stats_ = StatsManager.getCollection(repoInfo);
-    this.connURL = WebSocketConnection.connectionURL_(repoInfo, transportSessionId, lastSessionId);
+    this.connURL = WebSocketConnection.connectionURL_(
+        repoInfo, transportSessionId, lastSessionId);
   }
 
   /**
    * @param {RepoInfo} repoInfo The info for the websocket endpoint.
-   * @param {string=} transportSessionId Optional transportSessionId if this is connecting to an existing transport
-   *                                         session
-   * @param {string=} lastSessionId Optional lastSessionId if there was a previous connection
+   * @param {string=} transportSessionId Optional transportSessionId if this is
+   * connecting to an existing transport session
+   * @param {string=} lastSessionId Optional lastSessionId if there was a
+   * previous connection
    * @return {string} connection url
    * @private
    */
-  private static connectionURL_(repoInfo: RepoInfo, transportSessionId?: string, lastSessionId?: string): string {
-    const urlParams: { [k: string]: string } = {};
+  private static connectionURL_(repoInfo: RepoInfo, transportSessionId?: string,
+                                lastSessionId?: string): string {
+    const urlParams: {[k: string] : string} = {};
     urlParams[VERSION_PARAM] = PROTOCOL_VERSION;
 
-    if (!isNodeSdk() &&
-      typeof location !== 'undefined' &&
-      location.href &&
-      location.href.indexOf(FORGE_DOMAIN) !== -1) {
+    if (!isNodeSdk() && typeof location !== 'undefined' && location.href &&
+        location.href.indexOf(FORGE_DOMAIN) !== -1) {
       urlParams[REFERER_PARAM] = FORGE_REF;
     }
     if (transportSessionId) {
@@ -133,19 +133,24 @@ export class WebSocketConnection implements Transport {
       if (isNodeSdk()) {
         const device = ENV_CONSTANTS.NODE_ADMIN ? 'AdminNode' : 'Node';
         // UA Format: Firebase/<wire_protocol>/<sdk_version>/<platform>/<device>
-        const options: { [k: string]: object } = {
-          'headers': {
-            'User-Agent': `Firebase/${PROTOCOL_VERSION}/${firebase.SDK_VERSION}/${process.platform}/${device}`
-        }};
+        const options: {[k: string] : object} = {
+          'headers' : {
+            'User-Agent' :
+                `Firebase/${PROTOCOL_VERSION}/${
+                                                firebase.SDK_VERSION
+                                              }/${process.platform}/${device}`
+          }
+        };
 
-        // Plumb appropriate http_proxy environment variable into faye-websocket if it exists.
+        // Plumb appropriate http_proxy environment variable into faye-websocket
+        // if it exists.
         const env = process['env'];
         const proxy = (this.connURL.indexOf('wss://') == 0)
-          ? (env['HTTPS_PROXY'] || env['https_proxy'])
-          : (env['HTTP_PROXY'] || env['http_proxy']);
+                          ? (env['HTTPS_PROXY'] || env['https_proxy'])
+                          : (env['HTTP_PROXY'] || env['http_proxy']);
 
         if (proxy) {
-          options['proxy'] = {origin: proxy};
+          options['proxy'] = {origin : proxy};
         }
 
         this.mySock = new WebSocketImpl(this.connURL, [], options);
@@ -173,9 +178,7 @@ export class WebSocketConnection implements Transport {
       this.onClosed_();
     };
 
-    this.mySock.onmessage = (m: object) => {
-      this.handleIncomingFrame(m);
-    };
+    this.mySock.onmessage = (m: object) => { this.handleIncomingFrame(m); };
 
     this.mySock.onerror = (e: any) => {
       this.log_('WebSocket error.  Closing connection.');
@@ -188,15 +191,14 @@ export class WebSocketConnection implements Transport {
   }
 
   /**
-   * No-op for websockets, we don't need to do anything once the connection is confirmed as open
+   * No-op for websockets, we don't need to do anything once the connection is
+   * confirmed as open
    */
-  start() {};
+  start(){};
 
   static forceDisallow_: Boolean;
 
-  static forceDisallow() {
-    WebSocketConnection.forceDisallow_ = true;
-  }
+  static forceDisallow() { WebSocketConnection.forceDisallow_ = true; }
 
   static isAvailable(): boolean {
     let isOldAndroid = false;
@@ -210,7 +212,8 @@ export class WebSocketConnection implements Transport {
       }
     }
 
-    return !isOldAndroid && WebSocketImpl !== null && !WebSocketConnection.forceDisallow_;
+    return !isOldAndroid && WebSocketImpl !== null &&
+           !WebSocketConnection.forceDisallow_;
   }
 
   /**
@@ -233,7 +236,7 @@ export class WebSocketConnection implements Transport {
     // If our persistent storage is actually only in-memory storage,
     // we default to assuming that it previously failed to be safe.
     return PersistentStorage.isInMemoryStorage ||
-      PersistentStorage.get('previous_websocket_failure') === true;
+           PersistentStorage.get('previous_websocket_failure') === true;
   }
 
   markConnectionHealthy() {
@@ -247,13 +250,14 @@ export class WebSocketConnection implements Transport {
       this.frames = null;
       const jsonMess = jsonEval(fullMess);
 
-      //handle the message
+      // handle the message
       this.onMessage(jsonMess);
     }
   }
 
   /**
-   * @param {number} frameCount The number of frames we are expecting from the server
+   * @param {number} frameCount The number of frames we are expecting from the
+   * server
    * @private
    */
   private handleNewFrameCount_(frameCount: number) {
@@ -262,15 +266,19 @@ export class WebSocketConnection implements Transport {
   }
 
   /**
-   * Attempts to parse a frame count out of some text. If it can't, assumes a value of 1
+   * Attempts to parse a frame count out of some text. If it can't, assumes a
+   * value of 1
    * @param {!String} data
-   * @return {?String} Any remaining data to be process, or null if there is none
+   * @return {?String} Any remaining data to be process, or null if there is
+   * none
    * @private
    */
-  private extractFrameCount_(data: string): string | null {
+  private extractFrameCount_(data: string): string|null {
     assert(this.frames === null, 'We already have a frame buffer');
-    // TODO: The server is only supposed to send up to 9999 frames (i.e. length <= 4), but that isn't being enforced
-    // currently.  So allowing larger frame counts (length <= 6).  See https://app.asana.com/0/search/8688598998380/8237608042508
+    // TODO: The server is only supposed to send up to 9999 frames (i.e. length
+    // <= 4), but that isn't being enforced currently.  So allowing larger frame
+    // counts (length <= 6).  See
+    // https://app.asana.com/0/search/8688598998380/8237608042508
     if (data.length <= 6) {
       const frameCount = Number(data);
       if (!isNaN(frameCount)) {
@@ -286,9 +294,10 @@ export class WebSocketConnection implements Transport {
    * Process a websocket frame that has arrived from the server.
    * @param mess The frame data
    */
-  handleIncomingFrame(mess: { [k: string]: any }) {
+  handleIncomingFrame(mess: {[k: string] : any}) {
     if (this.mySock === null)
-      return; // Chrome apparently delivers incoming packets even after we .close() the connection sometimes.
+      return; // Chrome apparently delivers incoming packets even after we
+              // .close() the connection sometimes.
     const data = mess['data'] as string;
     this.bytesReceived += data.length;
     this.stats_.incrementCounter('bytes_received', data.length);
@@ -319,17 +328,18 @@ export class WebSocketConnection implements Transport {
     this.bytesSent += dataStr.length;
     this.stats_.incrementCounter('bytes_sent', dataStr.length);
 
-    //We can only fit a certain amount in each websocket frame, so we need to split this request
-    //up into multiple pieces if it doesn't fit in one request.
+    // We can only fit a certain amount in each websocket frame, so we need to
+    // split this request  up into multiple pieces if it doesn't fit in one
+    // request.
 
     const dataSegs = splitStringBySize(dataStr, WEBSOCKET_MAX_FRAME_SIZE);
 
-    //Send the length header
+    // Send the length header
     if (dataSegs.length > 1) {
       this.sendString_(String(dataSegs.length));
     }
 
-    //Send the actual data in segments.
+    // Send the actual data in segments.
     for (let i = 0; i < dataSegs.length; i++) {
       this.sendString_(dataSegs[i]);
     }
@@ -373,18 +383,19 @@ export class WebSocketConnection implements Transport {
   }
 
   /**
-   * Kill the current keepalive timer and start a new one, to ensure that it always fires N seconds after
-   * the last activity.
+   * Kill the current keepalive timer and start a new one, to ensure that it
+   * always fires N seconds after the last activity.
    */
   resetKeepAlive() {
     clearInterval(this.keepaliveTimer);
     this.keepaliveTimer = setInterval(() => {
-      //If there has been no websocket activity for a while, send a no-op
-      if (this.mySock) {
-        this.sendString_('0');
-      }
-      this.resetKeepAlive();
-    }, Math.floor(WEBSOCKET_KEEPALIVE_INTERVAL)) as any;
+                            // If there has been no websocket activity for a
+                            // while, send a no-op
+                            if (this.mySock) {
+                              this.sendString_('0');
+                            }
+                            this.resetKeepAlive();
+                          }, Math.floor(WEBSOCKET_KEEPALIVE_INTERVAL)) as any;
   }
 
   /**
@@ -394,16 +405,16 @@ export class WebSocketConnection implements Transport {
    * @private
    */
   private sendString_(str: string) {
-    // Firefox seems to sometimes throw exceptions (NS_ERROR_UNEXPECTED) from websocket .send()
-    // calls for some unknown reason.  We treat these as an error and disconnect.
-    // See https://app.asana.com/0/58926111402292/68021340250410
+    // Firefox seems to sometimes throw exceptions (NS_ERROR_UNEXPECTED) from
+    // websocket .send() calls for some unknown reason.  We treat these as an
+    // error and disconnect. See
+    // https://app.asana.com/0/58926111402292/68021340250410
     try {
       this.mySock.send(str);
     } catch (e) {
-      this.log_('Exception thrown from WebSocket.send():', e.message || e.data, 'Closing connection.');
+      this.log_('Exception thrown from WebSocket.send():', e.message || e.data,
+                'Closing connection.');
       setTimeout(this.onClosed_.bind(this), 0);
     }
   }
 }
-
-

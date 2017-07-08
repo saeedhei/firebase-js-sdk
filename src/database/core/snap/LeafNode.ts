@@ -1,32 +1,27 @@
 /**
-* Copyright 2017 Google Inc.
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-*   http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Copyright 2017 Google Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
-import { assert } from '../../../utils/assert'
-import {
-  doubleToIEEE754String,
-  sha1
-} from '../util/util';
-import {
-  priorityHashText,
-  validatePriorityNode
-} from './snap';
-import { Node } from './Node';
-import { Path } from '../util/Path';
-import { Index } from './indexes/Index';
-import { ChildrenNodeConstructor } from './ChildrenNode';
+import {assert} from '../../../utils/assert'
+import {Path} from '../util/Path';
+import {doubleToIEEE754String, sha1} from '../util/util';
+
+import {ChildrenNodeConstructor} from './ChildrenNode';
+import {Index} from './indexes/Index';
+import {Node} from './Node';
+import {priorityHashText, validatePriorityNode} from './snap';
 
 let __childrenNodeConstructor: ChildrenNodeConstructor;
 
@@ -40,43 +35,38 @@ export class LeafNode implements Node {
     __childrenNodeConstructor = val;
   }
 
-  static get __childrenNodeConstructor() {
-    return __childrenNodeConstructor;
-  }
+  static get __childrenNodeConstructor() { return __childrenNodeConstructor; }
 
   /**
-   * The sort order for comparing leaf nodes of different types. If two leaf nodes have
-   * the same type, the comparison falls back to their value
+   * The sort order for comparing leaf nodes of different types. If two leaf
+   * nodes have the same type, the comparison falls back to their value
    * @type {Array.<!string>}
    * @const
    */
-  static VALUE_TYPE_ORDER = ['object', 'boolean', 'number', 'string'];
+  static VALUE_TYPE_ORDER = [ 'object', 'boolean', 'number', 'string' ];
 
-  private lazyHash_: string | null = null;
+  private lazyHash_: string|null = null;
 
   /**
    * @implements {Node}
-   * @param {!(string|number|boolean|Object)} value_ The value to store in this leaf node.
-   *                                         The object type is possible in the event of a deferred value
+   * @param {!(string|number|boolean|Object)} value_ The value to store in this
+   * leaf node. The object type is possible in the event of a deferred value
    * @param {!Node=} priorityNode_ The priority of this node.
    */
-  constructor(private readonly value_: string | number | boolean | object,
-              private priorityNode_: Node = LeafNode.__childrenNodeConstructor.EMPTY_NODE) {
+  constructor(private readonly value_: string|number|boolean|object,
+              private priorityNode_:
+                  Node = LeafNode.__childrenNodeConstructor.EMPTY_NODE) {
     assert(this.value_ !== undefined && this.value_ !== null,
-      'LeafNode shouldn\'t be created with null/undefined value.');
+           'LeafNode shouldn\'t be created with null/undefined value.');
 
     validatePriorityNode(this.priorityNode_);
   }
 
   /** @inheritDoc */
-  isLeafNode(): boolean {
-    return true;
-  }
+  isLeafNode(): boolean { return true; }
 
   /** @inheritDoc */
-  getPriority(): Node {
-    return this.priorityNode_;
-  }
+  getPriority(): Node { return this.priorityNode_; }
 
   /** @inheritDoc */
   updatePriority(newPriorityNode: Node): Node {
@@ -107,9 +97,7 @@ export class LeafNode implements Node {
   /**
    * @inheritDoc
    */
-  hasChild(): boolean {
-    return false;
-  }
+  hasChild(): boolean { return false; }
 
   /** @inheritDoc */
   getPredecessorChildName(childName: String, childNode: Node): null {
@@ -124,8 +112,8 @@ export class LeafNode implements Node {
       return this;
     } else {
       return LeafNode.__childrenNodeConstructor.EMPTY_NODE
-        .updateImmediateChild(childName, newChildNode)
-        .updatePriority(this.priorityNode_);
+          .updateImmediateChild(childName, newChildNode)
+          .updatePriority(this.priorityNode_);
     }
   }
 
@@ -138,21 +126,19 @@ export class LeafNode implements Node {
       return this;
     } else {
       assert(front !== '.priority' || path.getLength() === 1,
-        '.priority must be the last token in a path');
+             '.priority must be the last token in a path');
 
-      return this.updateImmediateChild(front, LeafNode.__childrenNodeConstructor.EMPTY_NODE.updateChild(path.popFront(), newChildNode));
+      return this.updateImmediateChild(
+          front, LeafNode.__childrenNodeConstructor.EMPTY_NODE.updateChild(
+                     path.popFront(), newChildNode));
     }
   }
 
   /** @inheritDoc */
-  isEmpty(): boolean {
-    return false;
-  }
+  isEmpty(): boolean { return false; }
 
   /** @inheritDoc */
-  numChildren(): number {
-    return 0;
-  }
+  numChildren(): number { return 0; }
 
   /** @inheritDoc */
   forEachChild(index: Index, action: (s: string, n: Node) => void): any {
@@ -164,7 +150,10 @@ export class LeafNode implements Node {
    */
   val(exportFormat?: boolean): Object {
     if (exportFormat && !this.getPriority().isEmpty())
-      return {'.value': this.getValue(), '.priority': this.getPriority().val()};
+      return {
+        '.value' : this.getValue(),
+        '.priority' : this.getPriority().val()
+      };
     else
       return this.getValue();
   }
@@ -174,8 +163,10 @@ export class LeafNode implements Node {
     if (this.lazyHash_ === null) {
       let toHash = '';
       if (!this.priorityNode_.isEmpty())
-        toHash += 'priority:' + priorityHashText(
-          (this.priorityNode_.val() as number|string)) + ':';
+        toHash +=
+            'priority:' +
+            priorityHashText((this.priorityNode_.val() as number | string)) +
+            ':';
 
       const type = typeof this.value_;
       toHash += type + ':';
@@ -193,9 +184,7 @@ export class LeafNode implements Node {
    * Returns the value of the leaf node.
    * @return {Object|string|number|boolean} The value of the node.
    */
-  getValue(): object | string | number | boolean {
-    return this.value_;
-  }
+  getValue(): object|string|number|boolean { return this.value_; }
 
   /**
    * @inheritDoc
@@ -227,10 +216,12 @@ export class LeafNode implements Node {
     if (otherIndex === thisIndex) {
       // Same type, compare values
       if (thisLeafType === 'object') {
-        // Deferred value nodes are all equal, but we should also never get to this point...
+        // Deferred value nodes are all equal, but we should also never get to
+        // this point...
         return 0;
       } else {
-        // Note that this works because true > false, all others are number or string comparisons
+        // Note that this works because true > false, all others are number or
+        // string comparisons
         if (this.value_ < otherLeaf.value_) {
           return -1;
         } else if (this.value_ === otherLeaf.value_) {
@@ -247,16 +238,12 @@ export class LeafNode implements Node {
   /**
    * @inheritDoc
    */
-  withIndex(): Node {
-    return this;
-  }
+  withIndex(): Node { return this; }
 
   /**
    * @inheritDoc
    */
-  isIndexed(): boolean {
-    return true;
-  }
+  isIndexed(): boolean { return true; }
 
   /**
    * @inheritDoc
@@ -267,10 +254,10 @@ export class LeafNode implements Node {
      */
     if (other === this) {
       return true;
-    }
-    else if (other.isLeafNode()) {
+    } else if (other.isLeafNode()) {
       const otherLeaf = other as LeafNode;
-      return this.value_ === otherLeaf.value_ && this.priorityNode_.equals(otherLeaf.priorityNode_);
+      return this.value_ === otherLeaf.value_ &&
+             this.priorityNode_.equals(otherLeaf.priorityNode_);
     } else {
       return false;
     }

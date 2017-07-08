@@ -1,18 +1,18 @@
 /**
-* Copyright 2017 Google Inc.
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-*   http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Copyright 2017 Google Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 'use strict';
 
 import {ErrorFactory} from '../../app/errors';
@@ -62,27 +62,25 @@ export default class ControllerInterface {
     if (currentPermission !== NOTIFICATION_PERMISSION.granted) {
       if (currentPermission === NOTIFICATION_PERMISSION.denied) {
         return Promise.reject(
-            this.errorFactory_.create(Errors.codes.NOTIFICATIONS_BLOCKED)
-        );
+            this.errorFactory_.create(Errors.codes.NOTIFICATIONS_BLOCKED));
       }
 
       // We must wait for permission to be granted
       return Promise.resolve(null);
     }
 
-    return this.getSWRegistration_()
-      .then(registration => {
-        return this.tokenManager_.getSavedToken(
-            this.messagingSenderId_, registration)
-              .then(token => {
-                if (token) {
-                  return token;
-                }
+    return this.getSWRegistration_().then(registration => {
+      return this.tokenManager_
+          .getSavedToken(this.messagingSenderId_, registration)
+          .then(token => {
+            if (token) {
+              return token;
+            }
 
-                return this.tokenManager_.createToken(this.messagingSenderId_,
-                  registration);
-              });
-      });
+            return this.tokenManager_.createToken(this.messagingSenderId_,
+                                                  registration);
+          });
+    });
   }
 
   /**
@@ -93,23 +91,22 @@ export default class ControllerInterface {
    * @return {Promise<void>}
    */
   deleteToken(token) {
-    return this.tokenManager_.deleteToken(token)
-      .then(() => {
-        return this.getSWRegistration_()
-        .then((registration) => {
-          if (registration) {
-            return registration.pushManager.getSubscription();
-          }
-        })
-        .then(subscription => {
-          if (subscription) {
-            return subscription.unsubscribe();
-          }
-        });
-      });
+    return this.tokenManager_.deleteToken(token).then(() => {
+      return this.getSWRegistration_()
+          .then((registration) => {
+            if (registration) {
+              return registration.pushManager.getSubscription();
+            }
+          })
+          .then(subscription => {
+            if (subscription) {
+              return subscription.unsubscribe();
+            }
+          });
+    });
   }
 
-  getSWRegistration_(): Promise<ServiceWorkerRegistration>  {
+  getSWRegistration_(): Promise<ServiceWorkerRegistration> {
     throw this.errorFactory_.create(Errors.codes.SHOULD_BE_INHERITED);
   }
 
@@ -175,24 +172,18 @@ export default class ControllerInterface {
    * This method is required to adhere to the Firebase interface.
    * It closes any currently open indexdb database connections.
    */
-  delete() {
-    this.tokenManager_.closeDatabase();
-  }
+  delete() { this.tokenManager_.closeDatabase(); }
 
   /**
    * Returns the current Notification Permission state.
    * @private
    * @return {string} The currenct permission state.
    */
-  getNotificationPermission_() {
-    return (Notification as any).permission;
-  }
+  getNotificationPermission_() { return (Notification as any).permission; }
 
   /**
    * @protected
    * @returns {TokenManager}
    */
-  getTokenManager() {
-    return this.tokenManager_;
-  }
+  getTokenManager() { return this.tokenManager_; }
 }

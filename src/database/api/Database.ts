@@ -14,17 +14,18 @@
  * limitations under the License.
  */
 
-import { fatal } from '../core/util/util';
-import { parseRepoInfo } from '../core/util/libs/parser';
-import { Path } from '../core/util/Path';
-import { PromiseImpl } from '../../utils/promise';
-import { Reference } from './Reference';
-import { Repo } from '../core/Repo';
-import { RepoManager } from '../core/RepoManager';
-import { validateArgCount } from '../../utils/validation';
-import { validateUrl } from '../core/util/validation';
-import { FirebaseApp, FirebaseService } from '../../app/firebase_app';
-import { RepoInfo } from '../core/RepoInfo';
+import {FirebaseApp, FirebaseService} from '../../app/firebase_app';
+import {PromiseImpl} from '../../utils/promise';
+import {validateArgCount} from '../../utils/validation';
+import {Repo} from '../core/Repo';
+import {RepoInfo} from '../core/RepoInfo';
+import {RepoManager} from '../core/RepoManager';
+import {parseRepoInfo} from '../core/util/libs/parser';
+import {Path} from '../core/util/Path';
+import {fatal} from '../core/util/util';
+import {validateUrl} from '../core/util/validation';
+
+import {Reference} from './Reference';
 
 /**
  * Class representing a firebase database.
@@ -34,11 +35,7 @@ export class Database implements FirebaseService {
   INTERNAL: DatabaseInternals;
   private root_: Reference;
 
-  static readonly ServerValue = {
-    'TIMESTAMP': {
-      '.sv': 'timestamp'
-    }
-  };
+  static readonly ServerValue = {'TIMESTAMP' : {'.sv' : 'timestamp'}};
 
   /**
    * The constructor should not be called by users of our public API.
@@ -46,7 +43,8 @@ export class Database implements FirebaseService {
    */
   constructor(private repo_: Repo) {
     if (!(repo_ instanceof Repo)) {
-      fatal('Don\'t call new Database() directly - please use firebase.database().');
+      fatal(
+          'Don\'t call new Database() directly - please use firebase.database().');
     }
 
     /** @type {Reference} */
@@ -55,9 +53,7 @@ export class Database implements FirebaseService {
     this.INTERNAL = new DatabaseInternals(this);
   }
 
-  get app(): FirebaseApp {
-    return this.repo_.app;
-  }
+  get app(): FirebaseApp { return this.repo_.app; }
 
   /**
    * Returns a reference to the root or the path specified in opt_pathString.
@@ -89,8 +85,8 @@ export class Database implements FirebaseService {
     const repoInfo = parsedURL.repoInfo;
     if (repoInfo.host !== ((this.repo_ as any).repoInfo_ as RepoInfo).host) {
       fatal(apiName + ': Host name does not match the current database: ' +
-        '(found ' + repoInfo.host + ' but expected ' +
-        ((this.repo_ as any).repoInfo_ as RepoInfo).host + ')');
+            '(found ' + repoInfo.host + ' but expected ' +
+            ((this.repo_ as any).repoInfo_ as RepoInfo).host + ')');
     }
 
     return this.ref(parsedURL.path.toString());
@@ -121,8 +117,7 @@ export class Database implements FirebaseService {
 
 export class DatabaseInternals {
   /** @param {!Database} database */
-  constructor(public database: Database) {
-  }
+  constructor(public database: Database) {}
 
   /** @return {Promise<void>} */
   delete(): Promise<void> {
@@ -136,4 +131,3 @@ export class DatabaseInternals {
     return PromiseImpl.resolve();
   }
 }
-

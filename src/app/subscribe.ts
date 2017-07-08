@@ -1,18 +1,18 @@
 /**
-* Copyright 2017 Google Inc.
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-*   http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Copyright 2017 Google Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 export type NextFn<T> = (value: T) => void;
 export type ErrorFn = (error: Error) => void;
 export type CompleteFn = () => void;
@@ -52,7 +52,7 @@ export interface Observable<T> {
   subscribe: Subscribe<T>;
 }
 
-import { PromiseImpl } from '../utils/promise';
+import {PromiseImpl} from '../utils/promise';
 
 export type Executor<T> = (observer: Observer<T>) => void;
 
@@ -65,8 +65,7 @@ export type Executor<T> = (observer: Observer<T>) => void;
  * @param onNoObservers Callback when count of Observers goes to zero.
  */
 export function createSubscribe<T>(executor: Executor<T>,
-                                   onNoObservers?: Executor<T>)
-: Subscribe<T> {
+                                   onNoObservers?: Executor<T>): Subscribe<T> {
   let proxy = new ObserverProxy<T>(executor, onNoObservers);
   return proxy.subscribe.bind(proxy);
 }
@@ -75,7 +74,7 @@ export function createSubscribe<T>(executor: Executor<T>,
  * Implement fan-out for any number of Observers attached via a subscribe
  * function.
  */
-class ObserverProxy<T> implements Observer<T>{
+class ObserverProxy<T> implements Observer<T> {
   private observers: Array<Observer<T>>|undefined = [];
   private unsubscribes: Unsubscribe[] = [];
   private onNoObservers: Executor<T>|undefined;
@@ -95,32 +94,20 @@ class ObserverProxy<T> implements Observer<T>{
     // Call the executor asynchronously so subscribers that are called
     // synchronously after the creation of the subscribe function
     // can still receive the very first value generated in the executor.
-    this.task
-      .then(() => {
-        executor(this);
-      })
-      .catch((e) => {
-        this.error(e);
-      });
+    this.task.then(() => { executor(this); }).catch((e) => { this.error(e); });
   }
 
   next(value: T) {
-    this.forEachObserver((observer: Observer<T>) => {
-      observer.next(value);
-    });
+    this.forEachObserver((observer: Observer<T>) => { observer.next(value); });
   }
 
   error(error: Error) {
-    this.forEachObserver((observer: Observer<T>) => {
-      observer.error(error);
-    });
+    this.forEachObserver((observer: Observer<T>) => { observer.error(error); });
     this.close(error);
   }
 
   complete() {
-    this.forEachObserver((observer: Observer<T>) => {
-      observer.complete();
-    });
+    this.forEachObserver((observer: Observer<T>) => { observer.complete(); });
     this.close();
   }
 
@@ -130,10 +117,8 @@ class ObserverProxy<T> implements Observer<T>{
    * - We require that no event is sent to a subscriber sychronously to their
    *   call to subscribe().
    */
-  subscribe(nextOrObserver: PartialObserver<T> | Function,
-            error?: ErrorFn,
-            complete?: CompleteFn)
-  : Unsubscribe {
+  subscribe(nextOrObserver: PartialObserver<T>|Function, error?: ErrorFn,
+            complete?: CompleteFn): Unsubscribe {
     let observer: Observer<T>;
 
     if (nextOrObserver === undefined && error === undefined &&
@@ -142,13 +127,13 @@ class ObserverProxy<T> implements Observer<T>{
     }
 
     // Assemble an Observer object when passed as callback functions.
-    if (implementsAnyMethods(nextOrObserver, ['next', 'error', 'complete'])) {
+    if (implementsAnyMethods(nextOrObserver, [ 'next', 'error', 'complete' ])) {
       observer = nextOrObserver as Observer<T>;
     } else {
       observer = {
-        next: (nextOrObserver as any) as NextFn<T>,
-        error: error,
-        complete: complete,
+        next : (nextOrObserver as any) as NextFn<T>,
+        error : error,
+        complete : complete,
       } as Observer<T>;
     }
 
@@ -191,7 +176,7 @@ class ObserverProxy<T> implements Observer<T>{
   // any unsubscribed Observer.
   private unsubscribeOne(i: number) {
     if (this.observers === undefined || this.observers[i] === undefined) {
-        return;
+      return;
     }
 
     delete this.observers[i];
@@ -256,14 +241,12 @@ class ObserverProxy<T> implements Observer<T>{
 export function async(fn: Function, onError?: ErrorFn): Function {
   return (...args: any[]) => {
     PromiseImpl.resolve(true)
-      .then(() => {
-        fn(...args);
-      })
-      .catch((error: Error) => {
-        if (onError) {
-          onError(error);
-        }
-      });
+        .then(() => { fn(...args); })
+        .catch((error: Error) => {
+          if (onError) {
+            onError(error);
+          }
+        });
   };
 }
 

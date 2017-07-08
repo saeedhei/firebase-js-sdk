@@ -1,18 +1,18 @@
 /**
-* Copyright 2017 Google Inc.
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-*   http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Copyright 2017 Google Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 /**
  * @fileoverview Provides a method for running a function with exponential
@@ -28,10 +28,9 @@ export {id};
  * @param callback Get all the arguments passed to the function
  *     passed to f, including the initial boolean.
  */
-export function start(
-    f: (p1: (success: boolean, ...rest: any[]) => void,
-        canceled: boolean) => void,
-    callback: Function, timeout: number): id {
+export function start(f: (p1: (success: boolean, ...rest: any[]) => void,
+                          canceled: boolean) => void,
+                      callback: Function, timeout: number): id {
   // TODO(andysoto): make this code cleaner (probably refactor into an actual
   // type instead of a bunch of functions with state shared in the closure)
   let waitSeconds = 1;
@@ -40,9 +39,7 @@ export function start(
   let hitTimeout = false;
   let cancelState = 0;
 
-  function canceled() {
-    return cancelState === 2;
-  }
+  function canceled() { return cancelState === 2; }
   let triggeredCallback = false;
 
   function triggerCallback() {
@@ -59,7 +56,7 @@ export function start(
     }, millis);
   }
 
-  function handler(success: boolean, ...var_args: any[]):void {
+  function handler(success: boolean, ...var_args: any[]): void {
     if (triggeredCallback) {
       return;
     }
@@ -122,6 +119,4 @@ export function start(
  * after the current invocation finishes iff the current invocation would have
  * triggered another retry.
  */
-export function stop(id: id) {
-  id(false);
-}
+export function stop(id: id) { id(false); }

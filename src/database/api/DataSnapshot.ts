@@ -1,27 +1,28 @@
 /**
-* Copyright 2017 Google Inc.
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-*   http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Copyright 2017 Google Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
-import { validateArgCount, validateCallback } from '../../utils/validation';
-import { validatePathString } from '../core/util/validation';
-import { Path } from '../core/util/Path';
-import { PRIORITY_INDEX } from '../core/snap/indexes/PriorityIndex';
-import { Node } from '../core/snap/Node';
-import { Reference } from './Reference';
-import { Index } from '../core/snap/indexes/Index';
-import { ChildrenNode } from '../core/snap/ChildrenNode';
+import {validateArgCount, validateCallback} from '../../utils/validation';
+import {ChildrenNode} from '../core/snap/ChildrenNode';
+import {Index} from '../core/snap/indexes/Index';
+import {PRIORITY_INDEX} from '../core/snap/indexes/PriorityIndex';
+import {Node} from '../core/snap/Node';
+import {Path} from '../core/util/Path';
+import {validatePathString} from '../core/util/validation';
+
+import {Reference} from './Reference';
 
 /**
  * Class representing a firebase data snapshot.  It wraps a SnapshotNode and
@@ -33,16 +34,15 @@ export class DataSnapshot {
    * @param {!Reference} ref_ The ref of the location this snapshot came from.
    * @param {!Index} index_ The iteration order for this snapshot
    */
-  constructor(private readonly node_: Node,
-              private readonly ref_: Reference,
-              private readonly index_: Index) {
-  }
+  constructor(private readonly node_: Node, private readonly ref_: Reference,
+              private readonly index_: Index) {}
 
   /**
    * Retrieves the snapshot contents as JSON.  Returns null if the snapshot is
    * empty.
    *
-   * @return {*} JSON representation of the DataSnapshot contents, or null if empty.
+   * @return {*} JSON representation of the DataSnapshot contents, or null if
+   * empty.
    */
   val(): any {
     validateArgCount('DataSnapshot.val', 0, 0, arguments.length);
@@ -50,19 +50,21 @@ export class DataSnapshot {
   }
 
   /**
-   * Returns the snapshot contents as JSON, including priorities of node.  Suitable for exporting
-   * the entire node contents.
-   * @return {*} JSON representation of the DataSnapshot contents, or null if empty.
+   * Returns the snapshot contents as JSON, including priorities of node.
+   * Suitable for exporting the entire node contents.
+   * @return {*} JSON representation of the DataSnapshot contents, or null if
+   * empty.
    */
   exportVal(): any {
     validateArgCount('DataSnapshot.exportVal', 0, 0, arguments.length);
     return this.node_.val(true);
   }
 
-  // Do not create public documentation. This is intended to make JSON serialization work but is otherwise unnecessary
-  // for end-users
+  // Do not create public documentation. This is intended to make JSON
+  // serialization work but is otherwise unnecessary for end-users
   toJSON(): any {
-    // Optional spacer argument is unnecessary because we're depending on recursion rather than stringifying the content
+    // Optional spacer argument is unnecessary because we're depending on
+    // recursion rather than stringifying the content
     validateArgCount('DataSnapshot.toJSON', 0, 1, arguments.length);
     return this.exportVal();
   }
@@ -70,7 +72,8 @@ export class DataSnapshot {
   /**
    * Returns whether the snapshot contains a non-null value.
    *
-   * @return {boolean} Whether the snapshot contains a non-null value, or is empty.
+   * @return {boolean} Whether the snapshot contains a non-null value, or is
+   * empty.
    */
   exists(): boolean {
     validateArgCount('DataSnapshot.exists', 0, 0, arguments.length);
@@ -91,7 +94,8 @@ export class DataSnapshot {
 
     const childPath = new Path(childPathString);
     const childRef = this.ref_.child(childPath);
-    return new DataSnapshot(this.node_.getChild(childPath), childRef, PRIORITY_INDEX);
+    return new DataSnapshot(this.node_.getChild(childPath), childRef,
+                            PRIORITY_INDEX);
   }
 
   /**
@@ -113,10 +117,11 @@ export class DataSnapshot {
    *
    * @return {string|number|null} The priority.
    */
-  getPriority(): string | number | null {
+  getPriority(): string|number|null {
     validateArgCount('DataSnapshot.getPriority', 0, 0, arguments.length);
 
-    // typecast here because we never return deferred values or internal priorities (MAX_PRIORITY)
+    // typecast here because we never return deferred values or internal
+    // priorities (MAX_PRIORITY)
     return (this.node_.getPriority().val() as string | number | null);
   }
 
@@ -136,9 +141,11 @@ export class DataSnapshot {
       return false;
 
     const childrenNode = (this.node_ as ChildrenNode);
-    // Sanitize the return value to a boolean. ChildrenNode.forEachChild has a weird return type...
+    // Sanitize the return value to a boolean. ChildrenNode.forEachChild has a
+    // weird return type...
     return !!childrenNode.forEachChild(this.index_, (key, node) => {
-      return action(new DataSnapshot(node, this.ref_.child(key), PRIORITY_INDEX));
+      return action(
+          new DataSnapshot(node, this.ref_.child(key), PRIORITY_INDEX));
     });
   }
 
@@ -155,9 +162,7 @@ export class DataSnapshot {
       return !this.node_.isEmpty();
   }
 
-  get key() {
-    return this.ref_.getKey();
-  }
+  get key() { return this.ref_.getKey(); }
 
   /**
    * Returns the number of children for this DataSnapshot.
@@ -170,7 +175,8 @@ export class DataSnapshot {
   }
 
   /**
-   * @return {Reference} The Firebase reference for the location this snapshot's data came from.
+   * @return {Reference} The Firebase reference for the location this snapshot's
+   * data came from.
    */
   getRef(): Reference {
     validateArgCount('DataSnapshot.ref', 0, 0, arguments.length);
@@ -178,7 +184,5 @@ export class DataSnapshot {
     return this.ref_;
   }
 
-  get ref() {
-    return this.getRef();
-  }
+  get ref() { return this.getRef(); }
 }

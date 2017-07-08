@@ -1,23 +1,25 @@
 /**
-* Copyright 2017 Google Inc.
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-*   http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Copyright 2017 Google Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 /**
  * @fileoverview Defines methods used to actually send HTTP requests from
  * abstract representations.
  */
+import {FirebaseNamespace} from "../../app/firebase_app";
+
 import * as array from './array';
 import * as backoff from './backoff';
 import * as errorsExports from './error';
@@ -31,7 +33,6 @@ import * as UrlUtils from './url';
 import * as XhrIoExports from './xhrio';
 import {Headers, XhrIo} from './xhrio';
 import {XhrIoPool} from './xhriopool';
-import { FirebaseNamespace } from "../../app/firebase_app";
 
 declare var firebase: FirebaseNamespace;
 
@@ -69,21 +70,23 @@ class NetworkRequest<T> implements Request<T> {
   private canceled_: boolean = false;
   private appDelete_: boolean = false;
   private callback_: (p1: XhrIo, p2: string) => T;
-  private errorCallback_: ((p1: XhrIo, p2: FirebaseStorageError) => FirebaseStorageError) | null;
-  private progressCallback_:
-      ((p1: number, p2: number) => void) | null;
+  private errorCallback_:
+      ((p1: XhrIo, p2: FirebaseStorageError) => FirebaseStorageError)|null;
+  private progressCallback_: ((p1: number, p2: number) => void)|null;
   private timeout_: number;
   private pool_: XhrIoPool;
   promise_: Promise<T>;
 
-  constructor(
-      url: string, method: string, headers: Headers,
-      body: string|Blob|Uint8Array|null, successCodes: number[],
-      additionalRetryCodes: number[],
-      callback: (p1: XhrIo, p2: string) => T,
-      errorCallback: ((p1: XhrIo, p2: FirebaseStorageError) => FirebaseStorageError) | null, timeout: number,
-      progressCallback: ((p1: number, p2: number) => void) | null,
-      pool: XhrIoPool) {
+  constructor(url: string, method: string, headers: Headers,
+              body: string|Blob|Uint8Array|null, successCodes: number[],
+              additionalRetryCodes: number[],
+              callback: (p1: XhrIo, p2: string) => T,
+              errorCallback:
+                  ((p1: XhrIo,
+                    p2: FirebaseStorageError) => FirebaseStorageError)|null,
+              timeout: number,
+              progressCallback: ((p1: number, p2: number) => void)|null,
+              pool: XhrIoPool) {
     this.url_ = url;
     this.method_ = method;
     this.headers_ = headers;
@@ -109,9 +112,8 @@ class NetworkRequest<T> implements Request<T> {
   private start_() {
     let self = this;
 
-    function doTheRequest(
-        backoffCallback: (p1: boolean, ...p2: any[]) => void,
-        canceled: boolean) {
+    function doTheRequest(backoffCallback: (p1: boolean, ...p2: any[]) => void,
+                          canceled: boolean) {
       if (canceled) {
         backoffCallback(false, new RequestEndStatus(false, null, true));
         return;
@@ -142,8 +144,8 @@ class NetworkRequest<T> implements Request<T> {
             if (!hitServer || self.isRetryStatusCode_(status)) {
               let wasCanceled =
                   xhr.getErrorCode() === XhrIoExports.ErrorCode.ABORT;
-              backoffCallback(
-                  false, new RequestEndStatus(false, null, wasCanceled));
+              backoffCallback(false,
+                              new RequestEndStatus(false, null, wasCanceled));
               return;
             }
             let successCode = array.contains(self.successCodes_, status);
@@ -155,8 +157,8 @@ class NetworkRequest<T> implements Request<T> {
      * @param requestWentThrough True if the request eventually went
      *     through, false if it hit the retry limit or was canceled.
      */
-    function backoffDone(
-        requestWentThrough: boolean, status: RequestEndStatus) {
+    function backoffDone(requestWentThrough: boolean,
+                         status: RequestEndStatus) {
       let resolve = self.resolve_ as Function;
       let reject = self.reject_ as Function;
       let xhr = status.xhr as XhrIo;
@@ -182,8 +184,8 @@ class NetworkRequest<T> implements Request<T> {
           }
         } else {
           if (status.canceled) {
-            let err = self.appDelete_ ? errorsExports.appDeleted() :
-                                        errorsExports.canceled();
+            let err = self.appDelete_ ? errorsExports.appDeleted()
+                                      : errorsExports.canceled();
             reject(err);
           } else {
             let err = errorsExports.retryLimitExceeded();
@@ -200,9 +202,7 @@ class NetworkRequest<T> implements Request<T> {
   }
 
   /** @inheritDoc */
-  getPromise() {
-    return this.promise_;
-  }
+  getPromise() { return this.promise_; }
 
   /** @inheritDoc */
   cancel(appDelete?: boolean) {
@@ -244,9 +244,8 @@ export class RequestEndStatus {
    */
   canceled: boolean;
 
-  constructor(
-      public wasSuccessCode: boolean, public xhr: XhrIo|null,
-      opt_canceled?: boolean) {
+  constructor(public wasSuccessCode: boolean, public xhr: XhrIo|null,
+              opt_canceled?: boolean) {
     this.canceled = !!opt_canceled;
   }
 }
@@ -258,16 +257,17 @@ export function addAuthHeader_(headers: Headers, authToken: string|null) {
 }
 
 export function addVersionHeader_(headers: Headers) {
-  let number = typeof firebase !== 'undefined' ? firebase.SDK_VERSION : 'AppManager';
+  let number =
+      typeof firebase !== 'undefined' ? firebase.SDK_VERSION : 'AppManager';
   headers['X-Firebase-Storage-Version'] = 'webjs/' + number;
 }
 
 /**
  * @template T
  */
-export function makeRequest<T>(
-    requestInfo: RequestInfo<T>, authToken: string|null,
-    pool: XhrIoPool): Request<T> {
+export function makeRequest<T>(requestInfo: RequestInfo<T>,
+                               authToken: string | null,
+                               pool: XhrIoPool): Request<T> {
   let queryPart = UrlUtils.makeQueryString(requestInfo.urlParams);
   let url = requestInfo.url + queryPart;
   let headers = object.clone<Headers>(requestInfo.headers);

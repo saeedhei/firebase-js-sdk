@@ -1,18 +1,18 @@
 /**
-* Copyright 2017 Google Inc.
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-*   http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Copyright 2017 Google Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 import {assert} from 'chai';
 import {TaskEvent} from '../../../src/storage/implementation/taskenums';
 import {XhrIoPool} from '../../../src/storage/implementation/xhriopool';
@@ -40,13 +40,15 @@ describe("Firebase Storage > Service", () => {
       assert.equal(ref.toString(), makeGsUrl('path/to/child'));
     });
     it("Throws calling ref with a gs:// URL", () => {
-      const error = testShared.assertThrows(() => { service.ref('gs://bucket/object'); }, 'storage/invalid-argument');
+      const error = testShared.assertThrows(() => {
+        service.ref('gs://bucket/object');
+      }, 'storage/invalid-argument');
       assert.match(error.message, /refFromURL/);
     });
     it("Throws calling ref with an http:// URL", () => {
       const error = testShared.assertThrows(() => {
         service.ref('http://firebasestorage.googleapis.com/etc');
-        }, 'storage/invalid-argument');
+      }, 'storage/invalid-argument');
       assert.match(error.message, /refFromURL/);
     });
     it("Throws calling ref with an https:// URL", () => {
@@ -58,40 +60,45 @@ describe("Firebase Storage > Service", () => {
   });
   describe("custom bucket constructor", () => {
     it("gs:// custom bucket constructor refs point to the right place", () => {
-      const service = new Service(testShared.fakeApp, xhrIoPool, 'gs://foo-bar.appspot.com');
+      const service = new Service(testShared.fakeApp, xhrIoPool,
+                                  'gs://foo-bar.appspot.com');
       const ref = service.ref();
       assert.equal(ref.toString(), 'gs://foo-bar.appspot.com/');
     });
     it("http:// custom bucket constructor refs point to the right place", () => {
-      const service = new Service(testShared.fakeApp, xhrIoPool,
+      const service = new Service(
+          testShared.fakeApp, xhrIoPool,
           'http://firebasestorage.googleapis.com/v1/b/foo-bar.appspot.com/o');
       const ref = service.ref();
       assert.equal(ref.toString(), 'gs://foo-bar.appspot.com/');
     });
     it("https:// custom bucket constructor refs point to the right place", () => {
-      const service = new Service(testShared.fakeApp, xhrIoPool,
+      const service = new Service(
+          testShared.fakeApp, xhrIoPool,
           'https://firebasestorage.googleapis.com/v1/b/foo-bar.appspot.com/o');
       const ref = service.ref();
       assert.equal(ref.toString(), 'gs://foo-bar.appspot.com/');
     });
 
     it("Bare bucket name constructor refs point to the right place", () => {
-      const service = new Service(testShared.fakeApp, xhrIoPool, 'foo-bar.appspot.com');
+      const service =
+          new Service(testShared.fakeApp, xhrIoPool, 'foo-bar.appspot.com');
       const ref = service.ref();
       assert.equal(ref.toString(), 'gs://foo-bar.appspot.com/');
     });
     it("Child refs point to the right place", () => {
-      const service = new Service(testShared.fakeApp, xhrIoPool, 'foo-bar.appspot.com');
+      const service =
+          new Service(testShared.fakeApp, xhrIoPool, 'foo-bar.appspot.com');
       const ref = service.ref('path/to/child');
       assert.equal(ref.toString(), 'gs://foo-bar.appspot.com/path/to/child');
     });
-    it("Throws trying to construct with a gs:// URL containing an object path", () => {
-      const error = testShared.assertThrows(() => {
-        new Service(
-            testShared.fakeApp, xhrIoPool, 'gs://bucket/object/');
-      }, 'storage/invalid-default-bucket');
-      assert.match(error.message, /Invalid default bucket/);
-    });
+    it("Throws trying to construct with a gs:// URL containing an object path",
+       () => {
+         const error = testShared.assertThrows(() => {
+           new Service(testShared.fakeApp, xhrIoPool, 'gs://bucket/object/');
+         }, 'storage/invalid-default-bucket');
+         assert.match(error.message, /Invalid default bucket/);
+       });
   });
   describe("default bucket config", () => {
     it("gs:// works without ending slash", () => {
@@ -111,7 +118,9 @@ describe("Firebase Storage > Service", () => {
   describe("refFromURL", () => {
     const service = new Service(testShared.fakeApp, xhrIoPool);
     it("Throws on non-URL arg", () => {
-      const error = testShared.assertThrows(() => { service.refFromURL('path/to/child'); }, 'storage/invalid-argument');
+      const error = testShared.assertThrows(() => {
+        service.refFromURL('path/to/child');
+      }, 'storage/invalid-argument');
       assert.match(error.message, /invalid/i);
     });
     it("Works with gs:// URLs", () => {
@@ -135,9 +144,8 @@ describe("Firebase Storage > Service", () => {
     const service = new Service(testShared.fakeApp, xhrIoPool);
     describe("ref", () => {
       it("Throws with two args", () => {
-        testShared.assertThrows(
-            testShared.bind(service.ref, service, 1, 2),
-            'storage/invalid-argument-count');
+        testShared.assertThrows(testShared.bind(service.ref, service, 1, 2),
+                                'storage/invalid-argument-count');
       });
       it("Throws on gs:// argument", () => {
         testShared.assertThrows(
@@ -145,19 +153,18 @@ describe("Firebase Storage > Service", () => {
             'storage/invalid-argument');
       });
       it("Throws on number argument", () => {
-        testShared.assertThrows(
-            testShared.bind(service.ref, service, 3), 'storage/invalid-argument');
+        testShared.assertThrows(testShared.bind(service.ref, service, 3),
+                                'storage/invalid-argument');
       });
       it("Throws on null argument", () => {
-        testShared.assertThrows(
-            testShared.bind(service.ref, service, null), 'storage/invalid-argument');
+        testShared.assertThrows(testShared.bind(service.ref, service, null),
+                                'storage/invalid-argument');
       });
     });
     describe("refFromURL", () => {
       it("Throws with no args", () => {
-        testShared.assertThrows(
-            testShared.bind(service.refFromURL, service),
-            'storage/invalid-argument-count');
+        testShared.assertThrows(testShared.bind(service.refFromURL, service),
+                                'storage/invalid-argument-count');
       });
       it("Throws with two args", () => {
         testShared.assertThrows(
@@ -169,7 +176,7 @@ describe("Firebase Storage > Service", () => {
             testShared.bind(service.refFromURL, service, 'child'),
             'storage/invalid-argument');
       });
-     it("Throws with a null arg", () => {
+      it("Throws with a null arg", () => {
         testShared.assertThrows(
             testShared.bind(service.refFromURL, service, null),
             'storage/invalid-argument');
@@ -231,7 +238,9 @@ describe("Firebase Storage > Service", () => {
     it("In-flight requests are canceled when the service is deleted", () => {
       const ref = service.refFromURL('gs://mybucket/image.jpg');
       const toReturn = ref.getMetadata().then(
-          met => { assert.fail('Promise succeeded, should have been canceled'); },
+          met => {
+            assert.fail('Promise succeeded, should have been canceled');
+          },
           err => { assert.equal(err.code, 'storage/app-deleted'); });
       service.INTERNAL.delete();
       return toReturn;
@@ -240,14 +249,16 @@ describe("Firebase Storage > Service", () => {
       const ref = service.refFromURL('gs://mybucket/image.jpg');
       service.INTERNAL.delete();
       const toReturn = ref.getMetadata().then(
-          met => { assert.fail('Promise succeeded, should have been canceled'); },
+          met => {
+            assert.fail('Promise succeeded, should have been canceled');
+          },
           err => { assert.equal(err.code, 'storage/app-deleted'); });
       return toReturn;
     });
     it("Running uploads fail when the service is deleted", () => {
       const ref = service.refFromURL('gs://mybucket/image.jpg');
       const toReturn = new Promise(function(resolve, reject) {
-        ref.put(new Blob(['a']))
+        ref.put(new Blob([ 'a' ]))
             .on(TaskEvent.STATE_CHANGED, null,
                 err => {
                   assert.equal(err.code, 'storage/app-deleted');

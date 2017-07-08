@@ -1,20 +1,22 @@
 /**
-* Copyright 2017 Google Inc.
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-*   http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Copyright 2017 Google Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+import {FirebaseApp, FirebaseAuthTokenData} from "../../app/firebase_app";
 import {Reference} from '../reference';
 import {Service} from '../service';
+
 import * as constants from './constants';
 import * as errorsExports from './error';
 import {errors} from './error';
@@ -27,7 +29,6 @@ import {requestMaker} from './requestmaker';
 import {RequestMap} from './requestmap';
 import * as type from './type';
 import {XhrIoPool} from './xhriopool';
-import { FirebaseApp, FirebaseAuthTokenData } from "../../app/firebase_app";
 
 /**
  * @param app If null, getAuthToken always resolves with null.
@@ -42,8 +43,7 @@ export class AuthWrapper {
   /**
   maker
      */
-  private storageRefMaker_:
-      (p1: AuthWrapper, p2: Location) => Reference;
+  private storageRefMaker_: (p1: AuthWrapper, p2: Location) => Reference;
   private requestMaker_: requestMaker;
   private pool_: XhrIoPool;
   private service_: Service;
@@ -52,11 +52,9 @@ export class AuthWrapper {
   private requestMap_: RequestMap;
   private deleted_: boolean = false;
 
-  constructor(
-      app: FirebaseApp|null,
-      maker: (p1: AuthWrapper, p2: Location) => Reference,
-      requestMaker: requestMaker, service: Service,
-      pool: XhrIoPool) {
+  constructor(app: FirebaseApp|null,
+              maker: (p1: AuthWrapper, p2: Location) => Reference,
+              requestMaker: requestMaker, service: Service, pool: XhrIoPool) {
     this.app_ = app;
     if (this.app_ !== null) {
       let options = this.app_.options;
@@ -73,7 +71,7 @@ export class AuthWrapper {
     this.requestMap_ = new RequestMap();
   }
 
-  private static extractBucket_(config: {[prop: string]: any}): string|null {
+  private static extractBucket_(config: {[prop: string] : any}): string|null {
     let bucketString = config[constants.configOption] || null;
     if (bucketString == null) {
       return null;
@@ -88,16 +86,15 @@ export class AuthWrapper {
     if (this.app_ !== null && type.isDef(this.app_.INTERNAL) &&
         type.isDef(this.app_.INTERNAL.getToken)) {
       return this.app_.INTERNAL.getToken().then(
-          function(response: FirebaseAuthTokenData|null): string|null {
-            if (response !== null) {
-              return response.accessToken;
-            } else {
-              return null;
-            }
-          },
-          function(_error) {
-            return null;
-          });
+          function(response: FirebaseAuthTokenData|null): string |
+              null {
+                if (response !== null) {
+                  return response.accessToken;
+                } else {
+                  return null;
+                }
+              },
+          function(_error) { return null; });
     } else {
       return (promiseimpl.resolve(null) as Promise<string|null>);
     }
@@ -115,9 +112,7 @@ export class AuthWrapper {
    * The service associated with this auth wrapper. Untyped to avoid circular
    * type dependencies.
    */
-  service(): Service {
-    return this.service_;
-  }
+  service(): Service { return this.service_; }
 
   /**
    * Returns a new firebaseStorage.Reference object referencing this AuthWrapper
@@ -130,10 +125,10 @@ export class AuthWrapper {
     return this.storageRefMaker_(this, loc);
   }
 
-  makeRequest<T>(requestInfo: RequestInfo<T>, authToken: string|null): Request<T> {
+  makeRequest<T>(requestInfo: RequestInfo<T>,
+                 authToken: string|null): Request<T> {
     if (!this.deleted_) {
-      let request = this.requestMaker_(
-          requestInfo, authToken, this.pool_);
+      let request = this.requestMaker_(requestInfo, authToken, this.pool_);
       this.requestMap_.addRequest(request);
       return request;
     } else {
@@ -150,19 +145,11 @@ export class AuthWrapper {
     this.requestMap_.clear();
   }
 
-  maxUploadRetryTime(): number {
-    return this.maxUploadRetryTime_;
-  }
+  maxUploadRetryTime(): number { return this.maxUploadRetryTime_; }
 
-  setMaxUploadRetryTime(time: number) {
-    this.maxUploadRetryTime_ = time;
-  }
+  setMaxUploadRetryTime(time: number) { this.maxUploadRetryTime_ = time; }
 
-  maxOperationRetryTime(): number {
-    return this.maxOperationRetryTime_;
-  }
+  maxOperationRetryTime(): number { return this.maxOperationRetryTime_; }
 
-  setMaxOperationRetryTime(time: number) {
-    this.maxOperationRetryTime_ = time;
-  }
+  setMaxOperationRetryTime(time: number) { this.maxOperationRetryTime_ = time; }
 }

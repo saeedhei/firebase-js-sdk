@@ -1,18 +1,20 @@
 /**
-* Copyright 2017 Google Inc.
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-*   http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Copyright 2017 Google Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+import {FirebaseApp} from "../app/firebase_app";
+
 import * as args from './implementation/args';
 import {AuthWrapper} from './implementation/authwrapper';
 import {Location} from './implementation/location';
@@ -21,7 +23,6 @@ import * as RequestExports from './implementation/request';
 import {Request} from './implementation/request';
 import {XhrIoPool} from './implementation/xhriopool';
 import {Reference} from './reference';
-import { FirebaseApp } from "../app/firebase_app";
 
 /**
  * A service that provides firebaseStorage.Reference instances.
@@ -63,7 +64,7 @@ export class Service {
         throw 'Expected child path but got a URL, use refFromURL instead.';
       }
     }
-    args.validate('ref', [args.stringSpec(validator, true)], arguments);
+    args.validate('ref', [ args.stringSpec(validator, true) ], arguments);
     if (this.bucket_ == null) {
       throw new Error('No Storage Bucket defined in Firebase Options.');
     }
@@ -91,7 +92,8 @@ export class Service {
         throw 'Expected valid full URL but got an invalid one.';
       }
     }
-    args.validate('refFromURL', [args.stringSpec(validator, false)], arguments);
+    args.validate('refFromURL', [ args.stringSpec(validator, false) ],
+                  arguments);
     return new Reference(this.authWrapper_, url);
   }
 
@@ -100,8 +102,8 @@ export class Service {
   }
 
   setMaxUploadRetryTime(time: number) {
-    args.validate(
-        'setMaxUploadRetryTime', [args.nonNegativeNumberSpec()], arguments);
+    args.validate('setMaxUploadRetryTime', [ args.nonNegativeNumberSpec() ],
+                  arguments);
     this.authWrapper_.setMaxUploadRetryTime(time);
   }
 
@@ -110,18 +112,14 @@ export class Service {
   }
 
   setMaxOperationRetryTime(time: number) {
-    args.validate(
-        'setMaxOperationRetryTime', [args.nonNegativeNumberSpec()], arguments);
+    args.validate('setMaxOperationRetryTime', [ args.nonNegativeNumberSpec() ],
+                  arguments);
     this.authWrapper_.setMaxOperationRetryTime(time);
   }
 
-  get app(): FirebaseApp {
-    return this.app_;
-  }
+  get app(): FirebaseApp { return this.app_; }
 
-  get INTERNAL(): ServiceInternals {
-    return this.internals_;
-  }
+  get INTERNAL(): ServiceInternals { return this.internals_; }
 }
 
 /**
@@ -130,9 +128,7 @@ export class Service {
 export class ServiceInternals {
   service_: Service;
 
-  constructor(service: Service) {
-    this.service_ = service;
-  }
+  constructor(service: Service) { this.service_ = service; }
 
   /**
    * Called when the associated app is deleted.

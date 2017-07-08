@@ -1,28 +1,30 @@
 /**
-* Copyright 2017 Google Inc.
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-*   http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Copyright 2017 Google Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
-import { CONSTANTS } from "./constants";
-import { setWebSocketImpl } from "../database/realtime/WebSocketConnection";
-import { setBufferImpl } from "../database/core/util/util";
+import {Client} from "faye-websocket";
+
+import {setBufferImpl} from "../database/core/util/util";
 import {
-  FirebaseIFrameScriptHolder,
   FIREBASE_LONGPOLL_COMMAND_CB_NAME,
-  FIREBASE_LONGPOLL_DATA_CB_NAME
+  FIREBASE_LONGPOLL_DATA_CB_NAME,
+  FirebaseIFrameScriptHolder
 } from "../database/realtime/BrowserPollConnection";
-import { Client } from "faye-websocket";
+import {setWebSocketImpl} from "../database/realtime/WebSocketConnection";
+
+import {CONSTANTS} from "./constants";
 
 setBufferImpl(Buffer);
 setWebSocketImpl(Client);
@@ -35,7 +37,9 @@ CONSTANTS.NODE_CLIENT = true;
  */
 (function() {
   var version = process['version'];
-  if (version !== 'v0.10.22' && version !== 'v0.10.23' && version !== 'v0.10.24') return;
+  if (version !== 'v0.10.22' && version !== 'v0.10.23' &&
+      version !== 'v0.10.24')
+    return;
   /**
    * The following duplicates much of `/lib/_stream_writable.js` at
    * b922b5e90d2c14dd332b95827c2533e083df7e55, applying the fix for
@@ -74,23 +78,16 @@ CONSTANTS.NODE_CLIENT = true;
     var er = new Error('write after end');
     // TODO: defer error events consistently everywhere, not just the cb
     stream['emit']('error', er);
-    process['nextTick'](function() {
-      cb(er);
-    });
+    process['nextTick'](function() { cb(er); });
   }
 
   function validChunk(stream, state, chunk, cb) {
     var valid = true;
-    if (!Buffer['isBuffer'](chunk) &&
-        'string' !== typeof chunk &&
-        chunk !== null &&
-        chunk !== undefined &&
-        !state['objectMode']) {
+    if (!Buffer['isBuffer'](chunk) && 'string' !== typeof chunk &&
+        chunk !== null && chunk !== undefined && !state['objectMode']) {
       var er = new TypeError('Invalid non-string/buffer chunk');
       stream['emit']('error', er);
-      process['nextTick'](function() {
-        cb(er);
-      });
+      process['nextTick'](function() { cb(er); });
       valid = false;
     }
     return valid;
@@ -118,8 +115,7 @@ CONSTANTS.NODE_CLIENT = true;
   }
 
   function decodeChunk(state, chunk, encoding) {
-    if (!state['objectMode'] &&
-        state['decodeStrings'] !== false &&
+    if (!state['objectMode'] && state['decodeStrings'] !== false &&
         typeof chunk === 'string') {
       chunk = new Buffer(chunk, encoding);
     }
@@ -149,7 +145,8 @@ CONSTANTS.NODE_CLIENT = true;
 })();
 
 /**
- * @type {?function({url: string, forever: boolean}, function(Error, number, string))}
+ * @type {?function({url: string, forever: boolean}, function(Error, number,
+ * string))}
  */
 (FirebaseIFrameScriptHolder as any).request = null;
 
@@ -157,30 +154,35 @@ CONSTANTS.NODE_CLIENT = true;
  * @param {{url: string, forever: boolean}} req
  * @param {function(string)=} onComplete
  */
-(FirebaseIFrameScriptHolder as any).nodeRestRequest = function(req, onComplete) {
+(FirebaseIFrameScriptHolder as any).nodeRestRequest = function(req,
+                                                               onComplete) {
   if (!(FirebaseIFrameScriptHolder as any).request)
     (FirebaseIFrameScriptHolder as any).request =
-      /** @type {function({url: string, forever: boolean}, function(Error, number, string))} */ (require('request'));
+        /** @type {function({url: string, forever: boolean}, function(Error, number, string))} */
+        (require('request'));
 
-  (FirebaseIFrameScriptHolder as any).request(req, function(error, response, body) {
-    if (error)
-      throw 'Rest request for ' + req.url + ' failed.';
+  (FirebaseIFrameScriptHolder as any)
+      .request(req, function(error, response, body) {
+        if (error)
+          throw 'Rest request for ' + req.url + ' failed.';
 
-    if (onComplete)
-      onComplete(body);
-  });
+        if (onComplete)
+          onComplete(body);
+      });
 };
 
 /**
  * @param {!string} url
  * @param {function()} loadCB
  */
-(<any>FirebaseIFrameScriptHolder.prototype).doNodeLongPoll = function(url, loadCB) {
+(<any>FirebaseIFrameScriptHolder.prototype).doNodeLongPoll = function(url,
+                                                                      loadCB) {
   var self = this;
-  (FirebaseIFrameScriptHolder as any).nodeRestRequest({ url: url, forever: true }, function(body) {
-    self.evalBody(body);
-    loadCB();
-  });
+  (FirebaseIFrameScriptHolder as any)
+      .nodeRestRequest({url : url, forever : true}, function(body) {
+        self.evalBody(body);
+        loadCB();
+      });
 };
 
 /**
@@ -189,10 +191,8 @@ CONSTANTS.NODE_CLIENT = true;
  */
 (<any>FirebaseIFrameScriptHolder.prototype).evalBody = function(body) {
   var jsonpCB;
-  //jsonpCB is externed in firebase-extern.js
-  eval('jsonpCB = function(' + FIREBASE_LONGPOLL_COMMAND_CB_NAME + ', ' + FIREBASE_LONGPOLL_DATA_CB_NAME + ') {' +
-    body +
-    '}');
+  // jsonpCB is externed in firebase-extern.js
+  eval('jsonpCB = function(' + FIREBASE_LONGPOLL_COMMAND_CB_NAME + ', ' +
+       FIREBASE_LONGPOLL_DATA_CB_NAME + ') {' + body + '}');
   jsonpCB(this.commandCB, this.onMessageCB);
 };
-

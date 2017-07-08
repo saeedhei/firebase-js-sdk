@@ -1,18 +1,18 @@
 /**
-* Copyright 2017 Google Inc.
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-*   http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Copyright 2017 Google Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 /**
  * @fileoverview Documentation for the metadata format
@@ -26,10 +26,7 @@ import * as path from './path';
 import * as type from './type';
 import * as UrlUtils from './url';
 
-export function noXform_(
-    metadata: Metadata, value: any): any {
-  return value;
-}
+export function noXform_(metadata: Metadata, value: any): any { return value; }
 
 /**
  * @struct
@@ -39,10 +36,9 @@ export class Mapping {
   writable: boolean;
   xform: (p1: Metadata, p2: any) => any;
 
-  constructor(
-      public server: string, opt_local?: string|null, opt_writable?: boolean,
-      opt_xform?: (p1: Metadata, p2: any) => any |
-          null) {
+  constructor(public server: string, opt_local?: string|null,
+              opt_writable?: boolean,
+              opt_xform?: (p1: Metadata, p2: any) => any | null) {
     this.local = opt_local || server;
     this.writable = !!opt_writable;
     this.xform = opt_xform || noXform_;
@@ -74,8 +70,7 @@ export function getMappings(): Mappings {
   mappings.push(new Mapping('metageneration'));
   mappings.push(new Mapping('name', 'fullPath', true));
 
-  function mappingsXformPath(
-      metadata: Metadata, fullPath: any): string {
+  function mappingsXformPath(metadata: Metadata, fullPath: any): string {
     return xformPath(fullPath);
   }
   let nameMapping = new Mapping('name');
@@ -85,8 +80,7 @@ export function getMappings(): Mappings {
   /**
    * Coerces the second param to a number, if it is defined.
    */
-  function xformSize(
-      metadata: Metadata, size: any): number|null|undefined {
+  function xformSize(metadata: Metadata, size: any): number|null|undefined {
     if (type.isDef(size)) {
       return +(size as number);
     } else {
@@ -110,8 +104,7 @@ export function getMappings(): Mappings {
    * Transforms a comma-separated string of tokens into a list of download
    * URLs.
    */
-  function xformTokens(
-      metadata: Metadata, tokens: any): string[] {
+  function xformTokens(metadata: Metadata, tokens: any): string[] {
     let valid = type.isString(tokens) && tokens.length > 0;
     if (!valid) {
       // This can happen if objects are uploaded through GCS and retrieved
@@ -125,7 +118,8 @@ export function getMappings(): Mappings {
       let path: string = metadata['fullPath'] as string;
       let urlPart = '/b/' + encode(bucket) + '/o/' + encode(path);
       let base = UrlUtils.makeDownloadUrl(urlPart);
-      let queryString = UrlUtils.makeQueryString({'alt': 'media', 'token': token});
+      let queryString =
+          UrlUtils.makeQueryString({'alt' : 'media', 'token' : token});
       return base + queryString;
     });
     return urls;
@@ -143,14 +137,14 @@ export function addRef(metadata: Metadata, authWrapper: AuthWrapper) {
     let loc = new Location(bucket, path);
     return authWrapper.makeStorageReference(loc);
   }
-  Object.defineProperty(metadata, 'ref', {get: generateRef});
+  Object.defineProperty(metadata, 'ref', {get : generateRef});
 }
 
-export function fromResource(
-    authWrapper: AuthWrapper, resource: {[name: string]: any},
-    mappings: Mappings): Metadata {
+export function fromResource(authWrapper: AuthWrapper,
+                             resource: {[name: string] : any},
+                             mappings: Mappings): Metadata {
   let metadata: Metadata = {} as Metadata;
-  metadata['type']  = 'file';
+  metadata['type'] = 'file';
   let len = mappings.length;
   for (let i = 0; i < len; i++) {
     let mapping = mappings[i];
@@ -160,9 +154,9 @@ export function fromResource(
   return metadata;
 }
 
-export function fromResourceString(
-    authWrapper: AuthWrapper, resourceString: string,
-    mappings: Mappings): Metadata|null {
+export function fromResourceString(authWrapper: AuthWrapper,
+                                   resourceString: string,
+                                   mappings: Mappings): Metadata|null {
   let obj = json.jsonObjectOrNull(resourceString);
   if (obj === null) {
     return null;
@@ -171,11 +165,9 @@ export function fromResourceString(
   return fromResource(authWrapper, resource, mappings);
 }
 
-export function toResourceString(
-    metadata: Metadata, mappings: Mappings): string {
-  let resource: {
-    [prop: string]: any
-  } = {};
+export function toResourceString(metadata: Metadata,
+                                 mappings: Mappings): string {
+  let resource: {[prop: string] : any} = {};
   let len = mappings.length;
   for (let i = 0; i < len; i++) {
     let mapping = mappings[i];

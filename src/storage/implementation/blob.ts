@@ -1,18 +1,18 @@
 /**
-* Copyright 2017 Google Inc.
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-*   http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Copyright 2017 Google Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 /**
  * @file Provides a Blob-like wrapper for various binary types (including the
@@ -62,13 +62,9 @@ export class FbsBlob {
     this.type_ = blobType;
   }
 
-  size(): number {
-    return this.size_;
-  }
+  size(): number { return this.size_; }
 
-  type(): string {
-    return this.type_;
-  }
+  type(): string { return this.type_; }
 
   slice(startByte: number, endByte: number): FbsBlob|null {
     if (type.isNativeBlob(this.data_)) {
@@ -79,24 +75,27 @@ export class FbsBlob {
       }
       return new FbsBlob(sliced);
     } else {
-      let slice =
-          new Uint8Array((this.data_ as Uint8Array).buffer, startByte, endByte - startByte);
+      let slice = new Uint8Array((this.data_ as Uint8Array).buffer, startByte,
+                                 endByte - startByte);
       return new FbsBlob(slice, true);
     }
   }
 
   static getBlob(...var_args: (string|FbsBlob)[]): FbsBlob|null {
     if (type.isNativeBlobDefined()) {
-      var blobby: (Blob|Uint8Array|string)[] = var_args.map(function(val: string|FbsBlob): Blob|Uint8Array|string {
-        if (val instanceof FbsBlob) {
-          return val.data_;
-        } else {
-          return val;
-        }
-      });
+      var blobby: (Blob|Uint8Array|string)[] =
+          var_args.map(function(val: string|FbsBlob): Blob | Uint8Array |
+                       string {
+                         if (val instanceof FbsBlob) {
+                           return val.data_;
+                         } else {
+                           return val;
+                         }
+                       });
       return new FbsBlob(fs.getBlob.apply(null, blobby));
     } else {
-      let uint8Arrays: Uint8Array[] = var_args.map(function(val: string|FbsBlob): Uint8Array {
+      let uint8Arrays: Uint8Array[] = var_args.map(function(
+          val: string|FbsBlob): Uint8Array {
         if (type.isString(val)) {
           return string.dataFromString(StringFormat.RAW, val as string).data;
         } else {
@@ -119,7 +118,5 @@ export class FbsBlob {
     }
   }
 
-  uploadData(): Blob|Uint8Array {
-    return this.data_;
-  }
+  uploadData(): Blob|Uint8Array { return this.data_; }
 }

@@ -1,28 +1,30 @@
 /**
-* Copyright 2017 Google Inc.
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-*   http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Copyright 2017 Google Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
-import { FirebaseApp } from "../../app/firebase_app";
-import { safeGet } from "../../utils/obj";
-import { Repo } from "./Repo";
-import { fatal } from "./util/util";
-import { parseRepoInfo } from "./util/libs/parser";
-import { validateUrl } from "./util/validation";
 import "./Repo_transaction";
-import { Database } from '../api/Database';
-import { RepoInfo } from './RepoInfo';
+
+import {FirebaseApp} from "../../app/firebase_app";
+import {safeGet} from "../../utils/obj";
+import {Database} from '../api/Database';
+
+import {Repo} from "./Repo";
+import {RepoInfo} from './RepoInfo';
+import {parseRepoInfo} from "./util/libs/parser";
+import {fatal} from "./util/util";
+import {validateUrl} from "./util/validation";
 
 /** @const {string} */
 const DATABASE_URL_OPTION = 'databaseURL';
@@ -36,12 +38,11 @@ export class RepoManager {
   /**
    * @private {!Object.<string, !Repo>}
    */
-  private repos_: {
-    [name: string]: Repo
-  } = {};
+  private repos_: {[name: string] : Repo} = {};
 
   /**
-   * If true, new Repos will be created to use ReadonlyRestClient (for testing purposes).
+   * If true, new Repos will be created to use ReadonlyRestClient (for testing
+   * purposes).
    * @private {boolean}
    */
   private useRestClient_: boolean = false;
@@ -76,8 +77,8 @@ export class RepoManager {
     const dbUrl: string = app.options[DATABASE_URL_OPTION];
     if (dbUrl === undefined) {
       fatal("Can't determine Firebase Database URL.  Be sure to include " +
-                         DATABASE_URL_OPTION +
-                         " option when calling firebase.intializeApp().");
+            DATABASE_URL_OPTION +
+            " option when calling firebase.intializeApp().");
     }
 
     const parsedUrl = parseRepoInfo(dbUrl);
@@ -86,7 +87,7 @@ export class RepoManager {
     validateUrl('Invalid Firebase Database URL', 1, parsedUrl);
     if (!parsedUrl.path.isEmpty()) {
       fatal("Database URL must point to the root of a Firebase Database " +
-                         "(not including a child path).");
+            "(not including a child path).");
     }
 
     const repo = this.createRepo(repoInfo, app);
@@ -100,7 +101,7 @@ export class RepoManager {
    * @param {!Repo} repo
    */
   deleteRepo(repo: Repo) {
-    
+
     // This should never happen...
     if (safeGet(this.repos_, repo.app.name) !== repo) {
       fatal("Database " + repo.app.name + " has already been deleted.");
@@ -129,7 +130,8 @@ export class RepoManager {
   }
 
   /**
-   * Forces us to use ReadonlyRestClient instead of PersistentConnection for new Repos.
+   * Forces us to use ReadonlyRestClient instead of PersistentConnection for new
+   * Repos.
    * @param {boolean} forceRestClient
    */
   forceRestClient(forceRestClient: boolean) {

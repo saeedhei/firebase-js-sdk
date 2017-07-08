@@ -1,18 +1,18 @@
 /**
-* Copyright 2017 Google Inc.
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-*   http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Copyright 2017 Google Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 /**
  * @fileoverview Standardized Firebase Error.
  *
@@ -53,16 +53,16 @@
  *     }
  *   }
  */
-export type ErrorList<T> = {[code: string]: string};
+export type ErrorList<T> = {
+  [code: string] : string
+};
 
 const ERROR_NAME = 'FirebaseError';
 
-export interface StringLike {
-  toString: () => string;
-}
+export interface StringLike { toString: () => string; }
 
 let captureStackTrace: (obj: Object, fn?: Function) => void =
-  (Error as any).captureStackTrace;
+    (Error as any).captureStackTrace;
 
 // Export for faking in tests
 export function patchCapture(captureFake?: any): any {
@@ -75,22 +75,21 @@ export interface FirebaseError {
   // Unique code for error - format is service/error-code-string
   code: string,
 
-  // Developer-friendly error message.
-  message: string,
+      // Developer-friendly error message.
+      message: string,
 
-  // Always 'FirebaseError'
-  name: string,
+      // Always 'FirebaseError'
+      name: string,
 
-  // Where available - stack backtrace in a string
-  stack: string,
+      // Where available - stack backtrace in a string
+      stack: string,
 }
 
 export class FirebaseError implements FirebaseError {
   public stack: string;
   public name: string;
 
-  constructor(public code: string,
-              public message: string) {
+  constructor(public code: string, public message: string) {
     let stack: string;
     // We want the stack value, if implemented by Error
     if (captureStackTrace) {
@@ -100,11 +99,8 @@ export class FirebaseError implements FirebaseError {
       let err = Error.apply(this, arguments);
       this.name = ERROR_NAME;
       // Make non-enumerable getter for the property.
-      Object.defineProperty(this, 'stack', {
-        get: function() {
-          return err.stack;
-        }
-      });
+      Object.defineProperty(this, 'stack',
+                            {get : function() { return err.stack; }});
     }
   }
 }
@@ -118,13 +114,12 @@ export class ErrorFactory<T extends string> {
   // Matches {$name}, by default.
   public pattern = /\{\$([^}]+)}/g
 
-  constructor(private service: string,
-              private serviceName: string,
+  constructor(private service: string, private serviceName: string,
               private errors: ErrorList<T>) {
     // empty
   }
 
-  create(code: T, data?: {[prop: string]: StringLike}): FirebaseError {
+  create(code: T, data?: {[prop: string] : StringLike}): FirebaseError {
     if (data === undefined) {
       data = {};
     }
@@ -139,8 +134,7 @@ export class ErrorFactory<T extends string> {
     } else {
       message = template.replace(this.pattern, (match, key) => {
         let value = data![key];
-        return value !== undefined ? value.toString()
-          : '<' + key + '?>';
+        return value !== undefined ? value.toString() : '<' + key + '?>';
       });
     }
 

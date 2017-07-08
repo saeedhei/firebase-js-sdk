@@ -1,21 +1,22 @@
 /**
-* Copyright 2017 Google Inc.
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-*   http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Copyright 2017 Google Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
-import { EventEmitter } from "./EventEmitter";
-import { assert } from "../../../utils/assert";
+import {assert} from "../../../utils/assert";
+
+import {EventEmitter} from "./EventEmitter";
 
 declare const document: any;
 
@@ -25,15 +26,14 @@ declare const document: any;
 export class VisibilityMonitor extends EventEmitter {
   private visible_: boolean;
 
-  static getInstance() {
-    return new VisibilityMonitor();
-  }
+  static getInstance() { return new VisibilityMonitor(); }
 
   constructor() {
-    super(['visible']);
+    super([ 'visible' ]);
     let hidden: string;
     let visibilityChange: string;
-    if (typeof document !== 'undefined' && typeof document.addEventListener !== 'undefined') {
+    if (typeof document !== 'undefined' &&
+        typeof document.addEventListener !== 'undefined') {
       if (typeof document['hidden'] !== 'undefined') {
         // Opera 12.10 and Firefox 18 and later support
         visibilityChange = 'visibilitychange';
@@ -73,6 +73,6 @@ export class VisibilityMonitor extends EventEmitter {
    */
   getInitialEvent(eventType: string): boolean[] {
     assert(eventType === 'visible', 'Unknown event type: ' + eventType);
-    return [this.visible_];
+    return [ this.visible_ ];
   }
 }

@@ -1,18 +1,18 @@
 /**
-* Copyright 2017 Google Inc.
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-*   http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Copyright 2017 Google Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 /**
  * FakeSubscription Constructor.
  */
@@ -43,30 +43,30 @@ export default function(options = {}) {
   const fakeSub = new FakeSubscription();
 
   // Set endpoint
-  const endpoint = (options as any).endpoint ?
-    (options as any).endpoint :
-    'https://example-push-endpoint.com/';
+  const endpoint = (options as any).endpoint
+                       ? (options as any).endpoint
+                       : 'https://example-push-endpoint.com/';
 
-  Object.defineProperty(fakeSub, 'endpoint', {
-    value: endpoint
-  });
+  Object.defineProperty(fakeSub, 'endpoint', {value : endpoint});
 
   // Set getKey
   Object.defineProperty(fakeSub, 'getKey', {
-    value: (keyName) => {
+    value : (keyName) => {
       let keyString = null;
-      switch(keyName) {
-        case 'auth': {
-          keyString = (options as any).auth ? (options as any).auth : 'auth-secret';
-          break;
-        }
-        case 'p256dh': {
-          keyString = (options as any).p256dh ? (options as any).p256dh : 'the-user-public-key';
-          break;
-        }
-        default:
-          throw new Error('Error from MakeFakeSubscription, unexpected ' +
-            'getKey() key name: ' + keyName);
+      switch (keyName) {
+      case 'auth': {
+        keyString =
+            (options as any).auth ? (options as any).auth : 'auth-secret';
+        break;
+      }
+      case 'p256dh': {
+        keyString = (options as any).p256dh ? (options as any).p256dh
+                                            : 'the-user-public-key';
+        break;
+      }
+      default:
+        throw new Error('Error from MakeFakeSubscription, unexpected ' +
+                        'getKey() key name: ' + keyName);
       }
       return stringToArrayBuffer(keyString);
     }

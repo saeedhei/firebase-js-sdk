@@ -1,19 +1,21 @@
 /**
-* Copyright 2017 Google Inc.
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-*   http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Copyright 2017 Google Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
+import {RepoInfo} from '../core/RepoInfo';
+import {PersistentStorage} from '../core/storage/storage';
 import {
   error,
   logWrapper,
@@ -21,22 +23,23 @@ import {
   setTimeoutNonBlocking,
   warn,
 } from '../core/util/util';
-import { PersistentStorage } from '../core/storage/storage';
-import { PROTOCOL_VERSION } from './Constants';
-import { TransportManager } from './TransportManager';
-import { RepoInfo } from '../core/RepoInfo';
-import { Transport, TransportConstructor } from './Transport';
+
+import {PROTOCOL_VERSION} from './Constants';
+import {Transport, TransportConstructor} from './Transport';
+import {TransportManager} from './TransportManager';
 
 // Abort upgrade attempt if it takes longer than 60s.
 const UPGRADE_TIMEOUT = 60000;
 
-// For some transports (WebSockets), we need to "validate" the transport by exchanging a few requests and responses.
-// If we haven't sent enough requests within 5s, we'll start sending noop ping requests.
+// For some transports (WebSockets), we need to "validate" the transport by
+// exchanging a few requests and responses. If we haven't sent enough requests
+// within 5s, we'll start sending noop ping requests.
 const DELAY_BEFORE_SENDING_EXTRA_REQUESTS = 5000;
 
-// If the initial data sent triggers a lot of bandwidth (i.e. it's a large put or a listen for a large amount of data)
-// then we may not be able to exchange our ping/pong requests within the healthy timeout.  So if we reach the timeout
-// but we've sent/received enough bytes, we don't cancel the connection.
+// If the initial data sent triggers a lot of bandwidth (i.e. it's a large put
+// or a listen for a large amount of data) then we may not be able to exchange
+// our ping/pong requests within the healthy timeout.  So if we reach the
+// timeout but we've sent/received enough bytes, we don't cancel the connection.
 const BYTES_SENT_HEALTHY_OVERRIDE = 10 * 1024;
 const BYTES_RECEIVED_HEALTHY_OVERRIDE = 100 * 1024;
 
@@ -57,7 +60,6 @@ const END_TRANSMISSION = 'n';
 const PING = 'p';
 
 const SERVER_HELLO = 'h';
-
 
 /**
  * Creates a new real-time connection to the server using whichever method works
@@ -85,14 +87,18 @@ export class Connection {
   /**
    * @param {!string} id - an id for this connection
    * @param {!RepoInfo} repoInfo_ - the info for the endpoint to connect to
-   * @param {function(Object)} onMessage_ - the callback to be triggered when a server-push message arrives
-   * @param {function(number, string)} onReady_ - the callback to be triggered when this connection is ready to send messages.
-   * @param {function()} onDisconnect_ - the callback to be triggered when a connection was lost
-   * @param {function(string)} onKill_ - the callback to be triggered when this connection has permanently shut down.
-   * @param {string=} lastSessionId - last session id in persistent connection. is used to clean up old session in real-time server
+   * @param {function(Object)} onMessage_ - the callback to be triggered when a
+   * server-push message arrives
+   * @param {function(number, string)} onReady_ - the callback to be triggered
+   * when this connection is ready to send messages.
+   * @param {function()} onDisconnect_ - the callback to be triggered when a
+   * connection was lost
+   * @param {function(string)} onKill_ - the callback to be triggered when this
+   * connection has permanently shut down.
+   * @param {string=} lastSessionId - last session id in persistent connection.
+   * is used to clean up old session in real-time server
    */
-  constructor(public id: string,
-              private repoInfo_: RepoInfo,
+  constructor(public id: string, private repoInfo_: RepoInfo,
               private onMessage_: (a: Object) => void,
               private onReady_: (a: number, b: string) => void,
               private onDisconnect_: () => void,
@@ -110,10 +116,11 @@ export class Connection {
    */
   private start_() {
     const conn = this.transportManager_.initialTransport();
-    this.conn_ = new conn(this.nextTransportId_(), this.repoInfo_, undefined, this.lastSessionId);
+    this.conn_ = new conn(this.nextTransportId_(), this.repoInfo_, undefined,
+                          this.lastSessionId);
 
-    // For certain transports (WebSockets), we need to send and receive several messages back and forth before we
-    // can consider the transport healthy.
+    // For certain transports (WebSockets), we need to send and receive several
+    // messages back and forth before we can consider the transport healthy.
     this.primaryResponsesRequired_ = conn['responsesRequiredToBeHealthy'] || 0;
 
     const onMessageReceived = this.connReceiver_(this.conn_);
@@ -124,38 +131,46 @@ export class Connection {
     this.isHealthy_ = false;
 
     /*
-     * Firefox doesn't like when code from one iframe tries to create another iframe by way of the parent frame.
-     * This can occur in the case of a redirect, i.e. we guessed wrong on what server to connect to and received a reset.
-     * Somehow, setTimeout seems to make this ok. That doesn't make sense from a security perspective, since you should
-     * still have the context of your originating frame.
+     * Firefox doesn't like when code from one iframe tries to create another
+     * iframe by way of the parent frame. This can occur in the case of a
+     * redirect, i.e. we guessed wrong on what server to connect to and received
+     * a reset. Somehow, setTimeout seems to make this ok. That doesn't make
+     * sense from a security perspective, since you should still have the
+     * context of your originating frame.
      */
     setTimeout(() => {
-      // this.conn_ gets set to null in some of the tests. Check to make sure it still exists before using it
+      // this.conn_ gets set to null in some of the tests. Check to make sure it
+      // still exists before using it
       this.conn_ && this.conn_.open(onMessageReceived, onConnectionLost);
     }, Math.floor(0));
 
-
     const healthyTimeout_ms = conn['healthyTimeout'] || 0;
     if (healthyTimeout_ms > 0) {
-      this.healthyTimeout_ = setTimeoutNonBlocking(() => {
-        this.healthyTimeout_ = null;
-        if (!this.isHealthy_) {
-          if (this.conn_ && this.conn_.bytesReceived > BYTES_RECEIVED_HEALTHY_OVERRIDE) {
-            this.log_('Connection exceeded healthy timeout but has received ' + this.conn_.bytesReceived +
-              ' bytes.  Marking connection healthy.');
-            this.isHealthy_ = true;
-            this.conn_.markConnectionHealthy();
-          } else if (this.conn_ && this.conn_.bytesSent > BYTES_SENT_HEALTHY_OVERRIDE) {
-            this.log_('Connection exceeded healthy timeout but has sent ' + this.conn_.bytesSent +
-              ' bytes.  Leaving connection alive.');
-            // NOTE: We don't want to mark it healthy, since we have no guarantee that the bytes have made it to
-            // the server.
-          } else {
-            this.log_('Closing unhealthy connection after timeout.');
-            this.close();
-          }
-        }
-      }, Math.floor(healthyTimeout_ms)) as any;
+      this.healthyTimeout_ =
+          setTimeoutNonBlocking(() => {
+            this.healthyTimeout_ = null;
+            if (!this.isHealthy_) {
+              if (this.conn_ &&
+                  this.conn_.bytesReceived > BYTES_RECEIVED_HEALTHY_OVERRIDE) {
+                this.log_(
+                    'Connection exceeded healthy timeout but has received ' +
+                    this.conn_.bytesReceived +
+                    ' bytes.  Marking connection healthy.');
+                this.isHealthy_ = true;
+                this.conn_.markConnectionHealthy();
+              } else if (this.conn_ &&
+                         this.conn_.bytesSent > BYTES_SENT_HEALTHY_OVERRIDE) {
+                this.log_('Connection exceeded healthy timeout but has sent ' +
+                          this.conn_.bytesSent +
+                          ' bytes.  Leaving connection alive.');
+                // NOTE: We don't want to mark it healthy, since we have no
+                // guarantee that the bytes have made it to the server.
+              } else {
+                this.log_('Closing unhealthy connection after timeout.');
+                this.close();
+              }
+            }
+          }, Math.floor(healthyTimeout_ms)) as any;
     }
   }
 
@@ -200,20 +215,21 @@ export class Connection {
    */
   sendRequest(dataMsg: object) {
     // wrap in a data message envelope and send it on
-    const msg = {'t': 'd', 'd': dataMsg};
+    const msg = {'t' : 'd', 'd' : dataMsg};
     this.sendData_(msg);
   }
 
   tryCleanupConnection() {
     if (this.tx_ === this.secondaryConn_ && this.rx_ === this.secondaryConn_) {
-      this.log_('cleaning up and promoting a connection: ' + this.secondaryConn_.connId);
+      this.log_('cleaning up and promoting a connection: ' +
+                this.secondaryConn_.connId);
       this.conn_ = this.secondaryConn_;
       this.secondaryConn_ = null;
       // the server will shutdown the old connection
     }
   }
 
-  private onSecondaryControl_(controlData: { [k: string]: any }) {
+  private onSecondaryControl_(controlData: {[k: string] : any}) {
     if (MESSAGE_TYPE in controlData) {
       const cmd = controlData[MESSAGE_TYPE] as string;
       if (cmd === SWITCH_ACK) {
@@ -222,8 +238,10 @@ export class Connection {
         // Most likely the session wasn't valid. Abandon the switch attempt
         this.log_('Got a reset on secondary, closing it');
         this.secondaryConn_.close();
-        // If we were already using this connection for something, than we need to fully close
-        if (this.tx_ === this.secondaryConn_ || this.rx_ === this.secondaryConn_) {
+        // If we were already using this connection for something, than we need
+        // to fully close
+        if (this.tx_ === this.secondaryConn_ ||
+            this.rx_ === this.secondaryConn_) {
           this.close();
         }
       } else if (cmd === CONTROL_PONG) {
@@ -240,7 +258,8 @@ export class Connection {
     if (layer == 'c') {
       this.onSecondaryControl_(data);
     } else if (layer == 'd') {
-      // got a data message, but we're still second connection. Need to buffer it up
+      // got a data message, but we're still second connection. Need to buffer
+      // it up
       this.pendingDataMessages.push(data);
     } else {
       throw new Error('Unknown protocol layer: ' + layer);
@@ -256,7 +275,7 @@ export class Connection {
     } else {
       // Send a ping to make sure the connection is healthy.
       this.log_('sending ping on secondary.');
-      this.secondaryConn_.send({'t': 'c', 'd': {'t': PING, 'd': {}}});
+      this.secondaryConn_.send({'t' : 'c', 'd' : {'t' : PING, 'd' : {}}});
     }
   }
 
@@ -265,19 +284,21 @@ export class Connection {
     this.secondaryConn_.start();
     // send ack
     this.log_('sending client ack on secondary');
-    this.secondaryConn_.send({'t': 'c', 'd': {'t': SWITCH_ACK, 'd': {}}});
+    this.secondaryConn_.send({'t' : 'c', 'd' : {'t' : SWITCH_ACK, 'd' : {}}});
 
     // send end packet on primary transport, switch to sending on this one
-    // can receive on this one, buffer responses until end received on primary transport
+    // can receive on this one, buffer responses until end received on primary
+    // transport
     this.log_('Ending transmission on primary');
-    this.conn_.send({'t': 'c', 'd': {'t': END_TRANSMISSION, 'd': {}}});
+    this.conn_.send({'t' : 'c', 'd' : {'t' : END_TRANSMISSION, 'd' : {}}});
     this.tx_ = this.secondaryConn_;
 
     this.tryCleanupConnection();
   }
 
-  private onPrimaryMessageReceived_(parsedData: { [k: string]: any }) {
-    // Must refer to parsedData properties in quotes, so closure doesn't touch them.
+  private onPrimaryMessageReceived_(parsedData: {[k: string] : any}) {
+    // Must refer to parsedData properties in quotes, so closure doesn't touch
+    // them.
     const layer: string = requireKey('t', parsedData);
     const data: any = requireKey('d', parsedData);
     if (layer == 'c') {
@@ -305,7 +326,7 @@ export class Connection {
     }
   };
 
-  private onControl_(controlData: { [k: string]: any }) {
+  private onControl_(controlData: {[k: string] : any}) {
     const cmd: string = requireKey(MESSAGE_TYPE, controlData);
     if (MESSAGE_DATA in controlData) {
       const payload = controlData[MESSAGE_DATA];
@@ -320,8 +341,9 @@ export class Connection {
         this.pendingDataMessages = [];
         this.tryCleanupConnection();
       } else if (cmd === CONTROL_SHUTDOWN) {
-        // This was previously the 'onKill' callback passed to the lower-level connection
-        // payload in this case is the reason for the shutdown. Generally a human-readable error
+        // This was previously the 'onKill' callback passed to the lower-level
+        // connection payload in this case is the reason for the shutdown.
+        // Generally a human-readable error
         this.onConnectionShutdown_(payload);
       } else if (cmd === CONTROL_RESET) {
         // payload in this case is the host we should contact
@@ -343,13 +365,15 @@ export class Connection {
    * @param {Object} handshake The handshake data returned from the server
    * @private
    */
-  private onHandshake_(handshake: { ts: number, v: string, h: string, s: string }) {
+  private onHandshake_(handshake:
+                           {ts : number, v : string, h : string, s : string}) {
     const timestamp = handshake.ts;
     const version = handshake.v;
     const host = handshake.h;
     this.sessionId = handshake.s;
     this.repoInfo_.updateHost(host);
-    // if we've already closed the connection, then don't bother trying to progress further
+    // if we've already closed the connection, then don't bother trying to
+    // progress further
     if (this.state_ == RealtimeState.CONNECTING) {
       this.conn_.start();
       this.onConnectionEstablished_(this.conn_, timestamp);
@@ -369,17 +393,19 @@ export class Connection {
   }
 
   private startUpgrade_(conn: TransportConstructor) {
-    this.secondaryConn_ = new conn(this.nextTransportId_(),
-      this.repoInfo_, this.sessionId);
-    // For certain transports (WebSockets), we need to send and receive several messages back and forth before we
-    // can consider the transport healthy.
-    this.secondaryResponsesRequired_ = conn['responsesRequiredToBeHealthy'] || 0;
+    this.secondaryConn_ =
+        new conn(this.nextTransportId_(), this.repoInfo_, this.sessionId);
+    // For certain transports (WebSockets), we need to send and receive several
+    // messages back and forth before we can consider the transport healthy.
+    this.secondaryResponsesRequired_ =
+        conn['responsesRequiredToBeHealthy'] || 0;
 
     const onMessage = this.connReceiver_(this.secondaryConn_);
     const onDisconnect = this.disconnReceiver_(this.secondaryConn_);
     this.secondaryConn_.open(onMessage, onDisconnect);
 
-    // If we haven't successfully upgraded after UPGRADE_TIMEOUT, give up and kill the secondary.
+    // If we haven't successfully upgraded after UPGRADE_TIMEOUT, give up and
+    // kill the secondary.
     setTimeoutNonBlocking(() => {
       if (this.secondaryConn_) {
         this.log_('Timed out trying to upgrade.');
@@ -391,8 +417,9 @@ export class Connection {
   private onReset_(host: string) {
     this.log_('Reset packet received.  New host: ' + host);
     this.repoInfo_.updateHost(host);
-    // TODO: if we're already "connected", we need to trigger a disconnect at the next layer up.
-    // We don't currently support resets after the connection has already been established
+    // TODO: if we're already "connected", we need to trigger a disconnect at
+    // the next layer up. We don't currently support resets after the connection
+    // has already been established
     if (this.state_ === RealtimeState.CONNECTED) {
       this.close();
     } else {
@@ -412,23 +439,23 @@ export class Connection {
       this.onReady_ = null;
     }
 
-    // If after 5 seconds we haven't sent enough requests to the server to get the connection healthy,
-    // send some pings.
+    // If after 5 seconds we haven't sent enough requests to the server to get
+    // the connection healthy, send some pings.
     if (this.primaryResponsesRequired_ === 0) {
       this.log_('Primary connection is healthy.');
       this.isHealthy_ = true;
     } else {
-      setTimeoutNonBlocking(() => {
-        this.sendPingOnPrimaryIfNecessary_();
-      }, Math.floor(DELAY_BEFORE_SENDING_EXTRA_REQUESTS));
+      setTimeoutNonBlocking(() => { this.sendPingOnPrimaryIfNecessary_(); },
+                            Math.floor(DELAY_BEFORE_SENDING_EXTRA_REQUESTS));
     }
   }
 
   private sendPingOnPrimaryIfNecessary_() {
-    // If the connection isn't considered healthy yet, we'll send a noop ping packet request.
+    // If the connection isn't considered healthy yet, we'll send a noop ping
+    // packet request.
     if (!this.isHealthy_ && this.state_ === RealtimeState.CONNECTED) {
       this.log_('sending ping on primary.');
-      this.sendData_({'t': 'c', 'd': {'t': PING, 'd': {}}});
+      this.sendData_({'t' : 'c', 'd' : {'t' : PING, 'd' : {}}});
     }
   }
 
@@ -436,28 +463,32 @@ export class Connection {
     const conn = this.secondaryConn_;
     this.secondaryConn_ = null;
     if (this.tx_ === conn || this.rx_ === conn) {
-      // we are relying on this connection already in some capacity. Therefore, a failure is real
+      // we are relying on this connection already in some capacity. Therefore,
+      // a failure is real
       this.close();
     }
   }
 
   /**
    *
-   * @param {boolean} everConnected Whether or not the connection ever reached a server. Used to determine if
-   * we should flush the host cache
+   * @param {boolean} everConnected Whether or not the connection ever reached a
+   * server. Used to determine if we should flush the host cache
    * @private
    */
   private onConnectionLost_(everConnected: boolean) {
     this.conn_ = null;
 
-    // NOTE: IF you're seeing a Firefox error for this line, I think it might be because it's getting
-    // called on window close and RealtimeState.CONNECTING is no longer defined.  Just a guess.
+    // NOTE: IF you're seeing a Firefox error for this line, I think it might be
+    // because it's getting called on window close and RealtimeState.CONNECTING
+    // is no longer defined.  Just a guess.
     if (!everConnected && this.state_ === RealtimeState.CONNECTING) {
       this.log_('Realtime connection failed.');
-      // Since we failed to connect at all, clear any cached entry for this namespace in case the machine went away
+      // Since we failed to connect at all, clear any cached entry for this
+      // namespace in case the machine went away
       if (this.repoInfo_.isCacheableHost()) {
         PersistentStorage.remove('host:' + this.repoInfo_.host);
-        // reset the internal host to what we would show the user, i.e. <ns>.firebaseio.com
+        // reset the internal host to what we would show the user, i.e.
+        // <ns>.firebaseio.com
         this.repoInfo_.internalHost = this.repoInfo_.host;
       }
     } else if (this.state_ === RealtimeState.CONNECTED) {
@@ -480,13 +511,12 @@ export class Connection {
       this.onKill_ = null;
     }
 
-    // We intentionally don't want to fire onDisconnect (kill is a different case),
-    // so clear the callback.
+    // We intentionally don't want to fire onDisconnect (kill is a different
+    // case), so clear the callback.
     this.onDisconnect_ = null;
 
     this.close();
   }
-
 
   private sendData_(data: object) {
     if (this.state_ !== RealtimeState.CONNECTED) {
@@ -535,5 +565,3 @@ export class Connection {
     }
   }
 }
-
-

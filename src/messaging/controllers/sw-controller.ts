@@ -1,18 +1,18 @@
 /**
-* Copyright 2017 Google Inc.
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-*   http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Copyright 2017 Google Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 'use strict';
 
 import ControllerInterface from './controller-interface';
@@ -30,10 +30,10 @@ export default class SWController extends ControllerInterface {
     super(app);
 
     self.addEventListener('push', e => this.onPush_(e), false);
-    self.addEventListener(
-        'pushsubscriptionchange', e => this.onSubChange_(e), false);
-    self.addEventListener(
-        'notificationclick', e => this.onNotificationClick_(e), false);
+    self.addEventListener('pushsubscriptionchange', e => this.onSubChange_(e),
+                          false);
+    self.addEventListener('notificationclick',
+                          e => this.onNotificationClick_(e), false);
 
     /**
      * @private
@@ -43,18 +43,18 @@ export default class SWController extends ControllerInterface {
   }
 
   /**
-  * A handler for push events that shows notifications based on the content of
-  * the payload.
-  *
-  * The payload must be a JSON-encoded Object with a `notification` key. The
-  * value of the `notification` property will be used as the NotificationOptions
-  * object passed to showNotification. Additionally, the `title` property of the
-  * notification object will be used as the title.
-  *
-  * If there is no notification data in the payload then no notification will be
-  * shown.
-  * @private
-  */
+   * A handler for push events that shows notifications based on the content of
+   * the payload.
+   *
+   * The payload must be a JSON-encoded Object with a `notification` key. The
+   * value of the `notification` property will be used as the
+   * NotificationOptions object passed to showNotification. Additionally, the
+   * `title` property of the notification object will be used as the title.
+   *
+   * If there is no notification data in the payload then no notification will
+   * be shown.
+   * @private
+   */
   onPush_(event) {
     let msgPayload;
     try {
@@ -64,85 +64,81 @@ export default class SWController extends ControllerInterface {
       return;
     }
 
-    const handleMsgPromise = this.hasVisibleClients_()
-    .then(hasVisibleClients => {
-      if (hasVisibleClients) {
-        // Do not need to show a notification.
-        if (msgPayload.notification || this.bgMessageHandler_) {
-          // Send to page
-          return this.sendMessageToWindowClients_(msgPayload);
-        }
-        return;
-      }
+    const handleMsgPromise =
+        this.hasVisibleClients_().then(hasVisibleClients => {
+          if (hasVisibleClients) {
+            // Do not need to show a notification.
+            if (msgPayload.notification || this.bgMessageHandler_) {
+              // Send to page
+              return this.sendMessageToWindowClients_(msgPayload);
+            }
+            return;
+          }
 
-      const notificationDetails = this.getNotificationData_(msgPayload);
-      if (notificationDetails) {
-        const notificationTitle = notificationDetails.title || '';
-        return (self as any).registration
-          .showNotification(notificationTitle, notificationDetails);
-      } else if (this.bgMessageHandler_) {
-        return this.bgMessageHandler_(msgPayload);
-      }
-    });
+          const notificationDetails = this.getNotificationData_(msgPayload);
+          if (notificationDetails) {
+            const notificationTitle = notificationDetails.title || '';
+            return (self as any)
+                .registration.showNotification(notificationTitle,
+                                               notificationDetails);
+          } else if (this.bgMessageHandler_) {
+            return this.bgMessageHandler_(msgPayload);
+          }
+        });
 
     event.waitUntil(handleMsgPromise);
   }
 
   /**
-  * @private
-  */
+   * @private
+   */
   onSubChange_(event) {
-    const promiseChain = this.getToken()
-      .then(token => {
-        if (!token) {
-          // We can't resubscribe if we don't have an FCM token for this scope.
-          throw this.errorFactory_.create(
-              Errors.codes.NO_FCM_TOKEN_FOR_RESUBSCRIBE);
-        }
+    const promiseChain = this.getToken().then(token => {
+      if (!token) {
+        // We can't resubscribe if we don't have an FCM token for this scope.
+        throw this.errorFactory_.create(
+            Errors.codes.NO_FCM_TOKEN_FOR_RESUBSCRIBE);
+      }
 
-        let tokenDetails = null;
-        const tokenManager = this.getTokenManager();
-        return tokenManager.getTokenDetailsFromToken(token)
-        .then(details => {
-          tokenDetails = details;
-          if (!tokenDetails) {
-            throw this.errorFactory_.create(Errors.codes.INVALID_SAVED_TOKEN);
-          }
+      let tokenDetails = null;
+      const tokenManager = this.getTokenManager();
+      return tokenManager.getTokenDetailsFromToken(token)
+          .then(details => {
+            tokenDetails = details;
+            if (!tokenDetails) {
+              throw this.errorFactory_.create(Errors.codes.INVALID_SAVED_TOKEN);
+            }
 
-          // Attempt to get a new subscription
-          return (self as any).registration.pushManager.subscribe(FCMDetails.SUBSCRIPTION_OPTIONS);
-        })
-        .then(newSubscription => {
-          // Send new subscription to FCM.
-          return tokenManager.subscribeToFCM(
-            tokenDetails.fcmSenderId,
-            newSubscription,
-            tokenDetails.fcmPushSet
-          );
-        })
-        .catch(err => {
-          // The best thing we can do is log this to the terminal so
-          // developers might notice the error.
-          return tokenManager.deleteToken(tokenDetails.fcmToken)
-          .then(() => {
-            throw this.errorFactory_.create(
-              Errors.codes.UNABLE_TO_RESUBSCRIBE, {
-                'message': err
-              }
-            );
+            // Attempt to get a new subscription
+            return (self as any)
+                .registration.pushManager.subscribe(
+                    FCMDetails.SUBSCRIPTION_OPTIONS);
+          })
+          .then(newSubscription => {
+            // Send new subscription to FCM.
+            return tokenManager.subscribeToFCM(tokenDetails.fcmSenderId,
+                                               newSubscription,
+                                               tokenDetails.fcmPushSet);
+          })
+          .catch(err => {
+            // The best thing we can do is log this to the terminal so
+            // developers might notice the error.
+            return tokenManager.deleteToken(tokenDetails.fcmToken).then(() => {
+              throw this.errorFactory_.create(
+                  Errors.codes.UNABLE_TO_RESUBSCRIBE, {'message' : err});
+            });
           });
-        });
-      });
+    });
 
     event.waitUntil(promiseChain);
   }
 
   /**
-  * @private
-  */
+   * @private
+   */
   onNotificationClick_(event) {
     if (!(event.notification && event.notification.data &&
-        event.notification.data[FCM_MSG])) {
+          event.notification.data[FCM_MSG])) {
       // Not an FCM notification, do nothing.
       return;
     }
@@ -159,31 +155,35 @@ export default class SWController extends ControllerInterface {
       return;
     }
 
-    const promiseChain = this.getWindowClient_(clickAction)
-    .then(windowClient => {
-      if (!windowClient) {
-        // Unable to find window client so need to open one.
-        return (self as any).clients.openWindow(clickAction);
-      }
-      return windowClient;
-    })
-    .then(windowClient => {
-      if (!windowClient) {
-        // Window Client will not be returned if it's for a third party origin.
-        return;
-      }
+    const promiseChain =
+        this.getWindowClient_(clickAction)
+            .then(windowClient => {
+              if (!windowClient) {
+                // Unable to find window client so need to open one.
+                return (self as any).clients.openWindow(clickAction);
+              }
+              return windowClient;
+            })
+            .then(windowClient => {
+              if (!windowClient) {
+                // Window Client will not be returned if it's for a third party
+                // origin.
+                return;
+              }
 
-      // Delete notification data from payload before sending to the page.
-      const notificationData = msgPayload['notification'];
-      delete msgPayload['notification'];
+              // Delete notification data from payload before sending to the
+              // page.
+              const notificationData = msgPayload['notification'];
+              delete msgPayload['notification'];
 
-      const internalMsg = WorkerPageMessage.createNewMsg(
-          WorkerPageMessage.TYPES_OF_MSG.NOTIFICATION_CLICKED,
-          msgPayload);
-      // Attempt to send a message to the client to handle the data
-      // Is affected by: https://github.com/slightlyoff/ServiceWorker/issues/728
-      return this.attemptToMessageClient_(windowClient, internalMsg);
-    });
+              const internalMsg = WorkerPageMessage.createNewMsg(
+                  WorkerPageMessage.TYPES_OF_MSG.NOTIFICATION_CLICKED,
+                  msgPayload);
+              // Attempt to send a message to the client to handle the data
+              // Is affected by:
+              // https://github.com/slightlyoff/ServiceWorker/issues/728
+              return this.attemptToMessageClient_(windowClient, internalMsg);
+            });
 
     event.waitUntil(promiseChain);
   }
@@ -207,9 +207,7 @@ export default class SWController extends ControllerInterface {
     // notification as being an FCM notification vs a notification from
     // somewhere else (i.e. normal web push or developer generated
     // notification).
-    notificationInformation['data'] = {
-      [FCM_MSG]: msgPayload
-    };
+    notificationInformation['data'] = {[FCM_MSG] : msgPayload};
 
     return notificationInformation;
   }
@@ -232,7 +230,7 @@ export default class SWController extends ControllerInterface {
   setBackgroundMessageHandler(callback) {
     if (callback && typeof callback !== 'function') {
       throw this.errorFactory_.create(
-        Errors.codes.BG_HANDLER_FUNCTION_EXPECTED);
+          Errors.codes.BG_HANDLER_FUNCTION_EXPECTED);
     }
 
     this.bgMessageHandler_ = callback;
@@ -249,25 +247,23 @@ export default class SWController extends ControllerInterface {
     // This at least handles whether to include trailing slashes or not
     const parsedURL = new URL(url).href;
 
-    return (self as any).clients.matchAll({
-      type: 'window',
-      includeUncontrolled: true
-    })
-    .then(clientList => {
-      let suitableClient = null;
-      for (let i = 0; i < clientList.length; i++) {
-        const parsedClientUrl = new URL(clientList[i].url).href;
-        if (parsedClientUrl === parsedURL) {
-          suitableClient = clientList[i];
-          break;
-        }
-      }
+    return (self as any)
+        .clients.matchAll({type : 'window', includeUncontrolled : true})
+        .then(clientList => {
+          let suitableClient = null;
+          for (let i = 0; i < clientList.length; i++) {
+            const parsedClientUrl = new URL(clientList[i].url).href;
+            if (parsedClientUrl === parsedURL) {
+              suitableClient = clientList[i];
+              break;
+            }
+          }
 
-      if (suitableClient) {
-        suitableClient.focus();
-        return suitableClient;
-      }
-    });
+          if (suitableClient) {
+            suitableClient.focus();
+            return suitableClient;
+          }
+        });
   }
 
   /**
@@ -282,8 +278,8 @@ export default class SWController extends ControllerInterface {
   attemptToMessageClient_(client, message) {
     return new Promise((resolve, reject) => {
       if (!client) {
-        return reject(this.errorFactory_.create(
-          Errors.codes.NO_WINDOW_CLIENT_TO_MSG));
+        return reject(
+            this.errorFactory_.create(Errors.codes.NO_WINDOW_CLIENT_TO_MSG));
       }
 
       client.postMessage(message);
@@ -297,13 +293,12 @@ export default class SWController extends ControllerInterface {
    * this method will resolve to true, otherwise false.
    */
   hasVisibleClients_() {
-    return (self as any).clients.matchAll({
-      type: 'window',
-      includeUncontrolled: true
-    })
-    .then(clientList => {
-      return clientList.some(client => client.visibilityState === 'visible');
-    });
+    return (self as any)
+        .clients.matchAll({type : 'window', includeUncontrolled : true})
+        .then(clientList => {
+          return clientList.some(client =>
+                                     client.visibilityState === 'visible');
+        });
   }
 
   /**
@@ -314,21 +309,16 @@ export default class SWController extends ControllerInterface {
    * has been sent to all WindowClients.
    */
   sendMessageToWindowClients_(msgPayload) {
-    return (self as any).clients.matchAll({
-      type: 'window',
-      includeUncontrolled: true
-    })
-    .then(clientList => {
-      const internalMsg = WorkerPageMessage.createNewMsg(
-        WorkerPageMessage.TYPES_OF_MSG.PUSH_MSG_RECEIVED,
-        msgPayload);
+    return (self as any)
+        .clients.matchAll({type : 'window', includeUncontrolled : true})
+        .then(clientList => {
+          const internalMsg = WorkerPageMessage.createNewMsg(
+              WorkerPageMessage.TYPES_OF_MSG.PUSH_MSG_RECEIVED, msgPayload);
 
-      return Promise.all(
-        clientList.map(client => {
-          return this.attemptToMessageClient_(client, internalMsg);
-        })
-      );
-    });
+          return Promise.all(clientList.map(client => {
+            return this.attemptToMessageClient_(client, internalMsg);
+          }));
+        });
   }
 
   /**
@@ -337,7 +327,5 @@ export default class SWController extends ControllerInterface {
    * @return {Promise<!ServiceWorkerRegistration>} The service worker
    * registration to be used for the push service.
    */
-  getSWRegistration_() {
-    return Promise.resolve((self as any).registration);
-  }
+  getSWRegistration_() { return Promise.resolve((self as any).registration); }
 }

@@ -1,35 +1,31 @@
 /**
-* Copyright 2017 Google Inc.
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-*   http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Copyright 2017 Google Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
-import { Index } from './Index';
-import { nameCompare, MAX_NAME } from "../../util/util";
-import { NamedNode, Node } from '../Node';
-import { LeafNode } from "../LeafNode";
+import {MAX_NAME, nameCompare} from "../../util/util";
+import {LeafNode} from "../LeafNode";
+import {NamedNode, Node} from '../Node';
+
+import {Index} from './Index';
 
 let nodeFromJSON: (a: any) => Node;
 let MAX_NODE: Node;
 
-export function setNodeFromJSON(val: (a: any) => Node) {
-  nodeFromJSON = val;
-}
+export function setNodeFromJSON(val: (a: any) => Node) { nodeFromJSON = val; }
 
-export function setMaxNode(val: Node) {
-  MAX_NODE = val;
-}
-
+export function setMaxNode(val: Node) { MAX_NODE = val; }
 
 /**
  * @constructor
@@ -51,14 +47,10 @@ export class PriorityIndex extends Index {
     }
   }
 
-
   /**
    * @inheritDoc
    */
-  isDefinedOn(node: Node): boolean {
-    return !node.getPriority().isEmpty();
-  }
-
+  isDefinedOn(node: Node): boolean { return !node.getPriority().isEmpty(); }
 
   /**
    * @inheritDoc
@@ -67,14 +59,10 @@ export class PriorityIndex extends Index {
     return !oldNode.getPriority().equals(newNode.getPriority());
   }
 
-
   /**
    * @inheritDoc
    */
-  minPost(): NamedNode {
-    return (NamedNode as any).MIN;
-  }
-
+  minPost(): NamedNode { return (NamedNode as any).MIN; }
 
   /**
    * @inheritDoc
@@ -82,7 +70,6 @@ export class PriorityIndex extends Index {
   maxPost(): NamedNode {
     return new NamedNode(MAX_NAME, new LeafNode('[PRIORITY-POST]', MAX_NODE));
   }
-
 
   /**
    * @param {*} indexValue
@@ -94,13 +81,10 @@ export class PriorityIndex extends Index {
     return new NamedNode(name, new LeafNode('[PRIORITY-POST]', priorityNode));
   }
 
-
   /**
    * @return {!string} String representation for inclusion in a query spec
    */
-  toString(): string {
-    return '.priority';
-  }
+  toString(): string { return '.priority'; }
 }
 
 export const PRIORITY_INDEX = new PriorityIndex();
